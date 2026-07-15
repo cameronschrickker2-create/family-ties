@@ -1575,10 +1575,6 @@ async function saveEvent(){
   }
 }
 
-init();
-setupInstall();
-registerServiceWorker();
-
 // ---------- PWA INSTALL ----------
 let deferredPrompt = null;
 function isStandalone(){ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
@@ -1618,6 +1614,12 @@ function registerServiceWorker(){
     navigator.serviceWorker.register('service-worker.js').catch(()=>{});
   }
 }
+
+// Run after every declaration above has executed, so nothing is referenced
+// before its own initialization (avoids temporal-dead-zone errors).
+init();
+setupInstall();
+registerServiceWorker();
 </script>
 </body>
 </html>
