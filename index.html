@@ -309,7 +309,7 @@
   .sheet label{ color:var(--ink); font-size:12.5px; font-weight:700; display:block; margin-bottom:6px; margin-top:16px; }
 
   /* calendar */
-  .cal-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:11px; color:var(--ink-soft); font-weight:700; margin-bottom:6px; }
+  .cal-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center; font-size:11px; color:var(--ink-soft); font-weight:700; margin-bottom:6px; }
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
   .cal-day{
     aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
@@ -330,6 +330,23 @@
   .photo-preview-wrap{ position:relative; margin-top:10px; }
   .photo-preview-wrap img{ width:100%; border-radius:12px; display:block; }
   .photo-preview-wrap button{ position:absolute; top:8px; right:8px; }
+
+  .activity-item{ display:flex; align-items:flex-start; gap:8px; padding:9px 0; border-bottom:1px solid var(--line); }
+  .activity-item:last-child{ border-bottom:none; }
+  .activity-icon{ font-size:15px; margin-top:1px; }
+  .activity-text{ font-size:13.5px; line-height:1.4; }
+  .activity-text b{ font-weight:700; }
+  .activity-when{ font-size:11.5px; color:var(--ink-soft); margin-top:1px; }
+
+  .online-dot{
+    width:9px; height:9px; border-radius:50%; background:#45B08C; display:inline-block;
+    box-shadow:0 0 0 rgba(69,176,140,0.5); animation:pulse 1.8s infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(69,176,140,0.5); }
+    70%{ box-shadow:0 0 0 6px rgba(69,176,140,0); }
+    100%{ box-shadow:0 0 0 0 rgba(69,176,140,0); }
+  }
 </style>
 </head>
 <body>
@@ -339,8 +356,8 @@
     <div class="sheet">
 
       <div id="onboard-picker" style="display:none;">
-        <h1>Who's this?</h1>
-        <p>Pick your name to jump back in.</p>
+        <h1 id="picker-heading">Who's this?</h1>
+        <p id="picker-sub">Pick your name to jump back in.</p>
         <div id="picker-list"></div>
         <div id="picker-add-toggle">
           <button class="btn-ghost" style="width:100%; margin-top:6px;" onclick="showPickerAddForm()">＋ I'm not on this list</button>
@@ -354,28 +371,26 @@
             <input type="file" accept="image/*" id="pk-photo-input" style="display:none">
             <button class="btn-ghost" type="button" onclick="document.getElementById('pk-photo-input').click()">Choose photo</button>
           </div>
-          <button class="btn-gold" style="width:100%; margin-top:18px;" onclick="joinAsNew()">Join the family</button>
+          <button class="btn-gold" style="width:100%; margin-top:18px;" id="picker-join-btn" onclick="joinAsNew()">Join the family</button>
         </div>
-      </div>
-
-      <div id="onboard-setup" style="display:none;">
-        <h1>Meet the Schrickkers</h1>
-        <p>Keeping this family close, wherever we are. You're the first one here — set up the family circle.</p>
-        <label>What's your name?</label>
-        <input type="text" id="ob-name" placeholder="e.g. Cam">
-        <label>Who's in your circle? (comma separated, you'll be added automatically)</label>
-        <input type="text" id="ob-family" placeholder="e.g. Mom, Dad, Sarah">
-        <label>Add a profile picture (optional)</label>
-        <div class="row" style="gap:12px; margin-top:6px;">
-          <div id="ob-avatar-preview" class="avatar-fallback avatar-md" style="width:56px;height:56px;font-size:20px; background:var(--coral);">＋</div>
-          <input type="file" accept="image/*" id="ob-photo-input" style="display:none">
-          <button class="btn-ghost" type="button" onclick="document.getElementById('ob-photo-input').click()">Choose photo</button>
-        </div>
-        <button class="btn-gold" style="width:100%; margin-top:22px;" onclick="completeOnboarding()">Start</button>
       </div>
 
     </div>
   </div>
+
+  <div id="crop-modal" class="modal-overlay" style="display:none; background:rgba(58,52,44,0.65);">
+    <div class="sheet" style="text-align:center;">
+      <h1 style="font-size:20px;">Adjust your photo</h1>
+      <p style="margin-bottom:14px;">Drag to reposition, use the slider to zoom.</p>
+      <canvas id="crop-canvas" width="300" height="300" style="width:220px; height:220px; border-radius:50%; touch-action:none; cursor:grab; background:var(--cream); display:block; margin:0 auto;"></canvas>
+      <input type="range" id="crop-zoom" min="100" max="280" value="100" style="width:100%; margin-top:16px;">
+      <div class="row" style="margin-top:16px;">
+        <button class="btn-primary" onclick="confirmCrop()">Use this photo</button>
+        <button class="btn-ghost" onclick="closeCropper()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
 
   <div id="profile-modal" class="modal-overlay" style="display:none;">
     <div class="sheet">
@@ -431,6 +446,11 @@
           <button class="btn-primary" onclick="saveJournal()">Save entry</button>
         </div>
       </div>
+
+      <div class="card">
+        <h2>Recent activity</h2>
+        <div id="activity-list"></div>
+      </div>
     </div>
 
     <!-- CIRCLE -->
@@ -438,8 +458,8 @@
       <div class="card">
         <h2>Your circle</h2>
         <div class="orbit-wrap" id="orbit-wrap"></div>
-        <button class="btn-gold" style="width:100%;" onclick="shareLocation()">Share my location</button>
-        <div class="small" id="location-status" style="margin-top:8px; text-align:center;"></div>
+        <button class="btn-gold" style="width:100%;" onclick="shareLocation()">Refresh my location now</button>
+        <div class="small" id="location-status" style="margin-top:8px; text-align:center;">Updates automatically while the app is open.</div>
       </div>
       <div class="card">
         <h2>Last seen</h2>
@@ -463,6 +483,10 @@
         <div class="small" id="cal-free-line" style="margin-bottom:10px;"></div>
         <div id="cal-day-events"></div>
         <button class="btn-primary" style="width:100%; margin-top:12px;" onclick="openEventForm()">+ Add event</button>
+      </div>
+      <div class="card">
+        <h2>Upcoming across the family</h2>
+        <div id="cal-upcoming-list"></div>
       </div>
       <div id="event-form" class="card" style="display:none;">
         <h2>New event</h2>
@@ -588,7 +612,6 @@ let me = null;
 let family = [];
 let selectedEmoji = EMOJIS[0];
 let pendingMemoryPhoto = null; // dataURL string, or null
-let pendingObPhoto = null;
 let pendingProfilePhoto = null;
 let calendarEvents = [];
 let calViewDate = new Date();
@@ -733,6 +756,102 @@ function compressImageFile(file, maxDim, quality) {
   });
 }
 
+// ---------- PROFILE PHOTO CROPPER (pan + zoom to a square) ----------
+const CROP_SIZE = 300;    // internal canvas resolution used for preview + math
+const CROP_OUTPUT = 480;  // exported avatar resolution
+let cropImg = null, cropBaseScale = 1, cropZoom = 1, cropPanX = 0, cropPanY = 0;
+let cropDispW = 0, cropDispH = 0, cropDragging = false, cropStartX = 0, cropStartY = 0, cropStartPanX = 0, cropStartPanY = 0;
+let cropCallback = null;
+let cropperWired = false;
+
+function openCropper(file, callback){
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      cropImg = img;
+      cropCallback = callback;
+      cropBaseScale = Math.max(CROP_SIZE / img.width, CROP_SIZE / img.height);
+      cropZoom = 1;
+      document.getElementById('crop-zoom').value = 100;
+      recalcCropDisp();
+      cropPanX = (CROP_SIZE - cropDispW) / 2;
+      cropPanY = (CROP_SIZE - cropDispH) / 2;
+      wireCropperOnce();
+      document.getElementById('crop-modal').style.display = 'flex';
+      drawCrop();
+    };
+    img.onerror = () => showToast("Couldn't read that photo");
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function recalcCropDisp(){
+  const scale = cropBaseScale * cropZoom;
+  cropDispW = cropImg.width * scale;
+  cropDispH = cropImg.height * scale;
+}
+function clampCropPan(){
+  cropPanX = Math.min(0, Math.max(CROP_SIZE - cropDispW, cropPanX));
+  cropPanY = Math.min(0, Math.max(CROP_SIZE - cropDispH, cropPanY));
+}
+function drawCrop(){
+  const canvas = document.getElementById('crop-canvas');
+  const ctx = canvas.getContext('2d');
+  recalcCropDisp();
+  clampCropPan();
+  ctx.clearRect(0, 0, CROP_SIZE, CROP_SIZE);
+  ctx.drawImage(cropImg, cropPanX, cropPanY, cropDispW, cropDispH);
+}
+function wireCropperOnce(){
+  if(cropperWired) return;
+  cropperWired = true;
+  const canvas = document.getElementById('crop-canvas');
+  const zoomSlider = document.getElementById('crop-zoom');
+
+  function toCanvasScale(){ return CROP_SIZE / canvas.getBoundingClientRect().width; }
+
+  canvas.addEventListener('pointerdown', (e)=>{
+    cropDragging = true;
+    canvas.style.cursor = 'grabbing';
+    cropStartX = e.clientX; cropStartY = e.clientY;
+    cropStartPanX = cropPanX; cropStartPanY = cropPanY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', (e)=>{
+    if(!cropDragging) return;
+    const s = toCanvasScale();
+    cropPanX = cropStartPanX + (e.clientX - cropStartX) * s;
+    cropPanY = cropStartPanY + (e.clientY - cropStartY) * s;
+    drawCrop();
+  });
+  function endDrag(){ cropDragging = false; canvas.style.cursor = 'grab'; }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointerleave', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+
+  zoomSlider.addEventListener('input', ()=>{
+    cropZoom = zoomSlider.value / 100;
+    drawCrop();
+  });
+}
+function closeCropper(){
+  document.getElementById('crop-modal').style.display = 'none';
+  cropImg = null; cropCallback = null;
+}
+function confirmCrop(){
+  if(!cropImg){ closeCropper(); return; }
+  const factor = CROP_OUTPUT / CROP_SIZE;
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = CROP_OUTPUT; outCanvas.height = CROP_OUTPUT;
+  const octx = outCanvas.getContext('2d');
+  octx.drawImage(cropImg, cropPanX * factor, cropPanY * factor, cropDispW * factor, cropDispH * factor);
+  const dataUrl = outCanvas.toDataURL('image/jpeg', 0.82);
+  const cb = cropCallback;
+  closeCropper();
+  if(cb) cb(dataUrl);
+}
+
 // ---------- HELPERS ----------
 function dayOfYear(d){ const start = new Date(d.getFullYear(),0,0); return Math.floor((d-start)/86400000); }
 function todayKey(){ return dateKey(new Date()); }
@@ -785,7 +904,58 @@ async function applyAvatar(el, name, isMe){
   }catch(e){}
 }
 
-// ---------- INIT ----------
+// ---------- PRESENCE (online now) ----------
+// Marks this person active periodically while the app is open, so family can
+// see genuine "online now" status, not just last-location-shared time.
+let heartbeatTimer = null;
+function startHeartbeat(){
+  if(heartbeatTimer) return;
+  const beat = () => { if(me) storage.set('active:' + me, new Date().toISOString(), true); };
+  beat();
+  heartbeatTimer = setInterval(beat, 60000);
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) beat(); });
+}
+function isOnlineNow(iso){
+  if(!iso) return false;
+  return (Date.now() - new Date(iso).getTime()) < 3 * 60000; // active in last 3 min
+}
+
+// ---------- ACTIVITY FEED ----------
+// Logs shared, family-visible actions (memories, calendar events, location shares).
+// Journal entries are intentionally never logged here — journaling stays private.
+async function logActivity(icon, text){
+  try{
+    const res = await storage.get('activity:log', true).catch(()=>null);
+    const list = res && res.value ? JSON.parse(res.value) : [];
+    list.unshift({ icon, text, timestamp: new Date().toISOString() });
+    await storage.set('activity:log', JSON.stringify(list.slice(0,60)), true);
+  }catch(e){ /* non-critical, ignore */ }
+}
+async function renderActivity(){
+  const el = document.getElementById('activity-list');
+  if(!el) return;
+  try{
+    const res = await storage.get('activity:log', true);
+    const items = res && res.value ? JSON.parse(res.value) : [];
+    if(items.length === 0){
+      el.innerHTML = '<div class="empty">Nothing yet — memories, events, and location shares will show up here.</div>';
+      return;
+    }
+    el.innerHTML = items.slice(0,10).map(a => `
+      <div class="activity-item">
+        <span class="activity-icon">${a.icon}</span>
+        <div>
+          <div class="activity-text">${a.text}</div>
+          <div class="activity-when">${timeAgo(a.timestamp)}</div>
+        </div>
+      </div>
+    `).join('');
+  }catch(e){
+    el.innerHTML = '<div class="empty">Nothing yet.</div>';
+  }
+}
+
+
 async function init(){
   await loadFamily(); // always check who's already on the app first
   try{
@@ -794,16 +964,13 @@ async function init(){
       me = meRes.value;
       document.getElementById('onboard').style.display = 'none';
       renderAll();
-    } else if(family.length > 0){
-      document.getElementById('onboard').style.display = 'flex';
-      showOnboardPicker();
     } else {
       document.getElementById('onboard').style.display = 'flex';
-      showOnboardSetup();
+      showOnboardPicker();
     }
   }catch(e){
     document.getElementById('onboard').style.display = 'flex';
-    showOnboardSetup();
+    showOnboardPicker();
   }
   renderVerse();
   renderEmojiPicker();
@@ -811,28 +978,41 @@ async function init(){
 }
 
 function showOnboardPicker(){
-  document.getElementById('onboard-setup').style.display = 'none';
-  document.getElementById('onboard-picker').style.display = 'block';
-  document.getElementById('picker-add-form').style.display = 'none';
-  document.getElementById('picker-add-toggle').style.display = 'block';
+  const heading = document.getElementById('picker-heading');
+  const sub = document.getElementById('picker-sub');
+  const toggle = document.getElementById('picker-add-toggle');
   const list = document.getElementById('picker-list');
-  list.innerHTML = family.map((n,idx) => `
-    <button class="btn-ghost" style="width:100%; margin-bottom:8px; justify-content:flex-start;" onclick="pickIdentity('${n.replace(/'/g,"\\'")}')">
-      <span class="row" style="gap:10px;">
-        <span class="avatar-fallback avatar-sm" id="pick-avatar-${idx}" style="background:${avatarColor(n)}">${initials(n)}</span>
-        <span>${escapeHtml(n)}</span>
-      </span>
-    </button>
-  `).join('');
-  family.forEach((n,idx)=> applyAvatar(document.getElementById('pick-avatar-'+idx), n, false));
+  const joinBtn = document.getElementById('picker-join-btn');
+
+  if(family.length === 0){
+    // First person ever to open the app — just get their name and photo,
+    // no need to ask who else is in the family.
+    heading.textContent = "Meet the Schrickkers";
+    sub.textContent = "Keeping this family close, wherever we are. Let's get you set up.";
+    list.innerHTML = '';
+    toggle.style.display = 'none';
+    joinBtn.textContent = "Get started";
+    showPickerAddForm();
+  } else {
+    heading.textContent = "Who's this?";
+    sub.textContent = "Pick your name to jump back in.";
+    toggle.style.display = 'block';
+    joinBtn.textContent = "Join the family";
+    document.getElementById('picker-add-form').style.display = 'none';
+    list.innerHTML = family.map((n,idx) => `
+      <button class="btn-ghost" style="width:100%; margin-bottom:8px; justify-content:flex-start;" onclick="pickIdentity('${n.replace(/'/g,"\\'")}')">
+        <span class="row" style="gap:10px;">
+          <span class="avatar-fallback avatar-sm" id="pick-avatar-${idx}" style="background:${avatarColor(n)}">${initials(n)}</span>
+          <span>${escapeHtml(n)}</span>
+        </span>
+      </button>
+    `).join('');
+    family.forEach((n,idx)=> applyAvatar(document.getElementById('pick-avatar-'+idx), n, false));
+  }
 }
 function showPickerAddForm(){
   document.getElementById('picker-add-toggle').style.display = 'none';
   document.getElementById('picker-add-form').style.display = 'block';
-}
-function showOnboardSetup(){
-  document.getElementById('onboard-picker').style.display = 'none';
-  document.getElementById('onboard-setup').style.display = 'block';
 }
 
 async function pickIdentity(name){
@@ -870,40 +1050,34 @@ async function joinAsNew(){
 }
 
 function wireFileInputs(){
-  document.getElementById('ob-photo-input').addEventListener('change', async (evt)=>{
+  document.getElementById('pk-photo-input').addEventListener('change', (evt)=>{
     const file = evt.target.files[0];
     if(!file) return;
-    try{
-      pendingObPhoto = await compressImageFile(file, 400, 0.6);
-      const prev = document.getElementById('ob-avatar-preview');
-      prev.style.backgroundImage = `url(${pendingObPhoto})`;
-      prev.textContent = '';
-    }catch(e){ showToast("Couldn't read that photo"); }
-  });
-  document.getElementById('pk-photo-input').addEventListener('change', async (evt)=>{
-    const file = evt.target.files[0];
-    if(!file) return;
-    try{
-      pendingPkPhoto = await compressImageFile(file, 400, 0.6);
+    openCropper(file, (dataUrl)=>{
+      pendingPkPhoto = dataUrl;
       const prev = document.getElementById('pk-avatar-preview');
-      prev.style.backgroundImage = `url(${pendingPkPhoto})`;
+      prev.style.backgroundImage = `url(${dataUrl})`;
       prev.textContent = '';
-    }catch(e){ showToast("Couldn't read that photo"); }
+    });
+    evt.target.value = '';
   });
-  document.getElementById('profile-photo-input').addEventListener('change', async (evt)=>{
+  document.getElementById('profile-photo-input').addEventListener('change', (evt)=>{
     const file = evt.target.files[0];
     if(!file) return;
-    try{
-      pendingProfilePhoto = await compressImageFile(file, 400, 0.6);
+    openCropper(file, async (dataUrl)=>{
+      pendingProfilePhoto = dataUrl;
       const prev = document.getElementById('profile-avatar-preview');
-      prev.style.backgroundImage = `url(${pendingProfilePhoto})`;
+      prev.style.backgroundImage = `url(${dataUrl})`;
       prev.textContent = '';
       document.getElementById('profile-status').textContent = 'Saving...';
-      await saveImageChunked('profile:' + me, pendingProfilePhoto);
-      avatarCache[me] = pendingProfilePhoto;
-      document.getElementById('profile-status').textContent = 'Saved';
-      applyAvatar(document.getElementById('header-avatar'), me, true);
-    }catch(e){ showToast("Couldn't save that photo — try again"); }
+      try{
+        await saveImageChunked('profile:' + me, dataUrl);
+        avatarCache[me] = dataUrl;
+        document.getElementById('profile-status').textContent = 'Saved';
+        applyAvatar(document.getElementById('header-avatar'), me, true);
+      }catch(e){ showToast("Couldn't save that photo — try again"); }
+    });
+    evt.target.value = '';
   });
   document.getElementById('memory-photo-input').addEventListener('change', async (evt)=>{
     const file = evt.target.files[0];
@@ -931,31 +1105,6 @@ async function loadFamily(){
     const res = await storage.get('family:roster', true);
     family = res && res.value ? JSON.parse(res.value) : [];
   }catch(e){ family = []; }
-}
-
-async function completeOnboarding(){
-  const nameInput = document.getElementById('ob-name').value.trim();
-  const famInput = document.getElementById('ob-family').value.trim();
-  if(!nameInput){ showToast("Enter your name first"); return; }
-  try{
-    me = nameInput;
-    await storage.set('me:name', me, false);
-    if(pendingObPhoto){
-      await saveImageChunked('profile:' + me, pendingObPhoto);
-      avatarCache[me] = pendingObPhoto;
-    }
-
-    await loadFamily();
-    let names = famInput ? famInput.split(',').map(n=>n.trim()).filter(Boolean) : [];
-    names.push(me);
-    family = Array.from(new Set([...family, ...names]));
-    await storage.set('family:roster', JSON.stringify(family), true);
-
-    document.getElementById('onboard').style.display = 'none';
-    renderAll();
-  }catch(e){
-    showToast("Something went wrong saving your details — try again");
-  }
 }
 
 function renderVerse(){
@@ -988,6 +1137,8 @@ function switchTab(name){
 }
 
 async function renderAll(){
+  startHeartbeat();
+  startLocationAutoShare();
   await renderToday();
   document.getElementById('header-tag').textContent = "hi " + me + " \u00b7 your people, close by";
   applyAvatar(document.getElementById('header-avatar'), me, true);
@@ -1010,27 +1161,31 @@ function closeProfileModal(){
 async function renderToday(){
   await loadTodayJournal();
   await renderNudge();
+  await renderActivity();
 }
 async function loadTodayJournal(){
+  document.getElementById('journal-input').value = '';
   try{
     const res = await storage.get('journal:' + me, false);
     const map = res && res.value ? JSON.parse(res.value) : {};
     const key = todayKey();
-    document.getElementById('journal-input').value = map[key] || '';
-    document.getElementById('journal-status').textContent = map[key] ? "saved" : "";
+    document.getElementById('journal-status').textContent = map[key] ? "You've already added an entry today \u2014 view it in your Journal tab" : "";
   }catch(e){
-    document.getElementById('journal-input').value = '';
+    document.getElementById('journal-status').textContent = '';
   }
 }
 async function saveJournal(){
-  const text = document.getElementById('journal-input').value;
+  const text = document.getElementById('journal-input').value.trim();
+  if(!text){ showToast("Write something first"); return; }
   try{
     const res = await storage.get('journal:' + me, false).catch(()=>null);
     const map = res && res.value ? JSON.parse(res.value) : {};
-    map[todayKey()] = text;
+    const key = todayKey();
+    map[key] = map[key] ? map[key] + '\n\n' + text : text;
     await storage.set('journal:' + me, JSON.stringify(map), false);
-    document.getElementById('journal-status').textContent = "saved just now";
-    showToast("Journal saved");
+    document.getElementById('journal-input').value = '';
+    document.getElementById('journal-status').textContent = "Saved \u2714\ufe0f — view it in your Journal tab";
+    showToast("Saved to your Journal");
   }catch(e){
     showToast("Couldn't save — try again");
   }
@@ -1099,20 +1254,50 @@ function dismissNudge(){
 }
 
 // ---------- CIRCLE / LOCATION ----------
-async function shareLocation(){
-  const status = document.getElementById('location-status');
-  if(!navigator.geolocation){ status.textContent = "Location isn't available in this browser."; return; }
-  status.textContent = "Finding you...";
+let locationDenied = false;
+let hasLoggedLocationThisSession = false;
+let locationAutoTimer = null;
+
+async function shareLocationCore(manual){
+  if(!navigator.geolocation){
+    if(manual) document.getElementById('location-status').textContent = "Location isn't available in this browser.";
+    return;
+  }
+  if(manual) document.getElementById('location-status').textContent = "Finding you...";
   navigator.geolocation.getCurrentPosition(async (pos)=>{
     const data = { lat: pos.coords.latitude, lng: pos.coords.longitude, timestamp: new Date().toISOString() };
     try{
       await storage.set('location:' + me, JSON.stringify(data), true);
       await storage.set('active:' + me, new Date().toISOString(), true);
-      status.textContent = "Shared \u2014 up to date as of just now.";
-      renderCircle();
-    }catch(e){ status.textContent = "Couldn't save your location — try again."; }
+      locationDenied = false;
+      if(manual) document.getElementById('location-status').textContent = "Shared \u2014 up to date as of just now.";
+      if(!hasLoggedLocationThisSession){
+        hasLoggedLocationThisSession = true;
+        logActivity('📍', `<b>${escapeHtml(me)}</b> shared their location`);
+      }
+      const circleView = document.getElementById('view-circle');
+      if(circleView && circleView.classList.contains('active')) renderCircle();
+    }catch(e){
+      if(manual) document.getElementById('location-status').textContent = "Couldn't save your location — try again.";
+    }
   }, (err)=>{
-    status.textContent = "Location permission denied. Enable it in your browser settings to share.";
+    locationDenied = true;
+    if(manual) document.getElementById('location-status').textContent = "Location permission denied. Enable it in your browser settings to share.";
+  }, { maximumAge: 60000, timeout: 12000 });
+}
+function shareLocation(){ shareLocationCore(true); }
+
+// Auto-share on open + refresh every 5 min while the app stays open — this is the
+// closest a browser-based app can get to Life360-style live location. Important
+// honest limit: this only runs while the app is actually open in the foreground.
+// Unlike a native app, a web app can't track location in the background once
+// it's closed or the phone is locked — no browser permits that for privacy reasons.
+function startLocationAutoShare(){
+  if(locationAutoTimer) return;
+  shareLocationCore(false);
+  locationAutoTimer = setInterval(()=>{ if(!locationDenied) shareLocationCore(false); }, 5 * 60000);
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden && !locationDenied) shareLocationCore(false);
   });
 }
 async function renderCircle(){
@@ -1151,7 +1336,11 @@ async function renderCircle(){
         <span class="avatar-fallback avatar-sm" id="member-avatar-${idx}" style="background:${avatarColor(r.name)}">${initials(r.name)}</span>
         <span class="member-name">${escapeHtml(r.name)}</span>
       </div>
-      <span class="small"><span class="status-dot" style="background:${r.freshness.color}; margin-right:6px;"></span>${r.lastActive ? timeAgo(r.lastActive) : 'no location shared yet'}</span>
+      <span class="small">
+        ${isOnlineNow(r.lastActive)
+          ? `<span class="online-dot" style="margin-right:6px;"></span>Online now`
+          : `<span class="status-dot" style="background:${r.freshness.color}; margin-right:6px;"></span>${r.lastActive ? 'Last seen ' + timeAgo(r.lastActive) : 'not seen yet'}`}
+      </span>
     </div>
   `).join('');
   rows.forEach((r,idx)=> applyAvatar(document.getElementById('member-avatar-'+idx), r.name, false));
@@ -1181,6 +1370,7 @@ async function postMemory(){
     await storage.set('memories:list', JSON.stringify(list.slice(0,120)), true);
     document.getElementById('memory-input').value = '';
     clearMemoryPhoto();
+    logActivity(entry.emoji, `<b>${escapeHtml(me)}</b> posted a memory${entry.hasPhoto ? ' with a photo' : ''}`);
     showToast("Posted to the feed");
     renderMemories();
   }catch(e){
@@ -1234,6 +1424,33 @@ async function renderCalendar(){
   calendarEvents = await loadEvents();
   renderCalGrid();
   renderCalDayPanel();
+  renderUpcoming();
+}
+function renderUpcoming(){
+  const el = document.getElementById('cal-upcoming-list');
+  if(!el) return;
+  const today = todayKey();
+  const upcoming = calendarEvents
+    .filter(e => e.date >= today)
+    .sort((a,b) => (a.date + (a.time || '99:99')).localeCompare(b.date + (b.time || '99:99')))
+    .slice(0, 8);
+  if(upcoming.length === 0){
+    el.innerHTML = '<div class="empty">Nothing on the calendar yet — add an event above.</div>';
+    return;
+  }
+  el.innerHTML = upcoming.map(ev => {
+    const niceDate = new Date(ev.date + 'T00:00:00').toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+    return `
+      <div class="event-item" style="cursor:pointer;" onclick="calSelectDay('${ev.date}')">
+        <div class="row between">
+          <strong>${escapeHtml(ev.title)}</strong>
+          <span class="small">${niceDate}${ev.time ? ' \u00b7 ' + escapeHtml(ev.time) : ''}</span>
+        </div>
+        <div style="margin-top:6px;">${(ev.attendees||[]).map(a=>`<span class="attendee-tag">${escapeHtml(a)}</span>`).join('')}</div>
+        <div class="small" style="margin-top:4px;">added by ${escapeHtml(ev.author)}</div>
+      </div>
+    `;
+  }).join('');
 }
 function calShiftMonth(delta){
   calViewDate.setMonth(calViewDate.getMonth()+delta);
@@ -1291,7 +1508,7 @@ function renderCalDayPanel(){
   const free = family.filter(n=>!attendeeSet.has(n));
   const freeLine = document.getElementById('cal-free-line');
   if(dayEvents.length === 0){
-    freeLine.textContent = "Nothing on the calendar \u2014 everyone's free.";
+    freeLine.textContent = "Nothing on the calendar — everyone's free.";
   } else if(free.length === family.length){
     freeLine.textContent = "Everyone's free (no one tagged on today's events).";
   } else if(free.length === 0){
@@ -1347,9 +1564,11 @@ async function saveEvent(){
     await storage.set('calendar:events', JSON.stringify(events.slice(-500)), true);
     closeEventForm();
     calSelectedDate = date;
+    logActivity('🗓️', `<b>${escapeHtml(me)}</b> added an event: ${escapeHtml(title)}`);
     showToast("Event added");
     renderCalendar();
-    calViewDate = new Date(date);
+    const [evY, evM, evD] = date.split('-').map(Number);
+    calViewDate = new Date(evY, evM - 1, evD); // build from local components — new Date(string) parses as UTC and can shift a day
     renderCalGrid();
   }catch(e){
     showToast("Couldn't save that event — try again");
