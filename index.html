@@ -355,7 +355,7 @@
   <div id="onboard" class="modal-overlay">
     <div class="sheet">
 
-      <div id="onboard-picker" style="display:none;">
+      <div id="onboard-picker">
         <h1 id="picker-heading">Who's this?</h1>
         <p id="picker-sub">Pick your name to jump back in.</p>
         <div id="picker-list"></div>
@@ -978,6 +978,7 @@ async function init(){
 }
 
 function showOnboardPicker(){
+  document.getElementById('onboard-picker').style.display = 'block';
   const heading = document.getElementById('picker-heading');
   const sub = document.getElementById('picker-sub');
   const toggle = document.getElementById('picker-add-toggle');
