@@ -1,0 +1,15 @@
+{
+  "name": "Meet the Schrickkers",
+  "short_name": "Schrickkers",
+  "description": "Keeping this family close, wherever we are — locations, memories, a shared calendar, verse of the day, journal, and check-in nudges.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF8EC",
+  "theme_color": "#FF6B5B",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
