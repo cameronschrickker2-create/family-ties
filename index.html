@@ -15,6 +15,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Family Ties">
 <meta name="mobile-web-app-capable" content="yes">
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -552,6 +553,12 @@
     <button class="btn-ghost" onclick="dismissInstallBanner()">Not now</button>
   </div>
 
+  <div id="notif-banner" class="install-banner" style="display:none; top:0;">
+    <span>Turn on notifications to hear when someone posts, adds an event, or checks in.</span>
+    <button class="btn-gold" onclick="enableNotifications()">Enable</button>
+    <button class="btn-ghost" onclick="dismissNotifBanner()">Not now</button>
+  </div>
+
   <nav>
     <button class="tab active" data-view="today" onclick="switchTab('today')">
       <span>☀️</span><span>Today</span><span class="dot"></span>
@@ -629,6 +636,62 @@ let calSelectedDate = null;
 // listed anywhere public, so this is reasonable for a private family app, not bank-vault
 // security.
 const FIREBASE_BASE = "https://family-ties-388a5-default-rtdb.firebaseio.com";
+
+// ---------- PUSH NOTIFICATIONS (OneSignal) ----------
+const ONESIGNAL_APP_ID = "edcfb4d8-8e76-4e08-8f8b-46705981bb63";
+const ONESIGNAL_REST_KEY = "os_v2_app_5xh3jweoozhard4lizyftan3mpb57jlcinteytffhofutyzmz7k5wdcxhw33ir4s44glrm535atcwmo7hi3lwx7bxutamu4gv5u2pai";
+
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function (OneSignal) {
+  await OneSignal.init({
+    appId: ONESIGNAL_APP_ID,
+    serviceWorkerParam: { scope: "/family-ties/" },
+    serviceWorkerPath: "service-worker.js"
+  });
+  OneSignal.Notifications.addEventListener("click", (e) => {
+    const view = e.notification.additionalData && e.notification.additionalData.view;
+    if (view) switchTab(view);
+  });
+  if (me) OneSignal.login(me);
+});
+
+function maybeShowNotifPrompt() {
+  if (!("Notification" in window) || Notification.permission !== "default") return;
+  const el = document.getElementById("notif-banner");
+  if (el) el.style.display = "flex";
+}
+function enableNotifications() {
+  document.getElementById("notif-banner").style.display = "none";
+  OneSignalDeferred.push(async function (OneSignal) {
+    await OneSignal.Notifications.requestPermission();
+  });
+}
+function dismissNotifBanner() {
+  document.getElementById("notif-banner").style.display = "none";
+}
+
+async function sendPush(title, body, targetNames, view) {
+  if (!ONESIGNAL_APP_ID) return;
+  const targets = (targetNames || []).filter(Boolean);
+  if (targets.length === 0) return;
+  try {
+    await fetch("https://onesignal.com/api/v1/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": "Key " + ONESIGNAL_REST_KEY
+      },
+      body: JSON.stringify({
+        app_id: ONESIGNAL_APP_ID,
+        include_aliases: { external_id: targets },
+        target_channel: "push",
+        headings: { en: title },
+        contents: { en: body },
+        data: { view: view || "today" }
+      })
+    });
+  } catch (e) { /* non-critical */ }
+}
 
 const storage = (window.storage && typeof window.storage.get === 'function')
   ? window.storage
@@ -1025,6 +1088,7 @@ async function pickIdentity(name){
   try{
     me = name;
     await storage.set('me:name', me, false);
+    OneSignalDeferred.push(OneSignal => OneSignal.login(me));
     document.getElementById('onboard').style.display = 'none';
     renderAll();
   }catch(e){
@@ -1039,6 +1103,7 @@ async function joinAsNew(){
   try{
     me = name;
     await storage.set('me:name', me, false);
+    OneSignalDeferred.push(OneSignal => OneSignal.login(me));
     if(pendingPkPhoto){
       await saveImageChunked('profile:' + me, pendingPkPhoto);
       avatarCache[me] = pendingPkPhoto;
@@ -1148,6 +1213,7 @@ async function renderAll(){
   await renderToday();
   document.getElementById('header-tag').textContent = "hi " + me + " \u00b7 your people, close by";
   applyAvatar(document.getElementById('header-avatar'), me, true);
+  maybeShowNotifPrompt();
 }
 
 // ---------- PROFILE MODAL ----------
@@ -1250,6 +1316,7 @@ async function markCheckedIn(){
     const map = res && res.value ? JSON.parse(res.value) : {};
     map[name] = new Date().toISOString();
     await storage.set('checkins:' + me, JSON.stringify(map), true);
+    sendPush('Worth a hello 👋', me + ' checked in with you', [name], 'today');
     showToast("Marked \u2014 nice one");
     renderNudge();
   }catch(e){ showToast("Couldn't save that — try again"); }
@@ -1280,6 +1347,7 @@ async function shareLocationCore(manual){
       if(!hasLoggedLocationThisSession){
         hasLoggedLocationThisSession = true;
         logActivity('📍', `<b>${escapeHtml(me)}</b> shared their location`);
+        sendPush(me + ' is online', me + ' just opened Family Ties', family.filter(n => n !== me), 'circle');
       }
       const circleView = document.getElementById('view-circle');
       if(circleView && circleView.classList.contains('active')) renderCircle();
@@ -1377,6 +1445,7 @@ async function postMemory(){
     document.getElementById('memory-input').value = '';
     clearMemoryPhoto();
     logActivity(entry.emoji, `<b>${escapeHtml(me)}</b> posted a memory${entry.hasPhoto ? ' with a photo' : ''}`);
+    sendPush('New memory ' + entry.emoji, me + ' posted' + (entry.hasPhoto ? ' a photo' : '') + (text ? ': ' + text.slice(0, 80) : ''), family.filter(n => n !== me), 'memories');
     showToast("Posted to the feed");
     renderMemories();
   }catch(e){
@@ -1571,6 +1640,7 @@ async function saveEvent(){
     closeEventForm();
     calSelectedDate = date;
     logActivity('🗓️', `<b>${escapeHtml(me)}</b> added an event: ${escapeHtml(title)}`);
+    sendPush('New event 🗓️', me + ' added "' + title + '" to the calendar', family.filter(n => n !== me), 'calendar');
     showToast("Event added");
     renderCalendar();
     const [evY, evM, evD] = date.split('-').map(Number);
