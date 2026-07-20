@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Meet the Schrickkers</title>
+<title>Family Ties</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#FF6B5B">
-<meta name="description" content="Keeping the Schrickkers close, wherever we are.">
+<meta name="description" content="Keeping this family close, wherever we are.">
 
 <!-- PWA install support -->
 <link rel="manifest" href="manifest.json">
@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="The Schrickkers">
+<meta name="apple-mobile-web-app-title" content="Family Ties">
 <meta name="mobile-web-app-capable" content="yes">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -411,7 +411,7 @@
   <header>
     <div class="row between" style="align-items:flex-start;">
       <div>
-        <h1>Meet the Schrickkers</h1>
+        <h1>Family Ties</h1>
         <p class="tag" id="header-tag">your people, close by</p>
       </div>
       <div id="header-avatar" class="avatar-fallback header-avatar" onclick="openProfileModal()" title="Edit your profile" style="background:rgba(255,255,255,0.25);"></div>
@@ -628,7 +628,7 @@ let calSelectedDate = null;
 // who somehow found this exact project URL could read or write it. It isn't linked or
 // listed anywhere public, so this is reasonable for a private family app, not bank-vault
 // security.
-const FIREBASE_BASE = "https://meet-the-schrickkers-default-rtdb.firebaseio.com";
+const FIREBASE_BASE = "https://family-ties-388a5-default-rtdb.firebaseio.com";
 
 const storage = (window.storage && typeof window.storage.get === 'function')
   ? window.storage
@@ -993,7 +993,7 @@ function showOnboardPicker(){
   if(family.length === 0){
     // First person ever to open the app — just get their name and photo,
     // no need to ask who else is in the family.
-    heading.textContent = "Meet the Schrickkers";
+    heading.textContent = "Family Ties";
     sub.textContent = "Keeping this family close, wherever we are. Let's get you set up.";
     list.innerHTML = '';
     toggle.style.display = 'none';
