@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Family Ties</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FF6B5B">
+<meta name="description" content="Keeping this family close, wherever we are.">
+
+<!-- PWA install support -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Family Ties">
+<meta name="mobile-web-app-capable" content="yes">
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --coral:#FF6B5B;
+    --coral-2:#FF9166;
+    --sunny:#FFC93C;
+    --sky:#4FB6E8;
+    --leaf:#45B08C;
+    --cream:#FFF8EC;
+    --paper:#FFFFFF;
+    --ink:#3A342C;
+    --ink-soft:#93897A;
+    --line:#F3E4CE;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    display:flex;
+    justify-content:center;
+    min-height:100vh;
+  }
+  #app{
+    width:100%;
+    max-width:460px;
+    min-height:100vh;
+    background: var(--paper);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    box-shadow: 0 0 60px rgba(255,107,91,0.10);
+  }
+  header{
+    padding:20px 22px 16px;
+    background: linear-gradient(135deg, var(--coral), var(--coral-2) 55%, var(--sunny));
+    color: #fff;
+    position:relative;
+    overflow:hidden;
+  }
+  header .horizon{
+    position:absolute; left:0; right:0; bottom:0; height:30px;
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 100%);
+  }
+  header h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:0.01em;
+  }
+  header p.tag{
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:rgba(255,255,255,0.9);
+    margin-top:4px;
+    font-weight:600;
+  }
+  .header-avatar{
+    width:44px; height:44px; border-radius:50%;
+    border:2px solid rgba(255,255,255,0.8);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  main{
+    flex:1;
+    overflow-y:auto;
+    padding:20px 20px 100px;
+  }
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-family:'Fraunces', serif;
+    font-size:14px;
+    font-weight:700;
+    color:var(--coral);
+    text-transform:uppercase;
+    letter-spacing:0.07em;
+    margin-bottom:12px;
+  }
+  .verse-card{
+    background: linear-gradient(135deg, var(--sky) 0%, var(--coral-2) 60%, var(--sunny) 130%);
+    color: #fff;
+    border:none;
+  }
+  .verse-card h2{ color: rgba(255,255,255,0.85); }
+  .verse-text{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    line-height:1.5;
+    font-weight:600;
+    margin-bottom:10px;
+  }
+  .verse-ref{
+    font-size:13px;
+    color: #fff;
+    font-weight:700;
+    letter-spacing:0.04em;
+    opacity:0.9;
+  }
+  textarea{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px;
+    font-family:'Inter', sans-serif;
+    font-size:14.5px;
+    resize:vertical;
+    min-height:90px;
+    color:var(--ink);
+    background:var(--cream);
+  }
+  textarea:focus, input:focus{ outline:2px solid var(--sunny); outline-offset:1px; }
+  input[type=text], input[type=date], input[type=time]{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:14.5px;
+    font-family:'Inter', sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+  }
+  button{
+    font-family:'Inter', sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    border:none;
+    border-radius:10px;
+    padding:11px 16px;
+    cursor:pointer;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+  button:active{ transform: scale(0.97); }
+  .btn-primary{ background: var(--coral); color: #fff; }
+  .btn-gold{ background: var(--sunny); color: var(--ink); }
+  .btn-ghost{ background: var(--cream); color: var(--ink); border:1px solid var(--line); }
+  .row{ display:flex; gap:10px; align-items:center; }
+  .row.between{ justify-content:space-between; }
+  .small{ font-size:12.5px; color:var(--ink-soft); }
+  .nudge-card{ border-left:4px solid var(--coral); }
+  .nudge-card h2{ color: var(--coral); }
+  .nudge-name{ font-family:'Fraunces', serif; font-size:18px; font-weight:700; margin:4px 0 2px; }
+
+  /* nav */
+  nav{
+    position:absolute; bottom:0; left:0; right:0;
+    display:flex;
+    background:#fff;
+    border-top:1px solid var(--line);
+    max-width:460px;
+  }
+  nav button.tab{
+    flex:1;
+    background:none;
+    border-radius:0;
+    padding:10px 2px 9px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    color: var(--ink-soft);
+    font-size:10px;
+    font-weight:700;
+  }
+  nav button.tab span:first-child{ font-size:17px; }
+  nav button.tab.active{ color: var(--coral); }
+  nav button.tab .dot{
+    width:5px; height:5px; border-radius:50%;
+    background: var(--coral);
+    opacity:0;
+  }
+  nav button.tab.active .dot{ opacity:1; }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* avatars */
+  .avatar-fallback{
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:'Fraunces', serif; font-weight:700;
+    background-size:cover; background-position:center;
+    flex-shrink:0;
+  }
+  .avatar-sm{ width:34px; height:34px; font-size:13px; }
+  .avatar-md{ width:44px; height:44px; font-size:16px; }
+
+  /* orbit */
+  .orbit-wrap{
+    position:relative;
+    width:100%;
+    aspect-ratio:1/1;
+    max-height:280px;
+    margin:0 auto 8px;
+  }
+  .orbit-hub{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:58px; height:58px; border-radius:50%;
+    background: var(--coral);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+  }
+  .orbit-node{
+    position:absolute;
+    width:52px; height:52px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:16px;
+    color:#fff;
+    border:3px solid var(--paper);
+    transform: translate(-50%,-50%);
+    background-size:cover;
+    background-position:center;
+  }
+  .member-card{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .member-card:last-child{ border-bottom:none; }
+  .member-name{ font-weight:700; font-size:14px; }
+  .status-dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+  .memory-item{
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .memory-item:last-child{ border-bottom:none; }
+  .memory-head{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .memory-emoji{ font-size:20px; }
+  .memory-author{ font-weight:700; font-size:13.5px; }
+  .memory-time{ font-size:11.5px; color:var(--ink-soft); }
+  .memory-text{ font-size:14.5px; line-height:1.5; }
+  .memory-photo{ width:100%; border-radius:12px; margin-top:8px; display:block; background:var(--cream); min-height:60px; }
+
+  .journal-entry{ padding:12px 0; border-bottom:1px solid var(--line); }
+  .journal-date{ font-size:12px; color:var(--coral); font-weight:700; letter-spacing:0.05em; text-transform:uppercase; }
+  .journal-body{ font-size:14.5px; margin-top:4px; line-height:1.5; }
+
+  .empty{ text-align:center; padding:30px 10px; color:var(--ink-soft); font-size:13.5px; }
+
+  .emoji-picker{ display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
+  .emoji-picker span{ font-size:20px; cursor:pointer; padding:4px 6px; border-radius:8px; }
+  .emoji-picker span.sel{ background: var(--line); }
+
+  .toast{
+    position:absolute; bottom:78px; left:50%; transform:translateX(-50%);
+    background: var(--ink); color:#fff; padding:10px 18px;
+    border-radius:20px; font-size:13px; opacity:0; transition:opacity 0.25s;
+    pointer-events:none; z-index:60; white-space:nowrap;
+  }
+  .toast.show{ opacity:1; }
+
+  .install-banner{
+    position:absolute; top:0; left:0; right:0; z-index:40;
+    background: var(--ink); color: #fff;
+    padding:12px 16px; display:flex; align-items:center; gap:10px;
+    font-size:12.5px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.15);
+  }
+  .install-banner span{ flex:1; line-height:1.4; }
+  .install-banner button{ padding:8px 12px; font-size:12px; white-space:nowrap; }
+
+  /* modal overlay (onboarding + profile) */
+  .modal-overlay{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    padding:26px; z-index:50;
+  }
+  #onboard.modal-overlay{ background: linear-gradient(150deg, var(--coral), var(--sunny)); }
+  #profile-modal.modal-overlay{ background: rgba(58,52,44,0.55); }
+  .sheet{
+    background:var(--paper);
+    border-radius:20px;
+    padding:26px;
+    width:100%;
+    max-width:340px;
+    box-shadow:0 14px 40px rgba(0,0,0,0.25);
+  }
+  .sheet h1{ font-family:'Fraunces', serif; font-size:24px; margin-bottom:6px; color:var(--ink); }
+  .sheet > p{ color:var(--ink-soft); font-size:13px; margin-bottom:22px; }
+  .sheet label{ color:var(--ink); font-size:12.5px; font-weight:700; display:block; margin-bottom:6px; margin-top:16px; }
+
+  /* calendar */
+  .cal-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center; font-size:11px; color:var(--ink-soft); font-weight:700; margin-bottom:6px; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+  .cal-day{
+    aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+    border-radius:10px; font-size:12.5px; cursor:pointer; background:var(--cream);
+    color:var(--ink); position:relative; border:2px solid transparent; font-weight:600;
+  }
+  .cal-day.other-month{ opacity:0.3; }
+  .cal-day.today{ border-color:var(--sky); }
+  .cal-day.selected{ background:var(--coral); color:#fff; border-color:var(--coral); }
+  .cal-day .cal-dot{ width:5px; height:5px; border-radius:50%; background:var(--coral); position:absolute; bottom:4px; }
+  .cal-day.selected .cal-dot{ background:#fff; }
+  .attendee-picker{ display:flex; flex-wrap:wrap; }
+  .attendee-chip{ display:inline-flex; align-items:center; gap:5px; background:var(--cream); border:1px solid var(--line); border-radius:20px; padding:6px 10px; font-size:12.5px; margin:3px 5px 3px 0; }
+  .attendee-tag{ display:inline-block; background:var(--cream); border-radius:12px; padding:3px 9px; font-size:11.5px; margin:2px 4px 2px 0; color:var(--ink); }
+  .event-item{ padding:12px 0; border-bottom:1px solid var(--line); }
+  .event-item:last-child{ border-bottom:none; }
+
+  .photo-preview-wrap{ position:relative; margin-top:10px; }
+  .photo-preview-wrap img{ width:100%; border-radius:12px; display:block; }
+  .photo-preview-wrap button{ position:absolute; top:8px; right:8px; }
+
+  .activity-item{ display:flex; align-items:flex-start; gap:8px; padding:9px 0; border-bottom:1px solid var(--line); }
+  .activity-item:last-child{ border-bottom:none; }
+  .activity-icon{ font-size:15px; margin-top:1px; }
+  .activity-text{ font-size:13.5px; line-height:1.4; }
+  .activity-text b{ font-weight:700; }
+  .activity-when{ font-size:11.5px; color:var(--ink-soft); margin-top:1px; }
+
+  .online-dot{
+    width:9px; height:9px; border-radius:50%; background:#45B08C; display:inline-block;
+    box-shadow:0 0 0 rgba(69,176,140,0.5); animation:pulse 1.8s infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(69,176,140,0.5); }
+    70%{ box-shadow:0 0 0 6px rgba(69,176,140,0); }
+    100%{ box-shadow:0 0 0 0 rgba(69,176,140,0); }
+  }
+
+  /* comments (on memories) */
+  .comment-toggle{
+    font-size:12.5px; color:var(--coral); font-weight:700; cursor:pointer;
+    margin-top:10px; display:inline-block; background:none; border:none; padding:0;
+  }
+  .comment-item{ padding:8px 0; border-top:1px solid var(--line); }
+  .comment-item:first-child{ border-top:none; }
+  .comment-author{ font-weight:700; font-size:12.5px; }
+  .comment-time{ font-size:10.5px; color:var(--ink-soft); margin-left:6px; }
+  .comment-text{ font-size:13.5px; margin-top:2px; line-height:1.4; }
+  .comment-box{ margin-top:10px; gap:8px; }
+  .comment-box input[type=text]{ flex:1; }
+  .comment-box button{ flex-shrink:0; padding:10px 14px; }
+
+  /* chats / DM */
+  .chat-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:11px 4px; border-bottom:1px solid var(--line); cursor:pointer;
+  }
+  .chat-row:last-child{ border-bottom:none; }
+  .chat-preview{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #dm-modal{ align-items:stretch; justify-content:center; padding:0; z-index:55; background:var(--cream); }
+  #dm-modal .dm-shell{ width:100%; max-width:460px; height:100%; display:flex; flex-direction:column; background:var(--paper); margin:0 auto; }
+  .dm-header{
+    padding:16px 18px; display:flex; align-items:center; gap:12px;
+    background: linear-gradient(135deg, var(--coral), var(--coral-2));
+    color:#fff; flex-shrink:0;
+  }
+  .dm-back{ background:rgba(255,255,255,0.25); color:#fff; padding:8px 12px; }
+  .dm-messages{ flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; }
+  .dm-bubble-row{ display:flex; margin-bottom:10px; }
+  .dm-bubble{ max-width:75%; padding:10px 13px; border-radius:15px; font-size:14px; line-height:1.4; }
+  .dm-bubble .dm-time{ font-size:10.5px; opacity:0.75; margin-top:3px; }
+  .dm-input-bar{ padding:12px 14px; border-top:1px solid var(--line); display:flex; gap:8px; flex-shrink:0; }
+  .dm-input-bar input{ flex:1; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="onboard" class="modal-overlay">
+    <div class="sheet">
+
+      <div id="onboard-picker">
+        <h1 id="picker-heading">Who's this?</h1>
+        <p id="picker-sub">Pick your name to jump back in.</p>
+        <div id="picker-list"></div>
+        <div id="picker-add-toggle">
+          <button class="btn-ghost" style="width:100%; margin-top:6px;" onclick="showPickerAddForm()">＋ I'm not on this list</button>
+        </div>
+        <div id="picker-add-form" style="display:none; margin-top:6px;">
+          <label>What's your name?</label>
+          <input type="text" id="pk-name" placeholder="e.g. Cam">
+          <label>Add a profile picture (optional)</label>
+          <div class="row" style="gap:12px; margin-top:6px;">
+            <div id="pk-avatar-preview" class="avatar-fallback avatar-md" style="width:56px;height:56px;font-size:20px; background:var(--coral);">＋</div>
+            <input type="file" accept="image/*" id="pk-photo-input" style="display:none">
+            <button class="btn-ghost" type="button" onclick="document.getElementById('pk-photo-input').click()">Choose photo</button>
+          </div>
+          <button class="btn-gold" style="width:100%; margin-top:18px;" id="picker-join-btn" onclick="joinAsNew()">Join the family</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="crop-modal" class="modal-overlay" style="display:none; background:rgba(58,52,44,0.65);">
+    <div class="sheet" style="text-align:center;">
+      <h1 style="font-size:20px;">Adjust your photo</h1>
+      <p style="margin-bottom:14px;">Drag to reposition, use the slider to zoom.</p>
+      <canvas id="crop-canvas" width="300" height="300" style="width:220px; height:220px; border-radius:50%; touch-action:none; cursor:grab; background:var(--cream); display:block; margin:0 auto;"></canvas>
+      <input type="range" id="crop-zoom" min="100" max="280" value="100" style="width:100%; margin-top:16px;">
+      <div class="row" style="margin-top:16px;">
+        <button class="btn-primary" onclick="confirmCrop()">Use this photo</button>
+        <button class="btn-ghost" onclick="closeCropper()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="profile-modal" class="modal-overlay" style="display:none;">
+    <div class="sheet">
+      <h1 style="font-size:20px;">Your profile</h1>
+      <p style="margin-bottom:6px;">This is how your family sees you.</p>
+      <div class="row" style="gap:14px; margin:14px 0;">
+        <div id="profile-avatar-preview" class="avatar-fallback avatar-md" style="width:72px;height:72px;font-size:26px; background:var(--coral);"></div>
+        <div>
+          <input type="file" accept="image/*" id="profile-photo-input" style="display:none">
+          <button class="btn-ghost" type="button" onclick="document.getElementById('profile-photo-input').click()">Change photo</button>
+        </div>
+      </div>
+      <div class="small" id="profile-status"></div>
+      <button class="btn-primary" style="width:100%; margin-top:16px;" onclick="closeProfileModal()">Done</button>
+    </div>
+  </div>
+
+  <div id="dm-modal" class="modal-overlay" style="display:none;">
+    <div class="dm-shell">
+      <div class="dm-header">
+        <button class="btn-ghost dm-back" onclick="closeDm()">←</button>
+        <span id="dm-avatar" class="avatar-fallback avatar-sm" style="background:rgba(255,255,255,0.3);"></span>
+        <strong id="dm-name" style="font-family:'Fraunces', serif; font-size:16px;"></strong>
+      </div>
+      <div class="dm-messages" id="dm-messages"></div>
+      <div class="dm-input-bar">
+        <input type="text" id="dm-input" placeholder="Message..." onkeydown="if(event.key==='Enter'){event.preventDefault();sendDm();}">
+        <button class="btn-primary" onclick="sendDm()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="row between" style="align-items:flex-start;">
+      <div>
+        <h1>Family Ties</h1>
+        <p class="tag" id="header-tag">your people, close by</p>
+      </div>
+      <div id="header-avatar" class="avatar-fallback header-avatar" onclick="openProfileModal()" title="Edit your profile" style="background:rgba(255,255,255,0.25);"></div>
+    </div>
+    <div class="horizon"></div>
+  </header>
+
+  <main>
+    <!-- TODAY -->
+    <div class="view active" id="view-today">
+      <div class="card verse-card">
+        <h2>Verse of the day</h2>
+        <div class="verse-text" id="verse-text">Loading...</div>
+        <div class="verse-ref" id="verse-ref"></div>
+      </div>
+
+      <div class="card nudge-card" id="nudge-card" style="display:none;">
+        <h2>Worth a hello</h2>
+        <div class="nudge-name" id="nudge-name"></div>
+        <div class="small" id="nudge-detail"></div>
+        <div class="row" style="margin-top:12px;">
+          <button class="btn-primary" onclick="markCheckedIn()">Mark as checked in</button>
+          <button class="btn-ghost" onclick="dismissNudge()">Not today</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Today's journal</h2>
+        <textarea id="journal-input" placeholder="What's on your mind today?"></textarea>
+        <div class="row between" style="margin-top:10px;">
+          <span class="small" id="journal-status"></span>
+          <button class="btn-primary" onclick="saveJournal()">Save entry</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Recent activity</h2>
+        <div id="activity-list"></div>
+      </div>
+    </div>
+
+    <!-- CIRCLE -->
+    <div class="view" id="view-circle">
+      <div class="card">
+        <h2>Your circle</h2>
+        <div class="orbit-wrap" id="orbit-wrap"></div>
+        <button class="btn-gold" style="width:100%;" onclick="shareLocation()">Refresh my location now</button>
+        <div class="small" id="location-status" style="margin-top:8px; text-align:center;">Updates automatically while the app is open.</div>
+      </div>
+      <div class="card">
+        <h2>Last seen</h2>
+        <div id="member-list"></div>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="view" id="view-calendar">
+      <div class="card">
+        <div class="row between" style="margin-bottom:10px;">
+          <button class="btn-ghost" onclick="calShiftMonth(-1)">‹</button>
+          <h2 style="margin:0;" id="cal-month-label">Month</h2>
+          <button class="btn-ghost" onclick="calShiftMonth(1)">›</button>
+        </div>
+        <div class="cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="card">
+        <h2 id="cal-day-heading">Today</h2>
+        <div class="small" id="cal-free-line" style="margin-bottom:10px;"></div>
+        <div id="cal-day-events"></div>
+        <button class="btn-primary" style="width:100%; margin-top:12px;" onclick="openEventForm()">+ Add event</button>
+      </div>
+      <div class="card">
+        <h2>Upcoming across the family</h2>
+        <div id="cal-upcoming-list"></div>
+      </div>
+      <div id="event-form" class="card" style="display:none;">
+        <h2>New event</h2>
+        <label class="small" style="display:block; margin-bottom:4px; font-weight:700;">Title</label>
+        <input type="text" id="ev-title" placeholder="Sunday lunch">
+        <div class="row" style="margin-top:10px; gap:10px;">
+          <div style="flex:1;">
+            <label class="small" style="display:block; margin-bottom:4px; font-weight:700;">Date</label>
+            <input type="date" id="ev-date">
+          </div>
+          <div style="flex:1;">
+            <label class="small" style="display:block; margin-bottom:4px; font-weight:700;">Time (optional)</label>
+            <input type="time" id="ev-time">
+          </div>
+        </div>
+        <label class="small" style="display:block; margin:12px 0 4px; font-weight:700;">Who's involved?</label>
+        <div id="ev-attendees" class="attendee-picker"></div>
+        <textarea id="ev-note" placeholder="Any notes?" style="margin-top:10px; min-height:60px;"></textarea>
+        <div class="row" style="margin-top:12px;">
+          <button class="btn-primary" onclick="saveEvent()">Save event</button>
+          <button class="btn-ghost" onclick="closeEventForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMORIES -->
+    <div class="view" id="view-memories">
+      <div class="card">
+        <h2>Add a memory</h2>
+        <div class="emoji-picker" id="emoji-picker"></div>
+        <textarea id="memory-input" placeholder="What happened? What do you want everyone to remember?"></textarea>
+        <div class="row" style="margin-top:10px; gap:8px;">
+          <input type="file" accept="image/*" capture="environment" id="memory-photo-input" style="display:none">
+          <button class="btn-ghost" type="button" onclick="document.getElementById('memory-photo-input').click()">📷 Add photo</button>
+          <span class="small" id="memory-photo-status"></span>
+        </div>
+        <div id="memory-photo-preview-wrap" class="photo-preview-wrap" style="display:none;">
+          <img id="memory-photo-preview">
+          <button class="btn-ghost" onclick="clearMemoryPhoto()">Remove</button>
+        </div>
+        <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="postMemory()">Post to the family feed</button>
+      </div>
+      <div class="card">
+        <h2>The feed</h2>
+        <div id="memory-list"></div>
+      </div>
+    </div>
+
+    <!-- JOURNAL -->
+    <div class="view" id="view-journal">
+      <div class="card">
+        <h2>Your journal</h2>
+        <div id="journal-list"></div>
+      </div>
+    </div>
+
+    <!-- CHATS -->
+    <div class="view" id="view-chats">
+      <div class="card">
+        <h2>Messages</h2>
+        <div id="chats-list"></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <div id="install-banner" class="install-banner" style="display:none;">
+    <span id="install-text">Install this on your phone for quick access.</span>
+    <button class="btn-gold" id="install-btn" style="display:none;" onclick="triggerInstall()">Install</button>
+    <button class="btn-ghost" onclick="dismissInstallBanner()">Not now</button>
+  </div>
+
+  <div id="notif-banner" class="install-banner" style="display:none; top:0;">
+    <span>Turn on notifications to hear when someone posts, adds an event, or checks in.</span>
+    <button class="btn-gold" onclick="enableNotifications()">Enable</button>
+    <button class="btn-ghost" onclick="dismissNotifBanner()">Not now</button>
+  </div>
+
+  <nav>
+    <button class="tab active" data-view="today" onclick="switchTab('today')">
+      <span>☀️</span><span>Today</span><span class="dot"></span>
+    </button>
+    <button class="tab" data-view="circle" onclick="switchTab('circle')">
+      <span>🧭</span><span>Circle</span><span class="dot"></span>
+    </button>
+    <button class="tab" data-view="calendar" onclick="switchTab('calendar')">
+      <span>🗓️</span><span>Calendar</span><span class="dot"></span>
+    </button>
+    <button class="tab" data-view="memories" onclick="switchTab('memories')">
+      <span>📸</span><span>Memories</span><span class="dot"></span>
+    </button>
+    <button class="tab" data-view="journal" onclick="switchTab('journal')">
+      <span>📔</span><span>Journal</span><span class="dot"></span>
+    </button>
+    <button class="tab" data-view="chats" onclick="switchTab('chats')">
+      <span>💬</span><span>Chats</span><span class="dot"></span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+const VERSES = [
+["The LORD is my shepherd; I shall not want.","Psalm 23:1"],
+["Be strong and of a good courage; be not afraid... for the LORD thy God is with thee whithersoever thou goest.","Joshua 1:9"],
+["I can do all things through Christ which strengtheneth me.","Philippians 4:13"],
+["Trust in the LORD with all thine heart, and lean not unto thine own understanding.","Proverbs 3:5"],
+["Fear thou not; for I am with thee: be not dismayed; for I am thy God.","Isaiah 41:10"],
+["And we know that all things work together for good to them that love God.","Romans 8:28"],
+["For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil.","Jeremiah 29:11"],
+["God is our refuge and strength, a very present help in trouble.","Psalm 46:1"],
+["Take therefore no thought for the morrow: for the morrow shall take thought for the things of itself.","Matthew 6:34"],
+["Peace I leave with you, my peace I give unto you: let not your heart be troubled, neither let it be afraid.","John 14:27"],
+["For we walk by faith, not by sight.","2 Corinthians 5:7"],
+["This is the day which the LORD hath made; we will rejoice and be glad in it.","Psalm 118:24"],
+["And let us not be weary in well doing: for in due season we shall reap, if we faint not.","Galatians 6:9"],
+["Casting all your care upon him; for he careth for you.","1 Peter 5:7"],
+["The LORD bless thee, and keep thee.","Numbers 6:24"],
+["A friend loveth at all times, and a brother is born for adversity.","Proverbs 17:17"],
+["Bear ye one another's burdens, and so fulfil the law of Christ.","Galatians 6:2"],
+["Rejoice with them that do rejoice, and weep with them that weep.","Romans 12:15"],
+["And above all these things put on charity, which is the bond of perfectness.","Colossians 3:14"],
+["Let all your things be done with charity.","1 Corinthians 16:14"],
+["Be kindly affectioned one to another with brotherly love.","Romans 12:10"],
+["Behold, how good and how pleasant it is for brethren to dwell together in unity!","Psalm 133:1"],
+["As iron sharpeneth iron; so a man sharpeneth the countenance of his friend.","Proverbs 27:17"],
+["Two are better than one; because they have a good reward for their labour.","Ecclesiastes 4:9"],
+["Let brotherly love continue.","Hebrews 13:1"],
+["Draw nigh to God, and he will draw nigh to you.","James 4:8"],
+["He that watereth shall be watered also himself.","Proverbs 11:25"],
+["Delight thyself also in the LORD; and he shall give thee the desires of thine heart.","Psalm 37:4"],
+["The steadfast love of the LORD never ceases; his mercies never come to an end; they are new every morning.","Lamentations 3:22-23"],
+["Give thanks unto the LORD; for he is good: for his mercy endureth for ever.","Psalm 107:1"]
+];
+
+const EMOJIS = ["✨","❤️","🎉","🌿","☕","🏡","😂","🙏","📷","🌅"];
+const AVATAR_COLORS = ["#FF6B5B","#4FB6E8","#45B08C","#FFC93C","#FF9166"];
+let me = null;
+let family = [];
+let selectedEmoji = EMOJIS[0];
+let pendingMemoryPhoto = null; // dataURL string, or null
+let pendingProfilePhoto = null;
+let calendarEvents = [];
+let calViewDate = new Date();
+let calSelectedDate = null;
+
+// ---------- STORAGE ----------
+// Use Claude's built-in window.storage when previewing inside Claude.ai.
+// Otherwise (real hosting, e.g. GitHub Pages): shared family data (roster, locations,
+// memories, check-ins, calendar, profile pictures) syncs across everyone's phones via
+// a free Firebase Realtime Database. Personal data (journal entries) always stays in
+// localStorage on that one device only — never sent anywhere.
+//
+// Note: this database has open read/write rules (no login required), meaning anyone
+// who somehow found this exact project URL could read or write it. It isn't linked or
+// listed anywhere public, so this is reasonable for a private family app, not bank-vault
+// security.
+const FIREBASE_BASE = "https://family-ties-388a5-default-rtdb.firebaseio.com";
+
+// ---------- PUSH NOTIFICATIONS (OneSignal) ----------
+const ONESIGNAL_APP_ID = "edcfb4d8-8e76-4e08-8f8b-46705981bb63";
+// Cross-user pushes go through a small Cloudflare Worker relay, because OneSignal's
+// API rejects calls made directly from a web page (and the secret API key shouldn't
+// live in this public page anyway — it lives inside the Worker instead).
+const PUSH_RELAY_URL = "https://family-ties-push.cameronschrickker2.workers.dev/";
+
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function (OneSignal) {
+  await OneSignal.init({
+    appId: ONESIGNAL_APP_ID,
+    serviceWorkerParam: { scope: "/family-ties/" },
+    serviceWorkerPath: "service-worker.js"
+  });
+  OneSignal.Notifications.addEventListener("click", (e) => {
+    const view = e.notification.additionalData && e.notification.additionalData.view;
+    if (view) switchTab(view);
+  });
+  if (me) OneSignal.login(me);
+});
+
+function maybeShowNotifPrompt() {
+  if (!("Notification" in window) || Notification.permission !== "default") return;
+  const el = document.getElementById("notif-banner");
+  if (el) el.style.display = "flex";
+}
+function enableNotifications() {
+  document.getElementById("notif-banner").style.display = "none";
+  OneSignalDeferred.push(async function (OneSignal) {
+    await OneSignal.Notifications.requestPermission();
+  });
+}
+function dismissNotifBanner() {
+  document.getElementById("notif-banner").style.display = "none";
+}
+
+async function sendPush(title, body, targetNames, view) {
+  const targets = (targetNames || []).filter(Boolean);
+  if (targets.length === 0) return;
+  try {
+    await fetch(PUSH_RELAY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ title, body, targetNames: targets, view: view || "today" })
+    });
+  } catch (e) { /* non-critical */ }
+}
+
+const storage = (window.storage && typeof window.storage.get === 'function')
+  ? window.storage
+  : (function () {
+      function localKey(key) { return 'schrickkers:me:' + key; }
+      // Firebase keys can't contain . # $ [ ] — swap those out to keep any key safe.
+      function fbKey(key) { return key.replace(/[.#$[\]]/g, '_'); }
+      function fbUrl(key) { return FIREBASE_BASE + '/' + fbKey(key) + '.json'; }
+
+      async function localGet(key) {
+        try {
+          const raw = localStorage.getItem(localKey(key));
+          return raw !== null ? { key, value: raw, shared: false } : null;
+        } catch (e) { return null; }
+      }
+      async function localSet(key, value) {
+        try {
+          localStorage.setItem(localKey(key), value);
+          return { key, value, shared: false };
+        } catch (e) { return null; }
+      }
+
+      return {
+        async get(key, shared) {
+          if (!shared) return localGet(key);
+          try {
+            const res = await fetch(fbUrl(key));
+            if (!res.ok) throw new Error('firebase get failed');
+            const data = await res.json();
+            if (data === null || data === undefined) return null;
+            return { key, value: data, shared: true };
+          } catch (e) {
+            try {
+              const raw = localStorage.getItem('schrickkers:cache:' + key);
+              return raw !== null ? { key, value: raw, shared: true } : null;
+            } catch (e2) { return null; }
+          }
+        },
+        async set(key, value, shared) {
+          if (!shared) return localSet(key, value);
+          try {
+            const res = await fetch(fbUrl(key), { method: 'PUT', body: JSON.stringify(value) });
+            if (!res.ok) throw new Error('firebase set failed');
+            try { localStorage.setItem('schrickkers:cache:' + key, value); } catch (e) {}
+            return { key, value, shared: true };
+          } catch (e) {
+            try { localStorage.setItem('schrickkers:cache:' + key, value); } catch (e2) {}
+            return null;
+          }
+        },
+        async delete(key, shared) {
+          if (!shared) {
+            try { localStorage.removeItem(localKey(key)); return { key, deleted: true, shared: false }; }
+            catch (e) { return null; }
+          }
+          try {
+            const res = await fetch(fbUrl(key), { method: 'DELETE' });
+            try { localStorage.removeItem('schrickkers:cache:' + key); } catch (e) {}
+            return { key, deleted: res.ok, shared: true };
+          } catch (e) { return null; }
+        },
+        async list(prefix, shared) {
+          if (!shared) {
+            try {
+              const p = localKey(prefix || '');
+              const keys = [];
+              for (let i = 0; i < localStorage.length; i++) {
+                const kk = localStorage.key(i);
+                if (kk && kk.startsWith(p)) keys.push(kk.slice(p.length));
+              }
+              return { keys, prefix, shared: false };
+            } catch (e) { return null; }
+          }
+          try {
+            const res = await fetch(FIREBASE_BASE + '/.json?shallow=true');
+            if (!res.ok) throw new Error('firebase list failed');
+            const data = await res.json();
+            const allKeys = data ? Object.keys(data) : [];
+            const keys = prefix ? allKeys.filter(k => k.startsWith(fbKey(prefix))) : allKeys;
+            return { keys, prefix, shared: true };
+          } catch (e) { return null; }
+        }
+      };
+    })();
+
+// ---------- CHUNKED IMAGE STORAGE (for photos over the 16KB single-key limit) ----------
+async function saveImageChunked(key, dataUrl) {
+  const chunkSize = 14000;
+  const chunks = [];
+  for (let i = 0; i < dataUrl.length; i += chunkSize) chunks.push(dataUrl.slice(i, i + chunkSize));
+  for (let i = 0; i < chunks.length; i++) {
+    await storage.set(key + ':chunk:' + i, chunks[i], true);
+  }
+  await storage.set(key + ':meta', JSON.stringify({ chunks: chunks.length }), true);
+}
+async function loadImageChunked(key) {
+  try {
+    const metaRes = await storage.get(key + ':meta', true);
+    if (!metaRes || !metaRes.value) return null;
+    const meta = JSON.parse(metaRes.value);
+    let full = '';
+    for (let i = 0; i < meta.chunks; i++) {
+      const r = await storage.get(key + ':chunk:' + i, true);
+      if (!r) return null;
+      full += r.value;
+    }
+    return full;
+  } catch (e) { return null; }
+}
+function compressImageFile(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; } }
+        else { if (h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ---------- PROFILE PHOTO CROPPER (pan + zoom to a square) ----------
+const CROP_SIZE = 300;    // internal canvas resolution used for preview + math
+const CROP_OUTPUT = 480;  // exported avatar resolution
+let cropImg = null, cropBaseScale = 1, cropZoom = 1, cropPanX = 0, cropPanY = 0;
+let cropDispW = 0, cropDispH = 0, cropDragging = false, cropStartX = 0, cropStartY = 0, cropStartPanX = 0, cropStartPanY = 0;
+let cropCallback = null;
+let cropperWired = false;
+
+function openCropper(file, callback){
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      cropImg = img;
+      cropCallback = callback;
+      cropBaseScale = Math.max(CROP_SIZE / img.width, CROP_SIZE / img.height);
+      cropZoom = 1;
+      document.getElementById('crop-zoom').value = 100;
+      recalcCropDisp();
+      cropPanX = (CROP_SIZE - cropDispW) / 2;
+      cropPanY = (CROP_SIZE - cropDispH) / 2;
+      wireCropperOnce();
+      document.getElementById('crop-modal').style.display = 'flex';
+      drawCrop();
+    };
+    img.onerror = () => showToast("Couldn't read that photo");
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function recalcCropDisp(){
+  const scale = cropBaseScale * cropZoom;
+  cropDispW = cropImg.width * scale;
+  cropDispH = cropImg.height * scale;
+}
+function clampCropPan(){
+  cropPanX = Math.min(0, Math.max(CROP_SIZE - cropDispW, cropPanX));
+  cropPanY = Math.min(0, Math.max(CROP_SIZE - cropDispH, cropPanY));
+}
+function drawCrop(){
+  const canvas = document.getElementById('crop-canvas');
+  const ctx = canvas.getContext('2d');
+  recalcCropDisp();
+  clampCropPan();
+  ctx.clearRect(0, 0, CROP_SIZE, CROP_SIZE);
+  ctx.drawImage(cropImg, cropPanX, cropPanY, cropDispW, cropDispH);
+}
+function wireCropperOnce(){
+  if(cropperWired) return;
+  cropperWired = true;
+  const canvas = document.getElementById('crop-canvas');
+  const zoomSlider = document.getElementById('crop-zoom');
+
+  function toCanvasScale(){ return CROP_SIZE / canvas.getBoundingClientRect().width; }
+
+  canvas.addEventListener('pointerdown', (e)=>{
+    cropDragging = true;
+    canvas.style.cursor = 'grabbing';
+    cropStartX = e.clientX; cropStartY = e.clientY;
+    cropStartPanX = cropPanX; cropStartPanY = cropPanY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', (e)=>{
+    if(!cropDragging) return;
+    const s = toCanvasScale();
+    cropPanX = cropStartPanX + (e.clientX - cropStartX) * s;
+    cropPanY = cropStartPanY + (e.clientY - cropStartY) * s;
+    drawCrop();
+  });
+  function endDrag(){ cropDragging = false; canvas.style.cursor = 'grab'; }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointerleave', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+
+  zoomSlider.addEventListener('input', ()=>{
+    cropZoom = zoomSlider.value / 100;
+    drawCrop();
+  });
+}
+function closeCropper(){
+  document.getElementById('crop-modal').style.display = 'none';
+  cropImg = null; cropCallback = null;
+}
+function confirmCrop(){
+  if(!cropImg){ closeCropper(); return; }
+  const factor = CROP_OUTPUT / CROP_SIZE;
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = CROP_OUTPUT; outCanvas.height = CROP_OUTPUT;
+  const octx = outCanvas.getContext('2d');
+  octx.drawImage(cropImg, cropPanX * factor, cropPanY * factor, cropDispW * factor, cropDispH * factor);
+  const dataUrl = outCanvas.toDataURL('image/jpeg', 0.82);
+  const cb = cropCallback;
+  closeCropper();
+  if(cb) cb(dataUrl);
+}
+
+// ---------- HELPERS ----------
+function dayOfYear(d){ const start = new Date(d.getFullYear(),0,0); return Math.floor((d-start)/86400000); }
+function todayKey(){ return dateKey(new Date()); }
+function dateKey(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function timeAgo(iso){
+  if(!iso) return "never";
+  const mins = Math.floor((Date.now() - new Date(iso).getTime())/60000);
+  if(mins < 1) return "just now";
+  if(mins < 60) return mins + "m ago";
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24) return hrs + "h ago";
+  return Math.floor(hrs/24) + "d ago";
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+function initials(name){
+  return name.trim().split(/\s+/).map(p=>p[0]).slice(0,2).join('').toUpperCase();
+}
+function avatarColor(name){
+  let sum = 0;
+  for(let i=0;i<name.length;i++) sum += name.charCodeAt(i);
+  return AVATAR_COLORS[sum % AVATAR_COLORS.length];
+}
+const avatarCache = {}; // name -> dataUrl or false (checked, none found)
+async function applyAvatar(el, name, isMe){
+  if(!el) return;
+  el.style.background = avatarColor(name);
+  el.textContent = initials(name);
+  el.style.backgroundImage = '';
+  try{
+    if(avatarCache[name] === undefined){
+      avatarCache[name] = await loadImageChunked('profile:' + name) || false;
+    }
+    if(avatarCache[name]){
+      el.style.backgroundImage = `url(${avatarCache[name]})`;
+      el.textContent = '';
+    }
+  }catch(e){}
+}
+
+// ---------- PRESENCE (online now) ----------
+// Marks this person active periodically while the app is open, so family can
+// see genuine "online now" status, not just last-location-shared time.
+let heartbeatTimer = null;
+function startHeartbeat(){
+  if(heartbeatTimer) return;
+  const beat = () => { if(me) storage.set('active:' + me, new Date().toISOString(), true); };
+  beat();
+  heartbeatTimer = setInterval(beat, 60000);
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) beat(); });
+}
+function isOnlineNow(iso){
+  if(!iso) return false;
+  return (Date.now() - new Date(iso).getTime()) < 3 * 60000; // active in last 3 min
+}
+
+// ---------- ACTIVITY FEED ----------
+// Logs shared, family-visible actions (memories, calendar events, location shares).
+// Journal entries are intentionally never logged here — journaling stays private.
+async function logActivity(icon, text){
+  try{
+    const res = await storage.get('activity:log', true).catch(()=>null);
+    const list = res && res.value ? JSON.parse(res.value) : [];
+    list.unshift({ icon, text, timestamp: new Date().toISOString() });
+    await storage.set('activity:log', JSON.stringify(list.slice(0,60)), true);
+  }catch(e){ /* non-critical, ignore */ }
+}
+async function renderActivity(){
+  const el = document.getElementById('activity-list');
+  if(!el) return;
+  try{
+    const res = await storage.get('activity:log', true);
+    const items = res && res.value ? JSON.parse(res.value) : [];
+    if(items.length === 0){
+      el.innerHTML = '<div class="empty">Nothing yet — memories, events, and location shares will show up here.</div>';
+      return;
+    }
+    el.innerHTML = items.slice(0,10).map(a => `
+      <div class="activity-item">
+        <span class="activity-icon">${a.icon}</span>
+        <div>
+          <div class="activity-text">${a.text}</div>
+          <div class="activity-when">${timeAgo(a.timestamp)}</div>
+        </div>
+      </div>
+    `).join('');
+  }catch(e){
+    el.innerHTML = '<div class="empty">Nothing yet.</div>';
+  }
+}
+
+
+async function init(){
+  await loadFamily(); // always check who's already on the app first
+  try{
+    const meRes = await storage.get('me:name', false);
+    if(meRes && meRes.value && family.includes(meRes.value)){
+      me = meRes.value;
+      document.getElementById('onboard').style.display = 'none';
+      renderAll();
+    } else {
+      document.getElementById('onboard').style.display = 'flex';
+      showOnboardPicker();
+    }
+  }catch(e){
+    document.getElementById('onboard').style.display = 'flex';
+    showOnboardPicker();
+  }
+  renderVerse();
+  renderEmojiPicker();
+  wireFileInputs();
+}
+
+function showOnboardPicker(){
+  document.getElementById('onboard-picker').style.display = 'block';
+  const heading = document.getElementById('picker-heading');
+  const sub = document.getElementById('picker-sub');
+  const toggle = document.getElementById('picker-add-toggle');
+  const list = document.getElementById('picker-list');
+  const joinBtn = document.getElementById('picker-join-btn');
+
+  if(family.length === 0){
+    // First person ever to open the app — just get their name and photo,
+    // no need to ask who else is in the family.
+    heading.textContent = "Family Ties";
+    sub.textContent = "Keeping this family close, wherever we are. Let's get you set up.";
+    list.innerHTML = '';
+    toggle.style.display = 'none';
+    joinBtn.textContent = "Get started";
+    showPickerAddForm();
+  } else {
+    heading.textContent = "Who's this?";
+    sub.textContent = "Pick your name to jump back in.";
+    toggle.style.display = 'block';
+    joinBtn.textContent = "Join the family";
+    document.getElementById('picker-add-form').style.display = 'none';
+    list.innerHTML = family.map((n,idx) => `
+      <button class="btn-ghost" style="width:100%; margin-bottom:8px; justify-content:flex-start;" onclick="pickIdentity('${n.replace(/'/g,"\\'")}')">
+        <span class="row" style="gap:10px;">
+          <span class="avatar-fallback avatar-sm" id="pick-avatar-${idx}" style="background:${avatarColor(n)}">${initials(n)}</span>
+          <span>${escapeHtml(n)}</span>
+        </span>
+      </button>
+    `).join('');
+    family.forEach((n,idx)=> applyAvatar(document.getElementById('pick-avatar-'+idx), n, false));
+  }
+}
+function showPickerAddForm(){
+  document.getElementById('picker-add-toggle').style.display = 'none';
+  document.getElementById('picker-add-form').style.display = 'block';
+}
+
+async function pickIdentity(name){
+  try{
+    me = name;
+    await storage.set('me:name', me, false);
+    OneSignalDeferred.push(OneSignal => OneSignal.login(me));
+    document.getElementById('onboard').style.display = 'none';
+    renderAll();
+  }catch(e){
+    showToast("Couldn't log you in — try again");
+  }
+}
+
+let pendingPkPhoto = null;
+async function joinAsNew(){
+  const name = document.getElementById('pk-name').value.trim();
+  if(!name){ showToast("Enter your name first"); return; }
+  try{
+    me = name;
+    await storage.set('me:name', me, false);
+    OneSignalDeferred.push(OneSignal => OneSignal.login(me));
+    if(pendingPkPhoto){
+      await saveImageChunked('profile:' + me, pendingPkPhoto);
+      avatarCache[me] = pendingPkPhoto;
+    }
+    await loadFamily();
+    if(!family.includes(me)){
+      family.push(me);
+      await storage.set('family:roster', JSON.stringify(family), true);
+    }
+    document.getElementById('onboard').style.display = 'none';
+    renderAll();
+  }catch(e){
+    showToast("Something went wrong joining — try again");
+  }
+}
+
+function wireFileInputs(){
+  document.getElementById('pk-photo-input').addEventListener('change', (evt)=>{
+    const file = evt.target.files[0];
+    if(!file) return;
+    openCropper(file, (dataUrl)=>{
+      pendingPkPhoto = dataUrl;
+      const prev = document.getElementById('pk-avatar-preview');
+      prev.style.backgroundImage = `url(${dataUrl})`;
+      prev.textContent = '';
+    });
+    evt.target.value = '';
+  });
+  document.getElementById('profile-photo-input').addEventListener('change', (evt)=>{
+    const file = evt.target.files[0];
+    if(!file) return;
+    openCropper(file, async (dataUrl)=>{
+      pendingProfilePhoto = dataUrl;
+      const prev = document.getElementById('profile-avatar-preview');
+      prev.style.backgroundImage = `url(${dataUrl})`;
+      prev.textContent = '';
+      document.getElementById('profile-status').textContent = 'Saving...';
+      try{
+        await saveImageChunked('profile:' + me, dataUrl);
+        avatarCache[me] = dataUrl;
+        document.getElementById('profile-status').textContent = 'Saved';
+        applyAvatar(document.getElementById('header-avatar'), me, true);
+      }catch(e){ showToast("Couldn't save that photo — try again"); }
+    });
+    evt.target.value = '';
+  });
+  document.getElementById('memory-photo-input').addEventListener('change', async (evt)=>{
+    const file = evt.target.files[0];
+    if(!file) return;
+    document.getElementById('memory-photo-status').textContent = 'Processing photo...';
+    try{
+      pendingMemoryPhoto = await compressImageFile(file, 900, 0.55);
+      document.getElementById('memory-photo-preview').src = pendingMemoryPhoto;
+      document.getElementById('memory-photo-preview-wrap').style.display = 'block';
+      document.getElementById('memory-photo-status').textContent = 'Photo ready';
+    }catch(e){
+      document.getElementById('memory-photo-status').textContent = "Couldn't read that photo";
+    }
+  });
+}
+function clearMemoryPhoto(){
+  pendingMemoryPhoto = null;
+  document.getElementById('memory-photo-preview-wrap').style.display = 'none';
+  document.getElementById('memory-photo-status').textContent = '';
+  document.getElementById('memory-photo-input').value = '';
+}
+
+async function loadFamily(){
+  try{
+    const res = await storage.get('family:roster', true);
+    family = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ family = []; }
+}
+
+function renderVerse(){
+  const idx = dayOfYear(new Date()) % VERSES.length;
+  const [text, ref] = VERSES[idx];
+  document.getElementById('verse-text').textContent = "“" + text + "”";
+  document.getElementById('verse-ref').textContent = ref;
+}
+function renderEmojiPicker(){
+  const wrap = document.getElementById('emoji-picker');
+  wrap.innerHTML = '';
+  EMOJIS.forEach(e=>{
+    const span = document.createElement('span');
+    span.textContent = e;
+    if(e === selectedEmoji) span.classList.add('sel');
+    span.onclick = ()=>{ selectedEmoji = e; renderEmojiPicker(); };
+    wrap.appendChild(span);
+  });
+}
+
+function switchTab(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('nav .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`nav .tab[data-view="${name}"]`).classList.add('active');
+  if(name==='circle') renderCircle();
+  if(name==='memories') renderMemories();
+  if(name==='journal') renderJournalHistory();
+  if(name==='calendar') renderCalendar();
+  if(name==='chats') renderChatsList();
+}
+
+async function renderAll(){
+  startHeartbeat();
+  startLocationAutoShare();
+  await renderToday();
+  document.getElementById('header-tag').textContent = "hi " + me + " · your people, close by";
+  applyAvatar(document.getElementById('header-avatar'), me, true);
+  maybeShowNotifPrompt();
+}
+
+// ---------- PROFILE MODAL ----------
+function openProfileModal(){
+  document.getElementById('profile-status').textContent = '';
+  const prev = document.getElementById('profile-avatar-preview');
+  prev.style.backgroundImage = avatarCache[me] ? `url(${avatarCache[me]})` : '';
+  prev.textContent = avatarCache[me] ? '' : initials(me || '?');
+  prev.style.background = avatarColor(me || '?');
+  document.getElementById('profile-modal').style.display = 'flex';
+}
+function closeProfileModal(){
+  document.getElementById('profile-modal').style.display = 'none';
+}
+
+// ---------- TODAY / JOURNAL ----------
+async function renderToday(){
+  await loadTodayJournal();
+  await renderNudge();
+  await renderActivity();
+}
+async function loadTodayJournal(){
+  document.getElementById('journal-input').value = '';
+  try{
+    const res = await storage.get('journal:' + me, false);
+    const map = res && res.value ? JSON.parse(res.value) : {};
+    const key = todayKey();
+    document.getElementById('journal-status').textContent = map[key] ? "You've already added an entry today — view it in your Journal tab" : "";
+  }catch(e){
+    document.getElementById('journal-status').textContent = '';
+  }
+}
+async function saveJournal(){
+  const text = document.getElementById('journal-input').value.trim();
+  if(!text){ showToast("Write something first"); return; }
+  try{
+    const res = await storage.get('journal:' + me, false).catch(()=>null);
+    const map = res && res.value ? JSON.parse(res.value) : {};
+    const key = todayKey();
+    map[key] = map[key] ? map[key] + '\n\n' + text : text;
+    await storage.set('journal:' + me, JSON.stringify(map), false);
+    document.getElementById('journal-input').value = '';
+    document.getElementById('journal-status').textContent = "Saved ✔️ — view it in your Journal tab";
+    showToast("Saved to your Journal");
+  }catch(e){
+    showToast("Couldn't save — try again");
+  }
+}
+async function renderJournalHistory(){
+  const list = document.getElementById('journal-list');
+  try{
+    const res = await storage.get('journal:' + me, false);
+    const map = res && res.value ? JSON.parse(res.value) : {};
+    const dates = Object.keys(map).filter(d=>map[d] && map[d].trim()).sort().reverse();
+    if(dates.length === 0){
+      list.innerHTML = '<div class="empty">No entries yet. Write your first one on the Today tab.</div>';
+      return;
+    }
+    list.innerHTML = dates.map(d=>`
+      <div class="journal-entry">
+        <div class="journal-date">${d}</div>
+        <div class="journal-body">${escapeHtml(map[d])}</div>
+      </div>
+    `).join('');
+  }catch(e){
+    list.innerHTML = '<div class="empty">No entries yet.</div>';
+  }
+}
+
+// ---------- CHECK-IN NUDGE ----------
+async function renderNudge(){
+  const others = family.filter(n=>n !== me);
+  if(others.length === 0){ document.getElementById('nudge-card').style.display = 'none'; return; }
+  let checkins = {};
+  try{
+    const res = await storage.get('checkins:' + me, true);
+    checkins = res && res.value ? JSON.parse(res.value) : {};
+  }catch(e){ checkins = {}; }
+
+  if(window._dismissedToday){ document.getElementById('nudge-card').style.display = 'none'; return; }
+
+  let oldest = null, oldestTime = Infinity;
+  others.forEach(name=>{
+    const t = checkins[name] ? new Date(checkins[name]).getTime() : 0;
+    if(t < oldestTime){ oldestTime = t; oldest = name; }
+  });
+  if(!oldest){ document.getElementById('nudge-card').style.display = 'none'; return; }
+  document.getElementById('nudge-card').style.display = 'block';
+  document.getElementById('nudge-name').textContent = oldest;
+  document.getElementById('nudge-detail').textContent = checkins[oldest]
+    ? "Last check-in " + timeAgo(checkins[oldest])
+    : "You haven't logged a check-in with them yet";
+  window._currentNudge = oldest;
+}
+async function markCheckedIn(){
+  const name = window._currentNudge;
+  if(!name) return;
+  try{
+    const res = await storage.get('checkins:' + me, true).catch(()=>null);
+    const map = res && res.value ? JSON.parse(res.value) : {};
+    map[name] = new Date().toISOString();
+    await storage.set('checkins:' + me, JSON.stringify(map), true);
+    sendPush('Worth a hello 👋', me + ' checked in with you', [name], 'today');
+    showToast("Marked — nice one");
+    renderNudge();
+  }catch(e){ showToast("Couldn't save that — try again"); }
+}
+function dismissNudge(){
+  window._dismissedToday = true;
+  document.getElementById('nudge-card').style.display = 'none';
+}
+
+// ---------- CIRCLE / LOCATION ----------
+let locationDenied = false;
+let hasLoggedLocationThisSession = false;
+let locationAutoTimer = null;
+
+async function shareLocationCore(manual){
+  if(!navigator.geolocation){
+    if(manual) document.getElementById('location-status').textContent = "Location isn't available in this browser.";
+    return;
+  }
+  if(manual) document.getElementById('location-status').textContent = "Finding you...";
+  navigator.geolocation.getCurrentPosition(async (pos)=>{
+    const data = { lat: pos.coords.latitude, lng: pos.coords.longitude, timestamp: new Date().toISOString() };
+    try{
+      await storage.set('location:' + me, JSON.stringify(data), true);
+      await storage.set('active:' + me, new Date().toISOString(), true);
+      locationDenied = false;
+      if(manual) document.getElementById('location-status').textContent = "Shared — up to date as of just now.";
+      if(!hasLoggedLocationThisSession){
+        hasLoggedLocationThisSession = true;
+        logActivity('📍', `<b>${escapeHtml(me)}</b> shared their location`);
+        sendPush(me + ' is online', me + ' just opened Family Ties', family.filter(n => n !== me), 'circle');
+      }
+      const circleView = document.getElementById('view-circle');
+      if(circleView && circleView.classList.contains('active')) renderCircle();
+    }catch(e){
+      if(manual) document.getElementById('location-status').textContent = "Couldn't save your location — try again.";
+    }
+  }, (err)=>{
+    locationDenied = true;
+    if(manual) document.getElementById('location-status').textContent = "Location permission denied. Enable it in your browser settings to share.";
+  }, { maximumAge: 60000, timeout: 12000 });
+}
+function shareLocation(){ shareLocationCore(true); }
+
+// Auto-share on open + refresh every 5 min while the app stays open — this is the
+// closest a browser-based app can get to Life360-style live location. Important
+// honest limit: this only runs while the app is actually open in the foreground.
+// Unlike a native app, a web app can't track location in the background once
+// it's closed or the phone is locked — no browser permits that for privacy reasons.
+function startLocationAutoShare(){
+  if(locationAutoTimer) return;
+  shareLocationCore(false);
+  locationAutoTimer = setInterval(()=>{ if(!locationDenied) shareLocationCore(false); }, 5 * 60000);
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden && !locationDenied) shareLocationCore(false);
+  });
+}
+async function renderCircle(){
+  const wrap = document.getElementById('orbit-wrap');
+  const listEl = document.getElementById('member-list');
+  wrap.innerHTML = `<div class="orbit-hub">🏡</div>`;
+  if(family.length === 0){ listEl.innerHTML = '<div class="empty">No one in your circle yet.</div>'; return; }
+  const others = family.filter(n=>n!==me);
+  const n = others.length;
+  const radius = 40;
+  const rows = [];
+  for(let i=0;i<n;i++){
+    const angle = (2*Math.PI*i/n) - Math.PI/2;
+    const x = 50 + radius*Math.cos(angle);
+    const y = 50 + radius*Math.sin(angle);
+    let lastActive = null;
+    try{
+      const res = await storage.get('active:' + others[i], true);
+      lastActive = res ? res.value : null;
+    }catch(e){ lastActive = null; }
+    const freshness = getFreshness(lastActive);
+    const node = document.createElement('div');
+    node.className = 'orbit-node';
+    node.style.left = x + '%';
+    node.style.top = y + '%';
+    node.style.background = freshness.color;
+    node.textContent = initials(others[i]);
+    node.title = others[i];
+    wrap.appendChild(node);
+    applyAvatar(node, others[i], false);
+    rows.push({ name: others[i], lastActive, freshness });
+  }
+  listEl.innerHTML = rows.map((r,idx) => `
+    <div class="member-card" style="cursor:pointer;" onclick="openDm('${r.name.replace(/'/g,"\\'")}')">
+      <div class="row">
+        <span class="avatar-fallback avatar-sm" id="member-avatar-${idx}" style="background:${avatarColor(r.name)}">${initials(r.name)}</span>
+        <span class="member-name">${escapeHtml(r.name)}</span>
+      </div>
+      <span class="small">
+        ${isOnlineNow(r.lastActive)
+          ? `<span class="online-dot" style="margin-right:6px;"></span>Online now`
+          : `<span class="status-dot" style="background:${r.freshness.color}; margin-right:6px;"></span>${r.lastActive ? 'Last seen ' + timeAgo(r.lastActive) : 'not seen yet'}`}
+        &nbsp;💬
+      </span>
+    </div>
+  `).join('');
+  rows.forEach((r,idx)=> applyAvatar(document.getElementById('member-avatar-'+idx), r.name, false));
+}
+function getFreshness(iso){
+  if(!iso) return { color: '#E0D5C2' };
+  const hrs = (Date.now() - new Date(iso).getTime())/3600000;
+  if(hrs < 24) return { color: '#45B08C' };
+  if(hrs < 24*7) return { color:'#FFC93C' };
+  return { color:'#FF9166' };
+}
+
+// ---------- DIRECT MESSAGES ----------
+// Each pair of family members gets one shared key, named from their two names sorted
+// alphabetically so both people land on the same conversation regardless of who
+// opens it first. Same "one JSON blob per key" pattern as the rest of the app.
+function dmKey(a, b){ return 'dm:' + [a, b].sort().join('::'); }
+
+async function loadDmMessages(a, b){
+  try{
+    const res = await storage.get(dmKey(a, b), true);
+    return res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ return []; }
+}
+
+async function renderChatsList(){
+  const el = document.getElementById('chats-list');
+  const others = family.filter(n => n !== me);
+  if(others.length === 0){
+    el.innerHTML = '<div class="empty">No one else has joined the family yet.</div>';
+    return;
+  }
+  const rows = [];
+  for(const name of others){
+    const msgs = await loadDmMessages(me, name);
+    rows.push({ name, last: msgs.length ? msgs[msgs.length - 1] : null });
+  }
+  el.innerHTML = rows.map((r, idx) => `
+    <div class="chat-row" onclick="openDm('${r.name.replace(/'/g,"\\'")}')">
+      <div class="row">
+        <span class="avatar-fallback avatar-sm" id="chat-avatar-${idx}" style="background:${avatarColor(r.name)}">${initials(r.name)}</span>
+        <div>
+          <div class="member-name">${escapeHtml(r.name)}</div>
+          <div class="chat-preview">${r.last ? escapeHtml(r.last.from === me ? 'You: ' + r.last.text : r.last.text) : 'Say hello 👋'}</div>
+        </div>
+      </div>
+      <span class="small">${r.last ? timeAgo(r.last.timestamp) : ''}</span>
+    </div>
+  `).join('');
+  rows.forEach((r, idx) => applyAvatar(document.getElementById('chat-avatar-' + idx), r.name, false));
+}
+
+let dmPartner = null;
+let dmPollTimer = null;
+
+function openDm(name){
+  dmPartner = name;
+  document.getElementById('dm-name').textContent = name;
+  applyAvatar(document.getElementById('dm-avatar'), name, false);
+  document.getElementById('dm-modal').style.display = 'flex';
+  document.getElementById('dm-input').value = '';
+  renderDmMessages();
+  if(dmPollTimer) clearInterval(dmPollTimer);
+  dmPollTimer = setInterval(renderDmMessages, 4000); // light polling — Firebase REST has no live listener without the SDK
+  document.getElementById('dm-input').focus();
+}
+function closeDm(){
+  document.getElementById('dm-modal').style.display = 'none';
+  if(dmPollTimer){ clearInterval(dmPollTimer); dmPollTimer = null; }
+  dmPartner = null;
+  const chatsView = document.getElementById('view-chats');
+  if(chatsView && chatsView.classList.contains('active')) renderChatsList();
+}
+async function renderDmMessages(){
+  if(!dmPartner) return;
+  const el = document.getElementById('dm-messages');
+  const msgs = await loadDmMessages(me, dmPartner);
+  if(msgs.length === 0){
+    el.innerHTML = '<div class="empty">No messages yet — say hello 👋</div>';
+    return;
+  }
+  const wasNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  el.innerHTML = msgs.map(m => {
+    const mine = m.from === me;
+    return `
+      <div class="dm-bubble-row" style="justify-content:${mine ? 'flex-end' : 'flex-start'};">
+        <div class="dm-bubble" style="background:${mine ? 'var(--coral)' : 'var(--cream)'}; color:${mine ? '#fff' : 'var(--ink)'};">
+          <div>${escapeHtml(m.text)}</div>
+          <div class="dm-time">${timeAgo(m.timestamp)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  if(wasNearBottom) el.scrollTop = el.scrollHeight;
+}
+async function sendDm(){
+  if(!dmPartner) return;
+  const input = document.getElementById('dm-input');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  try{
+    const msgs = await loadDmMessages(me, dmPartner);
+    msgs.push({ from: me, text, timestamp: new Date().toISOString() });
+    await storage.set(dmKey(me, dmPartner), JSON.stringify(msgs.slice(-300)), true);
+    sendPush(me, text.slice(0, 80), [dmPartner], 'chats');
+    renderDmMessages();
+  }catch(e){
+    showToast("Couldn't send — try again");
+    input.value = text;
+  }
+}
+
+// ---------- MEMORIES ----------
+async function postMemory(){
+  const text = document.getElementById('memory-input').value.trim();
+  if(!text && !pendingMemoryPhoto){ showToast("Write something or add a photo first"); return; }
+  try{
+    const res = await storage.get('memories:list', true).catch(()=>null);
+    const list = res && res.value ? JSON.parse(res.value) : [];
+    const id = Date.now().toString();
+    const entry = { id, author: me, emoji: selectedEmoji, text, timestamp: new Date().toISOString(), hasPhoto: !!pendingMemoryPhoto };
+    if(pendingMemoryPhoto){
+      showToast("Uploading photo...");
+      await saveImageChunked('memoryimg:' + id, pendingMemoryPhoto);
+    }
+    list.unshift(entry);
+    await storage.set('memories:list', JSON.stringify(list.slice(0,120)), true);
+    document.getElementById('memory-input').value = '';
+    clearMemoryPhoto();
+    logActivity(entry.emoji, `<b>${escapeHtml(me)}</b> posted a memory${entry.hasPhoto ? ' with a photo' : ''}`);
+    sendPush('New memory ' + entry.emoji, me + ' posted' + (entry.hasPhoto ? ' a photo' : '') + (text ? ': ' + text.slice(0, 80) : ''), family.filter(n => n !== me), 'memories');
+    showToast("Posted to the feed");
+    renderMemories();
+  }catch(e){
+    showToast("Couldn't post — try again");
+  }
+}
+async function loadAllComments(){
+  try{
+    const res = await storage.get('memories:comments', true);
+    return res && res.value ? JSON.parse(res.value) : {};
+  }catch(e){ return {}; }
+}
+function renderCommentList(memId, comments){
+  if(!comments || comments.length === 0){
+    return '<div class="small" style="padding:4px 0 2px;">No comments yet.</div>';
+  }
+  return comments.map((c, ci) => `
+    <div class="comment-item">
+      <div class="row" style="gap:7px; align-items:flex-start;">
+        <span class="avatar-fallback avatar-sm" id="comment-avatar-${memId}-${ci}" style="width:26px;height:26px;font-size:11px; background:${avatarColor(c.author)}">${initials(c.author)}</span>
+        <div style="flex:1;">
+          <span class="comment-author">${escapeHtml(c.author)}</span><span class="comment-time">${timeAgo(c.timestamp)}</span>
+          <div class="comment-text">${escapeHtml(c.text)}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+function toggleComments(memId){
+  const wrap = document.getElementById('comments-wrap-' + memId);
+  if(!wrap) return;
+  wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+}
+async function postComment(memId){
+  const input = document.getElementById('comment-input-' + memId);
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  try{
+    const all = await loadAllComments();
+    const list = all[memId] || [];
+    list.push({ author: me, text, timestamp: new Date().toISOString() });
+    all[memId] = list.slice(-200);
+    await storage.set('memories:comments', JSON.stringify(all), true);
+
+    // Update just this memory's comment thread in place so other expanded/collapsed
+    // threads on the page aren't disturbed.
+    const listEl = document.getElementById('comments-list-' + memId);
+    if(listEl) listEl.innerHTML = renderCommentList(memId, all[memId]);
+    all[memId].forEach((c, ci) => applyAvatar(document.getElementById(`comment-avatar-${memId}-${ci}`), c.author, false));
+    const toggleBtn = document.getElementById('comment-toggle-' + memId);
+    if(toggleBtn) toggleBtn.textContent = `💬 ${all[memId].length} comment${all[memId].length === 1 ? '' : 's'}`;
+
+    logActivity('💬', `<b>${escapeHtml(me)}</b> commented on a memory`);
+    try{
+      const memRes = await storage.get('memories:list', true);
+      const memList = memRes && memRes.value ? JSON.parse(memRes.value) : [];
+      const mem = memList.find(x => x.id === memId);
+      if(mem && mem.author !== me) sendPush('New comment 💬', me + ' commented: ' + text.slice(0, 80), [mem.author], 'memories');
+    }catch(e){ /* notification is non-critical */ }
+  }catch(e){
+    showToast("Couldn't post that comment — try again");
+    input.value = text;
+  }
+}
+
+async function renderMemories(){
+  const list = document.getElementById('memory-list');
+  try{
+    const res = await storage.get('memories:list', true);
+    const items = res && res.value ? JSON.parse(res.value) : [];
+    const allComments = await loadAllComments();
+    if(items.length === 0){
+      list.innerHTML = '<div class="empty">No memories yet. Be the first to post one.</div>';
+      return;
+    }
+    list.innerHTML = items.map((m,idx) => {
+      const comments = allComments[m.id] || [];
+      return `
+      <div class="memory-item">
+        <div class="memory-head">
+          <span class="avatar-fallback avatar-sm" id="mem-avatar-${idx}" style="background:${avatarColor(m.author)}">${initials(m.author)}</span>
+          <span class="memory-emoji">${m.emoji}</span>
+          <span class="memory-author">${escapeHtml(m.author)}</span>
+          <span class="memory-time">· ${timeAgo(m.timestamp)}</span>
+        </div>
+        ${m.text ? `<div class="memory-text">${escapeHtml(m.text)}</div>` : ''}
+        ${m.hasPhoto ? `<img class="memory-photo" id="mem-photo-${idx}" alt="memory photo">` : ''}
+        <button type="button" class="comment-toggle" id="comment-toggle-${m.id}" onclick="toggleComments('${m.id}')">💬 ${comments.length} comment${comments.length === 1 ? '' : 's'}</button>
+        <div id="comments-wrap-${m.id}" style="display:none;">
+          <div id="comments-list-${m.id}">${renderCommentList(m.id, comments)}</div>
+          <div class="row comment-box">
+            <input type="text" id="comment-input-${m.id}" placeholder="Write a comment..." onkeydown="if(event.key==='Enter'){event.preventDefault();postComment('${m.id}');}">
+            <button class="btn-primary" onclick="postComment('${m.id}')">Post</button>
+          </div>
+        </div>
+      </div>
+    `;
+    }).join('');
+    items.forEach((m,idx)=>{
+      applyAvatar(document.getElementById('mem-avatar-'+idx), m.author, false);
+      (allComments[m.id] || []).forEach((c, ci) => applyAvatar(document.getElementById(`comment-avatar-${m.id}-${ci}`), c.author, false));
+      if(m.hasPhoto){
+        loadImageChunked('memoryimg:' + m.id).then(dataUrl=>{
+          const imgEl = document.getElementById('mem-photo-'+idx);
+          if(imgEl && dataUrl) imgEl.src = dataUrl;
+        });
+      }
+    });
+  }catch(e){
+    list.innerHTML = '<div class="empty">No memories yet.</div>';
+  }
+}
+
+// ---------- CALENDAR ----------
+async function loadEvents(){
+  try{
+    const res = await storage.get('calendar:events', true);
+    return res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){ return []; }
+}
+async function renderCalendar(){
+  if(!calSelectedDate) calSelectedDate = todayKey();
+  calendarEvents = await loadEvents();
+  renderCalGrid();
+  renderCalDayPanel();
+  renderUpcoming();
+}
+function renderUpcoming(){
+  const el = document.getElementById('cal-upcoming-list');
+  if(!el) return;
+  const today = todayKey();
+  const upcoming = calendarEvents
+    .filter(e => e.date >= today)
+    .sort((a,b) => (a.date + (a.time || '99:99')).localeCompare(b.date + (b.time || '99:99')))
+    .slice(0, 8);
+  if(upcoming.length === 0){
+    el.innerHTML = '<div class="empty">Nothing on the calendar yet — add an event above.</div>';
+    return;
+  }
+  el.innerHTML = upcoming.map(ev => {
+    const niceDate = new Date(ev.date + 'T00:00:00').toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+    return `
+      <div class="event-item" style="cursor:pointer;" onclick="calSelectDay('${ev.date}')">
+        <div class="row between">
+          <strong>${escapeHtml(ev.title)}</strong>
+          <span class="small">${niceDate}${ev.time ? ' · ' + escapeHtml(ev.time) : ''}</span>
+        </div>
+        <div style="margin-top:6px;">${(ev.attendees||[]).map(a=>`<span class="attendee-tag">${escapeHtml(a)}</span>`).join('')}</div>
+        <div class="small" style="margin-top:4px;">added by ${escapeHtml(ev.author)}</div>
+      </div>
+    `;
+  }).join('');
+}
+function calShiftMonth(delta){
+  calViewDate.setMonth(calViewDate.getMonth()+delta);
+  renderCalGrid();
+}
+function renderCalGrid(){
+  const y = calViewDate.getFullYear(), m = calViewDate.getMonth();
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  document.getElementById('cal-month-label').textContent = `${monthNames[m]} ${y}`;
+
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const daysInPrevMonth = new Date(y, m, 0).getDate();
+  const eventDates = new Set(calendarEvents.map(e=>e.date));
+  const todayStr = todayKey();
+
+  let cells = [];
+  for(let i=0;i<firstDay;i++){
+    const d = daysInPrevMonth - firstDay + 1 + i;
+    cells.push({ day:d, otherMonth:true, dateStr:null });
+  }
+  for(let d=1; d<=daysInMonth; d++){
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    cells.push({ day:d, otherMonth:false, dateStr });
+  }
+  while(cells.length % 7 !== 0 || cells.length < 35){
+    const idx = cells.length - (firstDay + daysInMonth);
+    cells.push({ day: idx+1, otherMonth:true, dateStr:null });
+  }
+
+  document.getElementById('cal-grid').innerHTML = cells.map(c=>{
+    if(c.otherMonth) return `<div class="cal-day other-month">${c.day}</div>`;
+    const classes = ['cal-day'];
+    if(c.dateStr === todayStr) classes.push('today');
+    if(c.dateStr === calSelectedDate) classes.push('selected');
+    const hasEvent = eventDates.has(c.dateStr);
+    return `<button type="button" class="${classes.join(' ')}" onclick="calSelectDay('${c.dateStr}')">${c.day}${hasEvent ? '<span class="cal-dot"></span>' : ''}</button>`;
+  }).join('');
+}
+function calSelectDay(dateStr){
+  calSelectedDate = dateStr;
+  renderCalGrid();
+  renderCalDayPanel();
+}
+function renderCalDayPanel(){
+  const heading = document.getElementById('cal-day-heading');
+  const isToday = calSelectedDate === todayKey();
+  const [y,mo,d] = calSelectedDate.split('-');
+  const niceDate = new Date(Number(y), Number(mo)-1, Number(d)).toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+  heading.textContent = isToday ? `Today · ${niceDate}` : niceDate;
+
+  const dayEvents = calendarEvents.filter(e=>e.date === calSelectedDate);
+  const attendeeSet = new Set();
+  dayEvents.forEach(e => (e.attendees||[]).forEach(a=>attendeeSet.add(a)));
+  const free = family.filter(n=>!attendeeSet.has(n));
+  const freeLine = document.getElementById('cal-free-line');
+  if(dayEvents.length === 0){
+    freeLine.textContent = "Nothing on the calendar — everyone's free.";
+  } else if(free.length === family.length){
+    freeLine.textContent = "Everyone's free (no one tagged on today's events).";
+  } else if(free.length === 0){
+    freeLine.textContent = "Looks like everyone's got something on.";
+  } else {
+    freeLine.textContent = "Free: " + free.join(', ');
+  }
+
+  const listEl = document.getElementById('cal-day-events');
+  if(dayEvents.length === 0){
+    listEl.innerHTML = '<div class="empty">No events yet for this day.</div>';
+    return;
+  }
+  dayEvents.sort((a,b)=> (a.time||'').localeCompare(b.time||''));
+  listEl.innerHTML = dayEvents.map(ev => `
+    <div class="event-item">
+      <div class="row between">
+        <strong>${escapeHtml(ev.title)}</strong>
+        <span class="small">${ev.time ? escapeHtml(ev.time) : 'All day'}</span>
+      </div>
+      ${ev.note ? `<div class="small" style="margin-top:4px;">${escapeHtml(ev.note)}</div>` : ''}
+      <div style="margin-top:6px;">${(ev.attendees||[]).map(a=>`<span class="attendee-tag">${escapeHtml(a)}</span>`).join('')}</div>
+      <div class="small" style="margin-top:4px;">added by ${escapeHtml(ev.author)}</div>
+    </div>
+  `).join('');
+}
+function openEventForm(){
+  document.getElementById('ev-title').value = '';
+  document.getElementById('ev-date').value = calSelectedDate || todayKey();
+  document.getElementById('ev-time').value = '';
+  document.getElementById('ev-note').value = '';
+  document.getElementById('ev-attendees').innerHTML = family.map(n=>`
+    <label class="attendee-chip"><input type="checkbox" value="${escapeHtml(n)}" checked style="margin-right:5px;">${escapeHtml(n)}</label>
+  `).join('');
+  document.getElementById('event-form').style.display = 'block';
+}
+function closeEventForm(){
+  document.getElementById('event-form').style.display = 'none';
+}
+async function saveEvent(){
+  const title = document.getElementById('ev-title').value.trim();
+  const date = document.getElementById('ev-date').value;
+  const time = document.getElementById('ev-time').value;
+  const note = document.getElementById('ev-note').value.trim();
+  if(!title || !date){ showToast("Add a title and date first"); return; }
+  const attendees = Array.from(document.querySelectorAll('#ev-attendees input:checked')).map(el=>el.value);
+  try{
+    const events = await loadEvents();
+    events.push({
+      id: Date.now().toString(),
+      title, date, time: time || null, note, author: me, attendees
+    });
+    await storage.set('calendar:events', JSON.stringify(events.slice(-500)), true);
+    closeEventForm();
+    calSelectedDate = date;
+    logActivity('🗓️', `<b>${escapeHtml(me)}</b> added an event: ${escapeHtml(title)}`);
+    sendPush('New event 🗓️', me + ' added "' + title + '" to the calendar', family.filter(n => n !== me), 'calendar');
+    showToast("Event added");
+    renderCalendar();
+    const [evY, evM, evD] = date.split('-').map(Number);
+    calViewDate = new Date(evY, evM - 1, evD); // build from local components — new Date(string) parses as UTC and can shift a day
+    renderCalGrid();
+  }catch(e){
+    showToast("Couldn't save that event — try again");
+  }
+}
+
+// ---------- PWA INSTALL ----------
+let deferredPrompt = null;
+function isStandalone(){ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; }
+function isIOS(){ return /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase()); }
+let installDismissed = false;
+
+function setupInstall(){
+  if(isStandalone()) return;
+  if(installDismissed) return;
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-banner').style.display = 'flex';
+    document.getElementById('install-btn').style.display = 'inline-block';
+    document.getElementById('install-text').textContent = 'Install this for one-tap access, even offline.';
+  });
+  if(isIOS()){
+    document.getElementById('install-banner').style.display = 'flex';
+    document.getElementById('install-btn').style.display = 'none';
+    document.getElementById('install-text').textContent = 'Add to your Home Screen: tap Share, then "Add to Home Screen".';
+  }
+}
+async function triggerInstall(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const choice = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner').style.display = 'none';
+  if(choice.outcome === 'accepted') showToast('Installed — find it on your home screen');
+}
+function dismissInstallBanner(){
+  document.getElementById('install-banner').style.display = 'none';
+  installDismissed = true;
+}
+function registerServiceWorker(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  }
+}
+
+// Run after every declaration above has executed, so nothing is referenced
+// before its own initialization (avoids temporal-dead-zone errors).
+init();
+setupInstall();
+registerServiceWorker();
+</script>
+</body>
+</html>
