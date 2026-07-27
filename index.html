@@ -16,6 +16,8 @@
 <meta name="apple-mobile-web-app-title" content="Family Ties">
 <meta name="mobile-web-app-capable" content="yes">
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -515,6 +517,11 @@
         <div class="orbit-wrap" id="orbit-wrap"></div>
         <button class="btn-gold" style="width:100%;" onclick="shareLocation()">Refresh my location now</button>
         <div class="small" id="location-status" style="margin-top:8px; text-align:center;">Updates automatically while the app is open.</div>
+      </div>
+      <div class="card">
+        <h2>On the map</h2>
+        <div id="family-map" style="height:260px; border-radius:12px; overflow:hidden; display:none;"></div>
+        <div class="small" id="family-map-empty" style="text-align:center; padding:20px 0;">No locations shared yet — they'll appear here.</div>
       </div>
       <div class="card">
         <h2>Last seen</h2>
@@ -1482,6 +1489,8 @@ async function renderCircle(){
   const listEl = document.getElementById('member-list');
   wrap.innerHTML = `<div class="orbit-hub">🏡</div>`;
   if(family.length === 0){ listEl.innerHTML = '<div class="empty">No one in your circle yet.</div>'; return; }
+  let myLoc = null;
+  try{ const mr = await storage.get('location:' + me, true); if(mr && mr.value) myLoc = JSON.parse(mr.value); }catch(e){}
   const others = family.filter(n=>n!==me);
   const n = others.length;
   const radius = 40;
@@ -1495,6 +1504,8 @@ async function renderCircle(){
       const res = await storage.get('active:' + others[i], true);
       lastActive = res ? res.value : null;
     }catch(e){ lastActive = null; }
+    let loc = null;
+    try{ const lr = await storage.get('location:' + others[i], true); if(lr && lr.value) loc = JSON.parse(lr.value); }catch(e){}
     const freshness = getFreshness(lastActive);
     const node = document.createElement('div');
     node.className = 'orbit-node';
@@ -1505,13 +1516,16 @@ async function renderCircle(){
     node.title = others[i];
     wrap.appendChild(node);
     applyAvatar(node, others[i], false);
-    rows.push({ name: others[i], lastActive, freshness });
+    rows.push({ name: others[i], lastActive, freshness, loc });
   }
   listEl.innerHTML = rows.map((r,idx) => `
     <div class="member-card" style="cursor:pointer;" onclick="openDm('${r.name.replace(/'/g,"\\'")}')">
       <div class="row">
         <span class="avatar-fallback avatar-sm" id="member-avatar-${idx}" style="background:${avatarColor(r.name)}">${initials(r.name)}</span>
-        <span class="member-name">${escapeHtml(r.name)}</span>
+        <span>
+          <div class="member-name">${escapeHtml(r.name)}</div>
+          ${r.loc && myLoc && typeof r.loc.lat === 'number' && typeof myLoc.lat === 'number' ? `<div class="small">${fmtDist(distKm(myLoc, r.loc))} away${r.loc.timestamp ? ' · as of ' + timeAgo(r.loc.timestamp) : ''}</div>` : ''}
+        </span>
       </div>
       <span class="small">
         ${isOnlineNow(r.lastActive)
@@ -1522,7 +1536,62 @@ async function renderCircle(){
     </div>
   `).join('');
   rows.forEach((r,idx)=> applyAvatar(document.getElementById('member-avatar-'+idx), r.name, false));
+  renderFamilyMap();
 }
+
+// ---------- FAMILY MAP (Leaflet + OpenStreetMap, free) ----------
+function distKm(a, b){
+  const R = 6371, dLat = (b.lat - a.lat) * Math.PI/180, dLng = (b.lng - a.lng) * Math.PI/180;
+  const s = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180) * Math.cos(b.lat*Math.PI/180) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+function fmtDist(km){
+  return km < 1 ? Math.round(km*1000) + ' m' : (km < 10 ? km.toFixed(1) : Math.round(km)) + ' km';
+}
+let familyMap = null, familyMapMarkers = [];
+async function renderFamilyMap(){
+  const mapEl = document.getElementById('family-map');
+  const emptyEl = document.getElementById('family-map-empty');
+  if(!mapEl || typeof L === 'undefined') return;
+  const points = [];
+  for(const name of family){
+    try{
+      const res = await storage.get('location:' + name, true);
+      if(res && res.value){
+        const loc = JSON.parse(res.value);
+        if(loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') points.push({ name, loc });
+      }
+    }catch(e){}
+  }
+  if(points.length === 0){ mapEl.style.display = 'none'; if(emptyEl) emptyEl.style.display = 'block'; return; }
+  mapEl.style.display = 'block';
+  if(emptyEl) emptyEl.style.display = 'none';
+  if(!familyMap){
+    familyMap = L.map('family-map', { zoomControl: false });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(familyMap);
+  }
+  familyMapMarkers.forEach(m => familyMap.removeLayer(m));
+  familyMapMarkers = [];
+  const bounds = [];
+  points.forEach(p => {
+    const img = avatarCache[p.name];
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:36px;height:36px;border-radius:50%;background-color:${avatarColor(p.name)};${img ? `background-image:url(${img});background-size:cover;background-position:center;` : ''}border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-family:'Fraunces',serif;font-size:13px;">${img ? '' : initials(p.name)}</div>`,
+      iconSize: [36, 36], iconAnchor: [18, 18]
+    });
+    const marker = L.marker([p.loc.lat, p.loc.lng], { icon }).addTo(familyMap);
+    const bits = [];
+    if(p.loc.timestamp) bits.push(timeAgo(p.loc.timestamp));
+    if(p.loc.accuracy) bits.push('±' + p.loc.accuracy + ' m');
+    marker.bindPopup(`<b>${escapeHtml(p.name)}</b>${bits.length ? '<br>' + bits.join(' · ') : ''}`);
+    familyMapMarkers.push(marker);
+    bounds.push([p.loc.lat, p.loc.lng]);
+  });
+  familyMap.fitBounds(bounds, { padding: [35, 35], maxZoom: 16 });
+  setTimeout(() => familyMap.invalidateSize(), 60);
+}
+
 function getFreshness(iso){
   if(!iso) return { color: '#E0D5C2' };
   const hrs = (Date.now() - new Date(iso).getTime())/3600000;
