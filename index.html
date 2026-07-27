@@ -44,7 +44,8 @@
   #app{
     width:100%;
     max-width:460px;
-    min-height:100vh;
+    height:100vh;
+    height:100dvh; /* fixes bottom nav disappearing on long pages — app fills the screen and only the middle scrolls */
     background: var(--paper);
     display:flex;
     flex-direction:column;
@@ -173,6 +174,7 @@
     background:#fff;
     border-top:1px solid var(--line);
     max-width:460px;
+    padding-bottom: env(safe-area-inset-bottom); /* keeps tabs above the iPhone home bar */
   }
   nav button.tab{
     flex:1;
