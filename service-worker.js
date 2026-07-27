@@ -1,6 +1,6 @@
 importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
 
-const CACHE_NAME = "tether-v1";
+const CACHE_NAME = "tether-v2";
 const ASSETS = [
   "./index.html",
   "./manifest.json",
@@ -25,14 +25,36 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  // Network-first for storage/API-like calls, cache-first for static shell
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const fetchPromise = fetch(event.request)
+  const req = event.request;
+  if (req.method !== "GET") return;
+
+  // The app page itself: NETWORK-FIRST, so everyone always gets the newest
+  // version immediately. The cached copy is only used when offline.
+  // (The old cache-first behavior meant phones kept showing stale versions.)
+  const isAppShell = req.mode === "navigate" || new URL(req.url).pathname.endsWith("/index.html");
+  if (isAppShell) {
+    event.respondWith(
+      fetch(req)
         .then((networkResponse) => {
-          if (event.request.method === "GET" && networkResponse && networkResponse.ok) {
+          if (networkResponse && networkResponse.ok) {
             const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(req).then((c) => c || caches.match("./index.html")))
+    );
+    return;
+  }
+
+  // Static assets (icons, manifest): cache-first with background refresh.
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      const fetchPromise = fetch(req)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.ok) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
           }
           return networkResponse;
         })
