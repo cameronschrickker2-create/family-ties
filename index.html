@@ -1411,19 +1411,38 @@ let locationDenied = false;
 let hasLoggedLocationThisSession = false;
 let locationAutoTimer = null;
 
+// High-accuracy GPS fix: watches the position and keeps refining until it's
+// within `targetAccuracy` metres, or `maxWait` ms pass (then the best fix so
+// far is used). enableHighAccuracy turns on real GPS instead of wifi/cell guess.
+function getAccuratePosition(targetAccuracy, maxWait){
+  return new Promise((resolve, reject)=>{
+    let best = null, done = false;
+    function cleanup(){ if(watchId !== null) navigator.geolocation.clearWatch(watchId); clearTimeout(timer); }
+    function finish(){ if(done) return; done = true; cleanup(); resolve(best); }
+    function fail(err){ if(done) return; done = true; cleanup(); reject(err); }
+    const watchId = navigator.geolocation.watchPosition((pos)=>{
+      if(!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
+      if(pos.coords.accuracy <= targetAccuracy) finish();
+    }, (err)=>{ if(!best) fail(err); }, { enableHighAccuracy: true, maximumAge: 0, timeout: maxWait });
+    const timer = setTimeout(()=>{ best ? finish() : fail(new Error('location timeout')); }, maxWait);
+  });
+}
+
 async function shareLocationCore(manual){
   if(!navigator.geolocation){
     if(manual) document.getElementById('location-status').textContent = "Location isn't available in this browser.";
     return;
   }
-  if(manual) document.getElementById('location-status').textContent = "Finding you...";
-  navigator.geolocation.getCurrentPosition(async (pos)=>{
-    const data = { lat: pos.coords.latitude, lng: pos.coords.longitude, timestamp: new Date().toISOString() };
+  if(manual) document.getElementById('location-status').textContent = "Finding you (GPS)...";
+  try{
+    const pos = await getAccuratePosition(10, 15000);
+    const acc = Math.round(pos.coords.accuracy);
+    const data = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: acc, timestamp: new Date().toISOString() };
     try{
       await storage.set('location:' + me, JSON.stringify(data), true);
       await storage.set('active:' + me, new Date().toISOString(), true);
       locationDenied = false;
-      if(manual) document.getElementById('location-status').textContent = "Shared — up to date as of just now.";
+      if(manual) document.getElementById('location-status').textContent = "Shared — accurate to about " + acc + " m.";
       if(!hasLoggedLocationThisSession){
         hasLoggedLocationThisSession = true;
         logActivity('📍', `<b>${escapeHtml(me)}</b> shared their location`);
@@ -1434,10 +1453,14 @@ async function shareLocationCore(manual){
     }catch(e){
       if(manual) document.getElementById('location-status').textContent = "Couldn't save your location — try again.";
     }
-  }, (err)=>{
-    locationDenied = true;
-    if(manual) document.getElementById('location-status').textContent = "Location permission denied. Enable it in your browser settings to share.";
-  }, { maximumAge: 60000, timeout: 12000 });
+  }catch(err){
+    if(err && err.code === 1){ // permission denied — stop auto-retrying
+      locationDenied = true;
+      if(manual) document.getElementById('location-status').textContent = "Location permission denied. Enable it in your browser settings to share.";
+    } else if(manual){
+      document.getElementById('location-status').textContent = "Couldn't get a GPS fix — try again near a window or outside.";
+    }
+  }
 }
 function shareLocation(){ shareLocationCore(true); }
 
