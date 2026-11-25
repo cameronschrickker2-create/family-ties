@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Ensign Studio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%27-4 0 64 64%27%3E%3Crect x=%270%27 width=%279%27 height=%2764%27 fill=%27%2311151C%27/%3E%3Cpath d=%27M9 0H56L49 7.5L56 15H9Z%27 fill=%27%23F2704E%27/%3E%3Crect x=%279%27 y=%2724.5%27 width=%2732%27 height=%2715%27 fill=%27%2311151C%27/%3E%3Crect x=%279%27 y=%2749%27 width=%2744%27 height=%2715%27 fill=%27%2311151C%27/%3E%3C/svg%3E">
 <meta name="description" content="Ensign Studio builds your whole brand: research, identity, websites, shops, CRMs and launch videos, in about three weeks. Cape Town.">
 <meta name="theme-color" content="#F7F5F0">
 <meta property="og:title" content="Ensign Studio: your brand, flown high">
@@ -34,11 +35,13 @@ h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.025em;line-
 
 /* nav */
 .nav{position:fixed;top:0;left:0;right:0;z-index:50;padding-top:env(safe-area-inset-top,0px);transition:background .3s}
-.nav{color:var(--nfg)}.nav .logo rect{fill:var(--nfg)}
+.nav{color:var(--nfg)}
 .nav.solid{background:rgba(17,21,28,.78);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);border-bottom:1px solid var(--nline)}
 .nav .wrap{display:flex;align-items:center;gap:24px;height:68px}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.01em}
-.logo svg{width:28px;height:28px}
+.logo svg{width:22px;height:25px}
+.logo .ink{fill:currentColor}.logo .fl{fill:var(--signal)}
+footer .logo{color:var(--paper)}footer .logo .fl{fill:var(--signal-strong)}
 .nav .links{margin-left:auto;display:flex;gap:26px}
 .nav .links a{font-size:14px;font-weight:500;text-decoration:none;color:var(--nmuted)}
 .nav .links a:hover{color:#fff}
@@ -277,7 +280,7 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
 <body>
 <div class="prog" id="prog" aria-hidden="true"></div>
 <header class="nav" id="nav"><div class="wrap">
-  <a class="logo" href="#top" aria-label="Ensign Studio home"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="2" width="2.4" height="25" rx="1.2" fill="#1F232C"/><path d="M6 3h18l-3.2 5L24 13H6z" fill="#F2704E"/><path d="M10 5.5h7M10 8h5M10 10.5h7" stroke="#1F232C" stroke-width="1.6" stroke-linecap="round"/></svg>Ensign Studio</a>
+  <a class="logo" href="#top" aria-label="Ensign Studio home"><svg class="mark" viewBox="0 0 56 64" aria-hidden="true"><rect class="ink" x="0" y="0" width="9" height="64"/><path class="fl" d="M9 0H56L49 7.5L56 15H9Z"/><rect class="ink" x="9" y="24.5" width="32" height="15"/><rect class="ink" x="9" y="49" width="44" height="15"/></svg>Ensign Studio</a>
   <nav class="links"><a href="#build">What we build</a><a href="#work">Work</a><a href="#process">Process</a><a href="#pricing">Pricing</a></nav>
   <a class="btn" href="#start">Start a build</a>
 </div></header>
@@ -294,7 +297,7 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
     <div></div>
   </div>
   <div class="flag3d"><canvas id="flag" aria-label="A man holding his phone, watching rows of brand websites, apps and logos drift past him" role="img"></canvas>
-    <div class="flag-fallback" aria-hidden="true"><svg viewBox="0 0 200 200" width="40%"><rect x="40" y="20" width="8" height="170" rx="4" fill="#1F232C"/><path d="M50 26h120l-18 32 18 32H50z" fill="#F2704E"/><path d="M75 42h48M75 58h34M75 74h48" stroke="#1F232C" stroke-width="9" stroke-linecap="round"/></svg></div>
+    <div class="flag-fallback" aria-hidden="true"><svg viewBox="0 0 56 64" width="22%"><rect x="0" y="0" width="9" height="64" fill="#F1EFEA"/><path d="M9 0H56L49 7.5L56 15H9Z" fill="#F2704E"/><rect x="9" y="24.5" width="32" height="15" fill="#F1EFEA"/><rect x="9" y="49" width="44" height="15" fill="#F1EFEA"/></svg></div>
   </div>
   <div class="hud" aria-hidden="true"><span class="a"></span><span class="b"></span><span class="c"></span><span class="d"></span></div>
   <p class="now" aria-live="polite"><span class="live">Brand feed · live</span> · <i id="hudCount">001</i><b id="nowName">Northside</b></p>
@@ -387,7 +390,7 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
   </form>
 </div></section>
 
-<footer><div class="wrap"><a class="logo" href="#top"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="2" width="2.4" height="25" rx="1.2" fill="#1F232C"/><path d="M6 3h18l-3.2 5L24 13H6z" fill="#F2704E"/><path d="M10 5.5h7M10 8h5M10 10.5h7" stroke="#1F232C" stroke-width="1.6" stroke-linecap="round"/></svg>Ensign Studio</a><span>Brands, flown high · Cape Town, South Africa</span><span>© <span id="yr"></span> Ensign Studio</span></div></footer>
+<footer><div class="wrap"><a class="logo" href="#top"><svg class="mark" viewBox="0 0 56 64" aria-hidden="true"><rect class="ink" x="0" y="0" width="9" height="64"/><path class="fl" d="M9 0H56L49 7.5L56 15H9Z"/><rect class="ink" x="9" y="24.5" width="32" height="15"/><rect class="ink" x="9" y="49" width="44" height="15"/></svg>Ensign Studio</a><span>Brands, flown high · Cape Town, South Africa</span><span>© <span id="yr"></span> Ensign Studio</span></div></footer>
 
 <script>
 // ===== Contact details: fill these in to receive briefs =====
