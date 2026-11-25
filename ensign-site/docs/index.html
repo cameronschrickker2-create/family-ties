@@ -11,6 +11,9 @@
 <meta property="og:description" content="Research, identity, websites, shops, CRMs and launch videos, built as one system in about three weeks.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<script>
+(function(){var r=document.documentElement;function z(){var w=innerWidth,k=w>860?Math.min(1.55,Math.max(1,w/1600)):1;r.style.setProperty('--z',k);r.style.setProperty('--gut',Math.max(20,(w-Math.min(w,1240*k))/2+20*k)+'px');}z();addEventListener('resize',z);})();
+</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <style>
 /* Ensign Studio: deep ink, paper, signal red (the flag). Unbounded display, Inter body, JetBrains Mono labels. */
@@ -290,6 +293,14 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
 .book h3{font-size:24px;margin:10px 0 8px}.book p:not(.label){margin:0 0 16px;color:var(--muted);line-height:1.55}
 .calwrap{margin-top:16px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#fff}
 .calwrap iframe{display:block;width:100%;height:640px;border:0}
+
+/* wide screens: content scales with the screen instead of shrinking into a narrow column */
+.wrap,.ticker{zoom:var(--z,1)}
+section{padding:calc(110px * var(--z,1)) 0}
+@media(min-width:861px){
+  .now,.hint{zoom:var(--z,1);right:calc(var(--gut,40px) / var(--z,1))}
+  .hero::after{background:linear-gradient(90deg,rgba(17,21,28,.94) 0,rgba(17,21,28,.74) calc(var(--tx,46vw) - 260px),rgba(17,21,28,0) calc(var(--tx,46vw) + 80px)),linear-gradient(0deg,rgba(17,21,28,.85) 0%,rgba(17,21,28,0) 22%)}
+}
 </style>
 </head>
 <body>
@@ -645,7 +656,11 @@ if (!gl) document.body.classList.add('no-gl');
 else {
   let count = 0;
   const { startHero } = await import('./hero.js');
-  startHero({ canvas: $('#flag'), man: 'media/man.webp', reduced, onBrand: name => { $('#nowName').textContent = name; $('#hudCount').textContent = String(++count).padStart(3, '0'); } }).catch(e => { console.warn(e); document.body.classList.add('no-gl'); });
+  const textCol = document.querySelector('.hero .wrap > div');
+  let edge = 0;
+  const measure = () => { edge = innerWidth > 860 ? textCol.getBoundingClientRect().right : 0; document.documentElement.style.setProperty('--tx', edge + 'px'); };
+  addEventListener('resize', measure); measure();
+  startHero({ canvas: $('#flag'), man: 'media/man.webp', reduced, textEdge: () => edge, onBrand: name => { $('#nowName').textContent = name; $('#hudCount').textContent = String(++count).padStart(3, '0'); } }).catch(e => { console.warn(e); document.body.classList.add('no-gl'); });
 }
 </script>
 </body>

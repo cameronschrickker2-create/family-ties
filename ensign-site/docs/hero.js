@@ -94,7 +94,7 @@ function drawPanel(b, kind, W, H) {
 function roundedAlpha(W, H, r) { const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, W, H); x.fillStyle = '#fff'; rr(x, 0, 0, W, H, r); x.fill(); const t = new THREE.CanvasTexture(c); return t; }
 
 // ---------- scene ----------
-export async function startHero({ canvas, man, onBrand = () => {}, reduced = false }) {
+export async function startHero({ canvas, man, onBrand = () => {}, reduced = false, textEdge = () => 0 }) {
   const small = Math.min(innerWidth, innerHeight) < 700;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
   renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.5 : 1.75)); renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -174,7 +174,7 @@ export async function startHero({ canvas, man, onBrand = () => {}, reduced = fal
   addEventListener('pointermove', e => { mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; });
 
   let visible = true; new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) requestAnimationFrame(loop); }).observe(canvas);
-  const clock = new THREE.Clock(); let sx = 0, sy = 0;
+  const clock = new THREE.Clock(); let sx = 0, sy = 0; const pv = new THREE.Vector3();
   function loop() {
     if (!visible) return;
     const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
@@ -189,7 +189,9 @@ export async function startHero({ canvas, man, onBrand = () => {}, reduced = fal
       const x = ((raw % row.span) + row.span) % row.span - row.span / 2 + manX * .6;
       it.g.position.set(x, row.y, row.z);
       it.g.rotation.y = -x * .035;
-      const fade = portrait ? 1 : Math.min(1, Math.max(.1, (x - (manX - 6.2)) / 3.2));
+      // fade screens that sit behind the headline: measured on screen, so it holds at any width
+      let fade = 1;
+      if (!portrait) { const edge = textEdge(); if (edge) { pv.set(x + PW * row.s * .5, row.y, row.z).project(cam); const sxp = (pv.x + 1) / 2 * canvas.clientWidth; fade = Math.min(1, Math.max(.08, (sxp - edge + 40) / 340)); } }
       it.face.material.opacity = fade; it.rim.visible = fade > .6;
       if (ri === 0) { const d = Math.abs(x - manX); if (d < bestD) { bestD = d; best = it; } }
     }));
