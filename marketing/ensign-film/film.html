@@ -21,11 +21,11 @@ const nsFrame = sec => `fr/ns_ad/${String(Math.min(53, Math.max(1, Math.round(se
 // ---------- timeline ----------
 // live shots: [start, end, clip, clipOffset, stamp]
 const SHOTS = [
-  [0.60, 5.64, 's1_harbour', 0.0, '06:12 · TABLE BAY'],
-  [5.64, 8.40, 's2_baker', 1.0, '04:48 · BAKERY, PAROW'],
-  [8.40, 10.10, 's4_shop', 1.6, '06:30 · BELLVILLE'],
-  [10.10, 12.70, 's3_electrician', 2.2, '19:52 · DURBANVILLE'],
-  [12.70, 17.60, 's5_face', 0.1, '23:40 · HOME OFFICE'],
+  [0.60, 5.64, 's1_harbour', 0.0, '06:12 · CAPE TOWN'],
+  [5.64, 8.40, 's2_baker', 1.0, '04:48 · PARIS'],
+  [8.40, 10.10, 's4_shop', 1.6, '06:30 · TOKYO'],
+  [10.10, 12.70, 's3_electrician', 2.2, '19:52 · MELBOURNE'],
+  [12.70, 17.60, 's5_face', 0.1, '23:40 · LONDON'],
   [27.30, 32.34, 's6_flag', 0.0, ''],
 ];
 const LIST = [ // montage words, cut on the voice
@@ -85,13 +85,19 @@ async function mapScene(lt) {
   x.strokeStyle = 'rgba(255,255,255,.05)'; x.lineWidth = 1; const off = (lt * 40) % 60;
   for (let gx = -60 + off; gx < W; gx += 60) { x.beginPath(); x.moveTo(gx, 0); x.lineTo(gx, H); x.stroke(); }
   for (let gy = 0; gy < H; gy += 60) { x.beginPath(); x.moveTo(0, gy); x.lineTo(W, gy); x.stroke(); }
-  // a stylised Northern Suburbs: coast line + suburb pins with data
-  x.strokeStyle = 'rgba(241,239,234,.35)'; x.lineWidth = 3; x.beginPath();
-  for (let i = 0; i <= 60; i++) { const px = 300 + i * 22, py = 330 + Math.sin(i * .28) * 40 + i * 2.2; i ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke();
-  const P = [['Durbanville', 1180, 430, '+38%'], ['Bellville', 980, 610, '1 240'], ['Brackenfell', 1380, 680, 'R2.4m'], ['Parow', 720, 560, '412'], ['Kuils River', 1260, 820, '96%']];
-  P.forEach(([n, px, py, v], i) => { const a = ease((lt - i * .09) / .3); if (a <= 0) return; x.globalAlpha = a;
-    x.fillStyle = SIG; x.beginPath(); x.arc(px, py, 9, 0, 7); x.fill(); x.strokeStyle = SIG; x.lineWidth = 2; x.globalAlpha = a * (1 - ((lt * 1.4 + i * .2) % 1)); x.beginPath(); x.arc(px, py, 9 + ((lt * 1.4 + i * .2) % 1) * 46, 0, 7); x.stroke(); x.globalAlpha = a;
-    x.font = FS(500, 26); x.fillStyle = CREAM; x.fillText(n, px + 22, py - 6); x.font = FM(20); x.fillStyle = MUTED; x.fillText(v, px + 22, py + 22); x.globalAlpha = 1; });
+  // a world of markets: lat/long graticule, cities, flight paths from the studio
+  const L = 220, R = 1700, Tp = 210, Bt = 870, proj = (lat, lon) => [L + (lon + 180) / 360 * (R - L), Tp + (90 - lat) / 180 * (Bt - Tp)];
+  x.strokeStyle = 'rgba(241,239,234,.10)'; x.lineWidth = 1;
+  for (let lo = -180; lo <= 180; lo += 30) { const [a] = proj(0, lo); x.beginPath(); x.moveTo(a, Tp); x.lineTo(a, Bt); x.stroke(); }
+  for (let la = -60; la <= 90; la += 30) { const [, b] = proj(la, 0); x.beginPath(); x.moveTo(L, b); x.lineTo(R, b); x.stroke(); }
+  const P = [['Cape Town', -33.9, 18.4, 'studio'], ['London', 51.5, -0.1, '+38%'], ['New York', 40.7, -74, '1 240'], ['Lagos', 6.5, 3.4, '412'], ['Dubai', 25.2, 55.3, 'R2.4m'], ['Tokyo', 35.7, 139.7, '96%'], ['Sydney', -33.9, 151.2, '+21%']];
+  const [hx, hy] = proj(P[0][1], P[0][2]);
+  P.forEach(([n, la, lo, v], i) => { const [px, py] = proj(la, lo); const a = ease((lt - i * .07) / .3); if (a <= 0) return;
+    if (i) { const pr = cl((lt - .1 - i * .07) / .45); x.strokeStyle = `rgba(242,112,78,${.7 * a})`; x.lineWidth = 2; x.setLineDash([6, 8]); x.lineDashOffset = -lt * 50; x.beginPath(); const mx = (hx + px) / 2, my = Math.min(hy, py) - 160;
+      x.moveTo(hx, hy); for (let k = 1; k <= 30 * pr; k++) { const u = k / 30; x.lineTo((1 - u) * (1 - u) * hx + 2 * (1 - u) * u * mx + u * u * px, (1 - u) * (1 - u) * hy + 2 * (1 - u) * u * my + u * u * py); } x.stroke(); x.setLineDash([]); }
+    x.globalAlpha = a; x.fillStyle = i ? CREAM : SIG; x.beginPath(); x.arc(px, py, i ? 7 : 11, 0, 7); x.fill();
+    x.strokeStyle = SIG; x.lineWidth = 2; const r = (lt * 1.4 + i * .2) % 1; x.globalAlpha = a * (1 - r); x.beginPath(); x.arc(px, py, 9 + r * 40, 0, 7); x.stroke(); x.globalAlpha = a;
+    x.font = FS(500, 24); x.fillStyle = CREAM; x.fillText(n, px + 18, py - 6); x.font = FM(18); x.fillStyle = i ? MUTED : SIG; x.fillText(v.toUpperCase(), px + 18, py + 20); x.globalAlpha = 1; });
   // scanning line
   const sx = 300 + ((lt / .9) % 1) * 1400; const g = x.createLinearGradient(sx - 160, 0, sx, 0); g.addColorStop(0, 'rgba(242,112,78,0)'); g.addColorStop(1, 'rgba(242,112,78,.12)'); x.fillStyle = g; x.fillRect(sx - 160, BAR, 160, H - 2 * BAR);
 }
@@ -122,13 +128,14 @@ async function montage(t) {
     const w = ease(lt / .9) * (W - 2 * 96); x.fillStyle = SIG; x.fillRect(96, H / 2, w, 2);
     const words = ['THE', 'WHOLE', 'BRAND.']; x.font = FD(600, 96); x.letterSpacing = '-3px';
     let px = 96; words.forEach((wd, i) => { const a = ease((lt - .45 - i * .22) / .3); x.save(); x.beginPath(); x.rect(0, H / 2 - 120, W, 112); x.clip(); x.fillStyle = i === 2 ? SIG : CREAM; x.fillText(wd, px, H / 2 - 22 + (1 - a) * 110); x.restore(); px += x.measureText(wd + ' ').width; });
-    x.letterSpacing = '0px'; x.font = FM(20); x.fillStyle = MUTED; x.globalAlpha = ease((lt - 1) / .4); x.letterSpacing = '4px'; x.fillText('ENSIGN STUDIO · CAPE TOWN', 98, H / 2 + 52); x.letterSpacing = '0px'; x.globalAlpha = 1;
+    x.letterSpacing = '0px'; x.font = FM(20); x.fillStyle = MUTED; x.globalAlpha = ease((lt - 1) / .4); x.letterSpacing = '4px'; x.fillText('ENSIGN STUDIO', 98, H / 2 + 52); x.letterSpacing = '0px'; x.globalAlpha = 1;
     return true;
   }
   const i = LIST.findIndex((l, j) => t >= l[0] && t < (LIST[j + 1]?.[0] ?? 25.4)); if (i < 0) return false;
   const [t0, word, kind] = LIST[i], t1 = LIST[i + 1]?.[0] ?? 25.4, lt = t - t0;
   if (kind === 'map') await mapScene(lt); else if (kind === 'mark') markScene(lt); else if (kind === 'ad') await adScene(lt); else await shotScene(kind, lt, t1 - t0);
   if (kind !== 'mark') vignette(.45);
+  if (kind !== 'mark' && kind !== 'map') { const g = x.createLinearGradient(0, H - BAR - 330, 0, H - BAR); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.82)'); x.fillStyle = g; x.fillRect(0, H - BAR - 330, W, 330); }
   caption(word, i, 1, t0, t, kind === 'mark' ? '#1A1E26' : CREAM);
   if (lt < .08) { x.fillStyle = `rgba(255,255,255,${.35 * (1 - lt / .08)})`; x.fillRect(0, 0, W, H); } // cut flash
   return true;
@@ -137,7 +144,7 @@ async function montage(t) {
 async function systemScene(t) { // "One system, in three weeks."
   if (t < 25.4 || t >= 27.3) return false; const lt = t - 25.4;
   x.fillStyle = '#07090C'; x.fillRect(0, 0, W, H);
-  const srcs = ['fr/ensign-hero2.png', 'fr/northside-shop.png', 'fr/isimork-laptop-dash.png', 'fr/northside-home.png', 'fr/ensign-build.png', 'fr/isimork-laptop.png'];
+  const srcs = ['fr/ensign-hero2.png', 'fr/northside-shop.png', 'fr/isimork-laptop-dash.png', 'fr/isimork-site.jpg', 'fr/ensign-build.png', 'fr/isimork-laptop.png'];
   const z = 1.6 - .6 * easeIO(lt / 1.2), tw = 520, th = 292, gap = 26;
   for (let i = 0; i < 6; i++) { const im = await img(srcs[i]); const col = i % 3, row = Math.floor(i / 3);
     const cx = W / 2 + (col - 1) * (tw + gap), cy = H / 2 - 20 + (row - .5) * (th + gap);
