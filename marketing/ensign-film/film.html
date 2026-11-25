@@ -1,0 +1,186 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+// "Raise your flag": Ensign Studio brand film. draw(t) renders one frame at time t (seconds).
+const W = 1920, H = 1080, FPS = 24, BAR = 138; // 2.39:1 picture inside 16:9
+const c = document.getElementById('c'), x = c.getContext('2d');
+const SIG = '#F2704E', INK = '#11151C', CREAM = '#F1EFEA', MUTED = '#A3AAB7';
+const FD = (w, s) => `${w} ${s}px Unbounded`, FS = (w, s) => `${w} ${s}px Inter`, FM = s => `500 ${s}px "JetBrains Mono"`;
+const ease = t => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
+const easeIO = t => { t = Math.min(1, Math.max(0, t)); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+
+// ---------- assets ----------
+const cache = new Map();
+function img(src) { if (cache.has(src)) return cache.get(src); const p = new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; }); cache.set(src, p); return p; }
+const frame = (clip, sec) => `fr/${clip}/${String(Math.min(121, Math.max(1, Math.round(sec * FPS) + 1))).padStart(4, '0')}.jpg`;
+const nsFrame = sec => `fr/ns_ad/${String(Math.min(53, Math.max(1, Math.round(sec * FPS) + 1))).padStart(4, '0')}.jpg`;
+
+// ---------- timeline ----------
+// live shots: [start, end, clip, clipOffset, stamp]
+const SHOTS = [
+  [0.60, 5.64, 's1_harbour', 0.0, '06:12 · TABLE BAY'],
+  [5.64, 8.40, 's2_baker', 1.0, '04:48 · BAKERY, PAROW'],
+  [8.40, 10.10, 's4_shop', 1.6, '06:30 · BELLVILLE'],
+  [10.10, 12.70, 's3_electrician', 2.2, '19:52 · DURBANVILLE'],
+  [12.70, 17.60, 's5_face', 0.1, '23:40 · HOME OFFICE'],
+  [27.30, 32.34, 's6_flag', 0.0, ''],
+];
+const LIST = [ // montage words, cut on the voice
+  [19.80, 'Research', 'map'], [20.68, 'Identity', 'mark'], [21.62, 'Website', 'fr/ensign-hero2.png'],
+  [22.48, 'Shop', 'fr/northside-shop.png'], [23.38, 'CRM', 'fr/isimork-laptop-dash.png'], [24.18, 'Film', 'ad'],
+];
+const END = 39.6;
+
+// ---------- grain ----------
+const grains = [...Array(6)].map(() => { const g = document.createElement('canvas'); g.width = 480; g.height = 270; const gx = g.getContext('2d'); const d = gx.createImageData(480, 270); for (let i = 0; i < d.data.length; i += 4) { const v = 128 + (Math.random() - .5) * 90; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } gx.putImageData(d, 0, 0); return g; });
+function grain(t, a = .07) { x.save(); x.globalAlpha = a; x.globalCompositeOperation = 'overlay'; x.imageSmoothingEnabled = true; x.drawImage(grains[Math.floor(t * FPS) % 6], 0, 0, W, H); x.restore(); }
+function vignette(a = .55) { const g = x.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, H * 1.05); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, `rgba(0,0,0,${a})`); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+function bars() { x.fillStyle = '#000'; x.fillRect(0, 0, W, BAR); x.fillRect(0, H - BAR, W, BAR); }
+function cover(im, s = 1, ox = 0, oy = 0) { if (!im) return; const k = Math.max(W / im.width, H / im.height) * s; const w = im.width * k, h = im.height * k; x.drawImage(im, (W - w) / 2 + ox, (H - h) / 2 + oy, w, h); }
+
+// ---------- the E-flag mark (56 x 64 units) ----------
+function mark(cx, cy, size, p, ink = CREAM, flag = SIG, wave = 0) {
+  const k = size / 64; x.save(); x.translate(cx - 28 * k, cy - 32 * k); x.scale(k, k);
+  const a = i => ease(cl((p - i * .14) / .5));
+  x.fillStyle = ink; x.fillRect(0, 64 - 64 * a(0), 9, 64 * a(0)); // stem grows up
+  const arm = (y, len, i) => { const q = a(i + 1); x.fillRect(8.5, y, len * q + .5, 15); };
+  arm(24.5, 32, 1); arm(49, 44, 0.6);
+  const q = a(2.2); if (q > 0) { x.fillStyle = flag; x.beginPath(); const L = 47 * q; const wv = Math.sin(wave) * 1.2 * q; x.moveTo(8.5, 0); x.lineTo(9 + L, wv); x.lineTo(9 + L - 7 * q, 7.5); x.lineTo(9 + L, 15 + wv); x.lineTo(8.5, 15); x.closePath(); x.fill(); }
+  x.restore();
+}
+
+// ---------- scenes ----------
+async function live(t) {
+  const s = SHOTS.find(s => t >= s[0] && t < s[1]); if (!s) return false;
+  const lt = t - s[0] + s[3], im = await img(frame(s[2], lt));
+  const dur = s[1] - s[0], k = (t - s[0]) / dur;
+  const push = 1.04 + .03 * k; // slow push-in on every shot
+  let ox = 0; if (s[2] === 's4_shop') ox = -60;
+  cover(im, push, ox, 0);
+  vignette(.5);
+  // stamp, like a film slate burned into the frame
+  if (s[4]) { const a = cl((t - s[0] - .25) / .4) * cl((s[1] - t - .1) / .3); x.globalAlpha = a; x.font = FM(20); x.fillStyle = CREAM; x.letterSpacing = '4px'; x.fillText(s[4], 96, H - BAR - 42); x.fillStyle = SIG; x.beginPath(); x.arc(78, H - BAR - 49, 5, 0, 7); x.fill(); x.letterSpacing = '0px'; x.globalAlpha = 1; }
+  // fade in from black at the very start, flash dip into the montage
+  if (t < 1.6) { x.fillStyle = `rgba(0,0,0,${1 - ease((t - .6) / 1)})`; x.fillRect(0, 0, W, H); }
+  if (s[2] === 's5_face' && t > 17.1) { x.fillStyle = `rgba(0,0,0,${ease((t - 17.1) / .5)})`; x.fillRect(0, 0, W, H); }
+  if (s[2] === 's6_flag') { if (t < 27.55) { x.fillStyle = `rgba(255,236,220,${1 - (t - 27.3) / .25})`; x.fillRect(0, 0, W, H); } }
+  return true;
+}
+
+function caption(word, idx, a, t0, t, col = CREAM) {
+  // big kinetic word, bottom-left, masked rise
+  x.save(); x.globalAlpha = a;
+  const y = H - BAR - 86, rise = (1 - ease((t - t0) / .28)) * 120;
+  x.beginPath(); x.rect(0, BAR, W, y - BAR + 30); x.clip();
+  x.font = FD(700, 150); x.fillStyle = col; x.letterSpacing = '-6px'; x.fillText(word + '.', 92, y + rise); x.letterSpacing = '0px';
+  x.restore();
+  x.save(); x.globalAlpha = a; x.font = FM(20); x.fillStyle = SIG; x.letterSpacing = '4px'; x.fillText(`0${idx + 1} / 06`, 98, BAR + 64); x.letterSpacing = '0px'; x.restore();
+}
+
+async function mapScene(lt) {
+  x.fillStyle = '#0D1117'; x.fillRect(0, 0, W, H);
+  x.strokeStyle = 'rgba(255,255,255,.05)'; x.lineWidth = 1; const off = (lt * 40) % 60;
+  for (let gx = -60 + off; gx < W; gx += 60) { x.beginPath(); x.moveTo(gx, 0); x.lineTo(gx, H); x.stroke(); }
+  for (let gy = 0; gy < H; gy += 60) { x.beginPath(); x.moveTo(0, gy); x.lineTo(W, gy); x.stroke(); }
+  // a stylised Northern Suburbs: coast line + suburb pins with data
+  x.strokeStyle = 'rgba(241,239,234,.35)'; x.lineWidth = 3; x.beginPath();
+  for (let i = 0; i <= 60; i++) { const px = 300 + i * 22, py = 330 + Math.sin(i * .28) * 40 + i * 2.2; i ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke();
+  const P = [['Durbanville', 1180, 430, '+38%'], ['Bellville', 980, 610, '1 240'], ['Brackenfell', 1380, 680, 'R2.4m'], ['Parow', 720, 560, '412'], ['Kuils River', 1260, 820, '96%']];
+  P.forEach(([n, px, py, v], i) => { const a = ease((lt - i * .09) / .3); if (a <= 0) return; x.globalAlpha = a;
+    x.fillStyle = SIG; x.beginPath(); x.arc(px, py, 9, 0, 7); x.fill(); x.strokeStyle = SIG; x.lineWidth = 2; x.globalAlpha = a * (1 - ((lt * 1.4 + i * .2) % 1)); x.beginPath(); x.arc(px, py, 9 + ((lt * 1.4 + i * .2) % 1) * 46, 0, 7); x.stroke(); x.globalAlpha = a;
+    x.font = FS(500, 26); x.fillStyle = CREAM; x.fillText(n, px + 22, py - 6); x.font = FM(20); x.fillStyle = MUTED; x.fillText(v, px + 22, py + 22); x.globalAlpha = 1; });
+  // scanning line
+  const sx = 300 + ((lt / .9) % 1) * 1400; const g = x.createLinearGradient(sx - 160, 0, sx, 0); g.addColorStop(0, 'rgba(242,112,78,0)'); g.addColorStop(1, 'rgba(242,112,78,.12)'); x.fillStyle = g; x.fillRect(sx - 160, BAR, 160, H - 2 * BAR);
+}
+function markScene(lt) {
+  x.fillStyle = '#E6E2DA'; x.fillRect(0, 0, W, H);
+  mark(W / 2 - 260, H / 2 - 20, 300, lt / .7, '#1A1E26', '#C9472B', lt * 6);
+  const sw = ['#11151C', '#F2704E', '#C9472B', '#E6E2DA', '#F1EFEA'];
+  sw.forEach((col, i) => { const a = ease((lt - .25 - i * .06) / .3); x.globalAlpha = a; x.fillStyle = col; x.fillRect(W / 2 + 60 + i * 118, H / 2 - 70 + (1 - a) * 40, 100, 100); x.strokeStyle = 'rgba(0,0,0,.15)'; x.strokeRect(W / 2 + 60 + i * 118, H / 2 - 70 + (1 - a) * 40, 100, 100); x.globalAlpha = 1; });
+  x.globalAlpha = ease((lt - .4) / .3); x.font = FM(20); x.fillStyle = '#575D69'; x.fillText('UNBOUNDED · INTER · JETBRAINS MONO', W / 2 + 60, H / 2 + 80); x.globalAlpha = 1;
+}
+async function shotScene(src, lt, dur) {
+  const im = await img(src); const k = lt / dur;
+  x.fillStyle = '#000'; x.fillRect(0, 0, W, H);
+  x.save(); x.translate(W / 2, H / 2); x.rotate((-1.5 + 3 * k) * Math.PI / 180); x.translate(-W / 2, -H / 2);
+  cover(im, 1.12 - .06 * k, (k - .5) * -80, 0); x.restore();
+}
+async function adScene(lt) {
+  x.fillStyle = '#0B1410'; x.fillRect(0, 0, W, H);
+  const im = await img(nsFrame(lt)); const ph = 700, pw = ph * 9 / 16, px = W / 2 - pw / 2 + 120, py = H / 2 - ph / 2;
+  x.save(); x.fillStyle = '#05070A'; x.beginPath(); x.roundRect(px - 14, py - 14, pw + 28, ph + 28, 46); x.fill();
+  x.beginPath(); x.roundRect(px, py, pw, ph, 34); x.clip(); if (im) x.drawImage(im, px, py, pw, ph); x.restore();
+  x.shadowColor = 'rgba(60,240,160,.35)'; x.shadowBlur = 80; x.strokeStyle = 'rgba(60,240,160,.25)'; x.lineWidth = 2; x.beginPath(); x.roundRect(px - 14, py - 14, pw + 28, ph + 28, 46); x.stroke(); x.shadowBlur = 0;
+}
+
+async function montage(t) {
+  if (t >= 17.6 && t < 19.8) { // "So we build the whole brand."
+    x.fillStyle = '#07090C'; x.fillRect(0, 0, W, H); const lt = t - 17.6;
+    const w = ease(lt / .9) * (W - 2 * 96); x.fillStyle = SIG; x.fillRect(96, H / 2, w, 2);
+    const words = ['THE', 'WHOLE', 'BRAND.']; x.font = FD(600, 96); x.letterSpacing = '-3px';
+    let px = 96; words.forEach((wd, i) => { const a = ease((lt - .45 - i * .22) / .3); x.save(); x.beginPath(); x.rect(0, H / 2 - 120, W, 112); x.clip(); x.fillStyle = i === 2 ? SIG : CREAM; x.fillText(wd, px, H / 2 - 22 + (1 - a) * 110); x.restore(); px += x.measureText(wd + ' ').width; });
+    x.letterSpacing = '0px'; x.font = FM(20); x.fillStyle = MUTED; x.globalAlpha = ease((lt - 1) / .4); x.letterSpacing = '4px'; x.fillText('ENSIGN STUDIO · CAPE TOWN', 98, H / 2 + 52); x.letterSpacing = '0px'; x.globalAlpha = 1;
+    return true;
+  }
+  const i = LIST.findIndex((l, j) => t >= l[0] && t < (LIST[j + 1]?.[0] ?? 25.4)); if (i < 0) return false;
+  const [t0, word, kind] = LIST[i], t1 = LIST[i + 1]?.[0] ?? 25.4, lt = t - t0;
+  if (kind === 'map') await mapScene(lt); else if (kind === 'mark') markScene(lt); else if (kind === 'ad') await adScene(lt); else await shotScene(kind, lt, t1 - t0);
+  if (kind !== 'mark') vignette(.45);
+  caption(word, i, 1, t0, t, kind === 'mark' ? '#1A1E26' : CREAM);
+  if (lt < .08) { x.fillStyle = `rgba(255,255,255,${.35 * (1 - lt / .08)})`; x.fillRect(0, 0, W, H); } // cut flash
+  return true;
+}
+
+async function systemScene(t) { // "One system, in three weeks."
+  if (t < 25.4 || t >= 27.3) return false; const lt = t - 25.4;
+  x.fillStyle = '#07090C'; x.fillRect(0, 0, W, H);
+  const srcs = ['fr/ensign-hero2.png', 'fr/northside-shop.png', 'fr/isimork-laptop-dash.png', 'fr/northside-home.png', 'fr/ensign-build.png', 'fr/isimork-laptop.png'];
+  const z = 1.6 - .6 * easeIO(lt / 1.2), tw = 520, th = 292, gap = 26;
+  for (let i = 0; i < 6; i++) { const im = await img(srcs[i]); const col = i % 3, row = Math.floor(i / 3);
+    const cx = W / 2 + (col - 1) * (tw + gap), cy = H / 2 - 20 + (row - .5) * (th + gap);
+    const w = tw * z, h = th * z, px = W / 2 + (cx - W / 2) * z - w / 2, py = H / 2 + (cy - H / 2) * z - h / 2;
+    const a = ease((lt - i * .06) / .35); x.globalAlpha = a; if (im) { x.save(); x.beginPath(); x.roundRect(px, py, w, h, 14 * z); x.clip(); x.drawImage(im, px, py, w, h); x.restore(); }
+    x.strokeStyle = 'rgba(255,255,255,.18)'; x.lineWidth = 1.5; x.beginPath(); x.roundRect(px, py, w, h, 14 * z); x.stroke(); x.globalAlpha = 1; }
+  // connecting lines pulse between tiles
+  x.strokeStyle = `rgba(242,112,78,${.6 * ease((lt - .6) / .4)})`; x.lineWidth = 2; x.setLineDash([8, 10]); x.lineDashOffset = -lt * 60;
+  x.beginPath(); x.moveTo(W / 2 - (tw + gap), H / 2 - 20); x.lineTo(W / 2 + (tw + gap), H / 2 - 20); x.stroke(); x.setLineDash([]);
+  const a = ease((lt - .5) / .35); x.globalAlpha = a; x.fillStyle = 'rgba(7,9,12,.72)'; x.fillRect(0, H - BAR - 150, W, 150);
+  x.font = FD(600, 64); x.letterSpacing = '-2px'; x.fillStyle = CREAM; x.fillText('One system.', 96, H - BAR - 52); x.fillStyle = SIG; x.fillText('Three weeks.', 96 + x.measureText('One system. ').width, H - BAR - 52); x.letterSpacing = '0px'; x.globalAlpha = 1;
+  if (t > 27.05) { x.fillStyle = `rgba(0,0,0,${ease((t - 27.05) / .25)})`; x.fillRect(0, 0, W, H); }
+  return true;
+}
+
+function endScene(t) {
+  if (t < 32.34) return false; const lt = t - 32.34;
+  x.fillStyle = INK; x.fillRect(0, 0, W, H);
+  // soft light bloom behind the mark
+  const g = x.createRadialGradient(W / 2, H / 2 - 40, 0, W / 2, H / 2 - 40, 700); g.addColorStop(0, `rgba(242,112,78,${.16 * ease(lt / 1.2)})`); g.addColorStop(1, 'rgba(242,112,78,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const shake = lt < .25 ? (1 - lt / .25) * 10 : 0; x.save(); x.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+  const mp = lt / 1.1, ms = 170 - 30 * ease((lt - 1.5) / .8), my = H / 2 - 70 - 50 * ease((lt - 1.5) / .8);
+  mark(W / 2, my, ms, mp, CREAM, SIG, lt * 5);
+  // wordmark
+  const wa = ease((lt - .9) / .5); x.globalAlpha = wa; x.font = FD(600, 84); x.letterSpacing = '-2px'; x.textAlign = 'center'; x.fillStyle = CREAM; x.fillText('Ensign Studio', W / 2, my + 150 + (1 - wa) * 30); x.letterSpacing = '0px';
+  // tagline, word by word with the voice
+  const tg = [['Your', 2.15], ['brand,', 2.4], ['flown', 3.3], ['high.', 3.55]]; x.font = FS(500, 38);
+  const full = 'Your brand, flown high.'; let cx = W / 2 - x.measureText(full).width / 2; x.textAlign = 'left';
+  tg.forEach(([w, at], i) => { const a = ease((lt - at) / .35); x.globalAlpha = a; x.fillStyle = i >= 2 ? SIG : MUTED; x.fillText(w, cx, my + 228 + (1 - a) * 16); cx += x.measureText(w + ' ').width; });
+  const ua = ease((lt - 4.4) / .5); x.globalAlpha = ua; x.font = FM(24); x.fillStyle = CREAM; x.textAlign = 'center'; x.letterSpacing = '3px'; x.fillText('ENSIGN-STUDIO.NETLIFY.APP', W / 2, H - BAR - 70); x.letterSpacing = '0px'; x.textAlign = 'left'; x.globalAlpha = 1;
+  x.restore();
+  if (lt < .12) { x.fillStyle = `rgba(255,240,230,${.8 * (1 - lt / .12)})`; x.fillRect(0, 0, W, H); }
+  if (t > END - .7) { x.fillStyle = `rgba(0,0,0,${ease((t - (END - .7)) / .7)})`; x.fillRect(0, 0, W, H); }
+  return true;
+}
+
+async function draw(t) {
+  x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
+  x.fillStyle = '#000'; x.fillRect(0, 0, W, H);
+  if (!(await live(t)) && !(await montage(t)) && !(await systemScene(t)) && !endScene(t)) { x.fillStyle = '#000'; x.fillRect(0, 0, W, H); }
+  grain(t, t >= 32.34 ? .05 : .08);
+  bars();
+}
+window.draw = draw; window.END = END; window.FPS = FPS;
+window.ready = document.fonts.load('600 60px Unbounded').then(() => document.fonts.load('700 60px Unbounded')).then(() => document.fonts.load('500 20px "JetBrains Mono"')).then(() => document.fonts.load('500 20px Inter'));
+</script></body></html>
