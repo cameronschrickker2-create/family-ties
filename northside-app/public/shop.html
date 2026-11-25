@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F5F1EA">
+<meta name="theme-color" content="#0B1410">
 <meta name="robots" content="noindex">
 <title>Northside · Shop</title>
 <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
@@ -31,16 +31,18 @@
 <div class="gate hidden" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
   <div class="gate-card">
     <div class="brand"><span class="mark"><span>N</span></span>Northside</div>
-    <h1 id="gateTitle">Are you <em>18 or older?</em></h1>
+    <h1 id="gateTitle">You 18 <em>or older?</em></h1>
     <p class="muted">You must be 18+ to enter this site and to order. Your ID will be checked on delivery.</p>
     <div class="field"><label for="gateDob">Date of birth</label><input class="input" id="gateDob" type="date"></div>
     <div class="error hidden" id="gateErr"></div>
-    <button class="btn block" id="gateYes">Enter</button>
+    <button class="btn lime block" id="gateYes">Let me in</button>
     <button class="btn ghost block" id="gateNo" style="margin-top:8px">I'm under 18</button>
     <p class="fine">For private adult use. Don't drive under the influence. Keep out of reach of children and pets.</p>
   </div>
 </div>
 <script src="/vendor/leaflet/leaflet.js"></script>
+<script src="/js/grain.js"></script>
+<script src="/js/flow.js"></script>
 <script src="/store.js"></script>
 </body>
 </html>

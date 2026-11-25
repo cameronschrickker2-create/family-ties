@@ -163,7 +163,7 @@ function viewMap() {
 function drawMap() {
   if (A.tab !== 'map' || !A.layer) return;
   A.layer.clearLayers();
-  L.circleMarker([A.settings.base.lat, A.settings.base.lng], { radius: 8, color: '#262420', fillColor: '#D9C7A4', fillOpacity: 1 }).bindTooltip('Dispatch').addTo(A.layer);
+  L.circleMarker([A.settings.base.lat, A.settings.base.lng], { radius: 8, color: '#0B1410', fillColor: '#C6FF3D', fillOpacity: 1 }).bindTooltip('Dispatch').addTo(A.layer);
   for (const o of A.orders.values()) if (!['delivered', 'cancelled'].includes(o.status))
     L.marker([o.lat, o.lng], { icon: L.divIcon({ className: '', html: '<div class="opin"></div>', iconSize: [22, 22], iconAnchor: [11, 22] }) }).bindTooltip(`${esc(o.code)} · ${esc(o.customer.name)} · ${LABEL[o.status]}`).on('click', () => orderDrawer(o.id)).addTo(A.layer);
   for (const d of A.drivers) if (d.lat != null && d.active)
@@ -211,7 +211,7 @@ async function viewMenu() {
   $('#main').innerHTML = `<div class="head"><h1>Menu & prices</h1><button class="btn lime" id="np">+ Add product</button></div>
     <div class="panel"><table><tr><th>Product</th><th>Category</th><th>Price</th><th>Live</th><th></th></tr>
     ${ps.map(p => `<tr><td><b>${esc(p.name)}</b><br><span class="muted">${esc(p.badge)} ${esc(p.strength)}</span></td><td>${esc(p.category)}</td><td>${price(p)}</td>
-      <td><input type="checkbox" data-live="${p.id}" ${p.active ? 'checked' : ''} style="width:20px;height:20px;accent-color:#262420"></td><td><button class="btn ghost sm" data-ed="${p.id}">Edit</button></td></tr>`).join('')}</table></div>`;
+      <td><input type="checkbox" data-live="${p.id}" ${p.active ? 'checked' : ''} style="width:20px;height:20px;accent-color:#0B1410"></td><td><button class="btn ghost sm" data-ed="${p.id}">Edit</button></td></tr>`).join('')}</table></div>`;
   $('#np').onclick = () => productDrawer({ category: 'Flower', name: '', description: '', badge: '', strength: '', image: '', base_price: 0, options: [{ name: 'Size', type: 'single', required: true, choices: [{ label: '1g', price: 100 }] }], active: 1, sort: ps.length });
   $$('[data-ed]').forEach(b => b.onclick = () => productDrawer(ps.find(p => p.id === +b.dataset.ed)));
   $$('[data-live]').forEach(cb => cb.onchange = async () => { const p = ps.find(x => x.id === +cb.dataset.live); p.active = cb.checked ? 1 : 0; await api('/api/admin/products/' + p.id, { method: 'PUT', body: JSON.stringify(p) }); toast(cb.checked ? 'Now live on the store' : 'Hidden from the store'); });
@@ -265,7 +265,7 @@ async function viewDrivers() {
       <input class="input" id="dn" placeholder="Full name"><input class="input" id="dp" placeholder="Mobile number"><input class="input" id="dpin" placeholder="PIN (4–8 digits)" inputmode="numeric"><button class="btn" id="dadd">Add</button></div>
       <p class="muted" style="font-size:13px;margin-bottom:0">Drivers log in at <b>${location.origin}/driver</b> with their mobile number and PIN.</p></div>
     <div class="panel"><table><tr><th>Name</th><th>Phone</th><th>Last location</th><th>Active</th><th></th></tr>
-    ${A.drivers.map(d => `<tr><td><b>${esc(d.name)}</b></td><td>${esc(d.phone)}</td><td>${d.loc_at ? ago(d.loc_at) : '—'}</td><td><input type="checkbox" data-da="${d.id}" ${d.active ? 'checked' : ''} style="width:20px;height:20px;accent-color:#262420"></td><td><button class="btn ghost sm" data-rp="${d.id}">Reset PIN</button></td></tr>`).join('') || '<tr><td class="muted">No drivers yet</td></tr>'}</table></div>`;
+    ${A.drivers.map(d => `<tr><td><b>${esc(d.name)}</b></td><td>${esc(d.phone)}</td><td>${d.loc_at ? ago(d.loc_at) : '—'}</td><td><input type="checkbox" data-da="${d.id}" ${d.active ? 'checked' : ''} style="width:20px;height:20px;accent-color:#0B1410"></td><td><button class="btn ghost sm" data-rp="${d.id}">Reset PIN</button></td></tr>`).join('') || '<tr><td class="muted">No drivers yet</td></tr>'}</table></div>`;
   $('#dadd').onclick = async () => { try { await api('/api/admin/drivers', { method: 'POST', body: JSON.stringify({ name: $('#dn').value, phone: $('#dp').value, pin: $('#dpin').value }) }); toast('Driver added'); viewDrivers(); } catch (e) { toast(e.message); } };
   $$('[data-da]').forEach(cb => cb.onchange = () => api('/api/admin/drivers/' + cb.dataset.da, { method: 'PATCH', body: JSON.stringify({ active: cb.checked }) }).then(viewDrivers));
   $$('[data-rp]').forEach(b => b.onclick = async () => { const pin = prompt('New PIN (4–8 digits):'); if (!pin) return; try { await api('/api/admin/drivers/' + b.dataset.rp, { method: 'PATCH', body: JSON.stringify({ pin }) }); toast('PIN updated'); } catch (e) { toast(e.message); } });

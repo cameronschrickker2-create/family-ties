@@ -281,7 +281,7 @@ export function createGallery(canvas, stations) {
 }
 
 // ---------- Thumbnails: render each product once on a stone plinth, return image URLs ----------
-export async function renderThumbs(specs, size = 640) {
+export async function renderThumbs(specs, size = 640, look = 'dark') {
   const canvas = document.createElement('canvas'); canvas.width = canvas.height = size;
   const renderer = setupRenderer(canvas, true); renderer.setPixelRatio(1); renderer.setSize(size, size, false);
   const scene = new THREE.Scene(); envFor(renderer, scene);
@@ -289,8 +289,9 @@ export async function renderThumbs(specs, size = 640) {
   scene.add(new THREE.HemisphereLight(0xFFF6EA, 0xBFAE96, 0.9));
   const key = new THREE.DirectionalLight(0xFFDDB3, 2.6); key.position.set(-3, 5, 3.5); key.castShadow = true; key.shadow.mapSize.set(1536, 1536); key.shadow.bias = -0.0005; key.shadow.normalBias = 0.02;
   Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3 }); scene.add(key, key.target);
-  const gobo = makeGobo(5, 7); scene.add(gobo); placeGobo(gobo, key, 0.45);
-  const rim = new THREE.DirectionalLight(0xFFE2BE, 1.2); rim.position.set(-3, 2, -3); scene.add(rim);
+  if (look === 'dark') { ground.material.opacity = 0.45; const lime = new THREE.DirectionalLight(0xC6FF3D, 3.2); lime.position.set(3, 1.5, -3); scene.add(lime); const back = new THREE.DirectionalLight(0xC6FF3D, 1.4); back.position.set(-3, 3, -2); scene.add(back); }
+  else { const gobo = makeGobo(5, 7); scene.add(gobo); placeGobo(gobo, key, 0.45); }
+  const rim = new THREE.DirectionalLight(0xFFE2BE, 1.0); rim.position.set(-3, 2, -3); scene.add(rim);
   const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
   const out = [];
   for (const spec of specs) {
@@ -307,7 +308,7 @@ export async function renderThumbs(specs, size = 640) {
 }
 
 // ---------- Turntable viewer for the product sheet (drag to rotate) ----------
-export function createViewer(container, spec) {
+export function createViewer(container, spec, look = 'dark') {
   const canvas = document.createElement('canvas'); canvas.style.cssText = 'width:100%;height:100%;display:block;touch-action:pan-y';
   container.appendChild(canvas);
   const renderer = setupRenderer(canvas, true);
@@ -316,7 +317,9 @@ export function createViewer(container, spec) {
   scene.add(new THREE.HemisphereLight(0xFFF6EA, 0xBFAE96, 0.8));
   const key = new THREE.DirectionalLight(0xFFDDB3, 2.6); key.position.set(-3, 5, 3.5); key.castShadow = true; key.shadow.mapSize.set(1536, 1536); key.shadow.bias = -0.0005; key.shadow.normalBias = 0.02;
   Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3 }); scene.add(key, key.target);
-  const gobo = makeGobo(5, 7); scene.add(gobo); const sway = placeGobo(gobo, key, 0.45); const clock = new THREE.Clock();
+  let sway = () => {}; const clock = new THREE.Clock();
+  if (look === 'dark') { ground.material.opacity = 0.45; const lime = new THREE.DirectionalLight(0xC6FF3D, 3.2); lime.position.set(3, 1.5, -3); scene.add(lime); const back = new THREE.DirectionalLight(0xC6FF3D, 1.4); back.position.set(-3, 3, -2); scene.add(back); }
+  else { const gobo = makeGobo(5, 7); scene.add(gobo); sway = placeGobo(gobo, key, 0.45); }
   const m = buildModel(spec); scene.add(m);
   const box = new THREE.Box3().setFromObject(m), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()), r = Math.max(s.x, s.y * 1.2, s.z);
   const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50); cam.position.set(c.x + r * 1.4, c.y + r * 1.0, c.z + r * 2.5);
@@ -327,4 +330,38 @@ export function createViewer(container, spec) {
   resize(); const ro = new ResizeObserver(resize); ro.observe(container);
   (function loop() { if (!alive) return; if (!reduced) sway(clock.getElapsedTime()); ctl.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
   return { dispose() { alive = false; ro.disconnect(); ctl.dispose(); renderer.dispose(); renderer.forceContextLoss(); canvas.remove(); } };
+}
+
+// ---------- Hero: one product floating in the dark, lime rim light, follows the pointer and scroll ----------
+export function createHero(canvas, spec) {
+  const renderer = setupRenderer(canvas, true); renderer.shadowMap.enabled = false;
+  const scene = new THREE.Scene(); envFor(renderer, scene); scene.environmentIntensity = 0.35;
+  scene.add(new THREE.HemisphereLight(0xFFF3E3, 0x0B1410, 0.6));
+  const key = new THREE.DirectionalLight(0xFFE6C8, 2.4); key.position.set(-3, 4, 4); scene.add(key);
+  const lime = new THREE.DirectionalLight(0xC6FF3D, 5); lime.position.set(4, 1, -3); scene.add(lime);
+  const lime2 = new THREE.PointLight(0xC6FF3D, 6, 6); lime2.position.set(-2, -1, -1.5); scene.add(lime2);
+  const holder = new THREE.Group(); scene.add(holder);
+  let model = buildModel(spec); holder.add(model);
+  const fit = () => { const b = new THREE.Box3().setFromObject(model), c = b.getCenter(new THREE.Vector3()); model.position.sub(c); };
+  fit();
+  const cam = new THREE.PerspectiveCamera(28, 1, 0.1, 50); cam.position.set(0, 0.5, 5.2); cam.lookAt(0, 0, 0);
+  let mx = 0, my = 0, sx = 0, sy = 0, scroll = 0, alive = true, paused = false;
+  addEventListener('pointermove', e => { mx = e.clientX / innerWidth - 0.5; my = e.clientY / innerHeight - 0.5; });
+  const resize = () => { const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
+  const ro = new ResizeObserver(resize); ro.observe(canvas); resize();
+  const clock = new THREE.Clock();
+  (function loop() {
+    if (!alive) return; if (paused) { requestAnimationFrame(loop); return; }
+    const t = clock.getElapsedTime(); sx += (mx - sx) * 0.06; sy += (my - sy) * 0.06;
+    holder.rotation.y = (reduced ? 0.6 : t * 0.5) + sx * 0.8 + scroll * 2.5;
+    holder.rotation.x = 0.15 + sy * 0.3;
+    holder.position.y = reduced ? 0 : Math.sin(t * 1.2) * 0.08;
+    renderer.render(scene, cam); requestAnimationFrame(loop);
+  })();
+  return {
+    setScroll(v) { scroll = v; },
+    setPaused(v) { paused = v; },
+    swap(next) { holder.remove(model); model = buildModel(next); holder.add(model); fit(); },
+    dispose() { alive = false; ro.disconnect(); renderer.dispose(); },
+  };
 }

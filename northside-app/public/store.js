@@ -29,10 +29,16 @@ function renderThumbs() {
   const todo = S.menu.filter(p => !imgFor(p));
   document.fonts.load('italic 400 40px "Cormorant Garamond"').catch(() => {}).then(() => NS3D.renderThumbs(todo.map(p => NS3D.modelFor(p)), 640)).then(urls => {
     todo.forEach((p, i) => { S.thumbs[p.id] = urls[i]; });
+    todo.forEach(p => S.flow?.setImage(p.id, S.thumbs[p.id]));
     document.querySelectorAll('[data-thumb]').forEach(el => { const p = S.menu.find(m => m.id === +el.dataset.thumb); const src = p && imgFor(p); if (src && !el.querySelector('img')) { el.classList.remove('loading'); el.insertAdjacentHTML('afterbegin', `<img src="${esc(src)}" alt="${esc(p.name)}" draggable="false">`); } });
   }).catch(e => console.warn('thumbs', e));
 }
 window.addEventListener('ns3d', renderThumbs);
+function mountFlow() {
+  const el = $('#flow'); if (!el || !window.NSFlow) return;
+  const list = S.cat === 'All' ? S.menu : S.menu.filter(p => p.category === S.cat);
+  S.flow = NSFlow.mount(el, list.map(p => ({ id: p.id, title: p.name, kicker: [p.category, p.badge].filter(Boolean).join(' · '), price: (hasPriceRange(p) ? 'from ' : '') + R(fromPrice(p)), img: imgFor(p), word: p.category })), { onOpen: it => productSheet(S.menu.find(p => p.id === it.id)) });
+}
 // Subtle 3D tilt with a moving glare (pointer devices only)
 function bindTilt(root) {
   if (!fine || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -171,8 +177,9 @@ function viewMenu() {
   const cats = ['All', ...new Set(S.menu.map(p => p.category))];
   const groups = cats.slice(1).filter(c => S.cat === 'All' || S.cat === c);
   $('#view').innerHTML = `
-    <section class="intro"><div><p class="eyebrow">The collection</p><h1>Shop <em>Northside.</em></h1></div>
+    <section class="intro"><div><p class="eyebrow">The menu · Northern Suburbs</p><h1>Top shelf<br><em>only.</em></h1></div>
       <div class="meta"><span>Delivered in ~${S.config.prep_minutes + 15}–${S.config.prep_minutes + 40} min</span><span>Free delivery over ${R(S.config.free_delivery_over)}</span><span>18+ · ID checked at the door</span></div></section>
+    <div id="flow" style="margin-top:16px"></div>
     ${S.config.store_open ? '' : '<div class="closed">We’re closed right now. You can browse the menu, and ordering opens again soon.</div>'}
     <nav class="cats">${cats.map(c => `<button class="${c === S.cat ? 'on' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}</nav>
     ${groups.map(c => { const list = S.menu.filter(p => p.category === c); return `<h2 class="sec-title">${esc(c)}<small>${list.length} ${list.length === 1 ? 'item' : 'items'}</small></h2><div class="grid">${list.map(p => `
@@ -182,7 +189,7 @@ function viewMenu() {
     <p class="legal">18+ only. For private adult use. ID is checked on every delivery.<br>Don’t drive or operate machinery under the influence. Keep out of reach of children and pets.<br>Know your local laws.</p>`;
   document.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => { S.cat = b.dataset.cat; viewMenu(); });
   document.querySelectorAll('.item').forEach(b => b.onclick = () => productSheet(S.menu.find(p => p.id === +b.dataset.id)));
-  bindTilt($('#view')); renderThumbs();
+  bindTilt($('#view')); mountFlow(); renderThumbs();
 }
 
 function viewCheckout() {
@@ -282,7 +289,7 @@ function viewTrack(token) {
       const ll = [o.driver.lat, o.driver.lng];
       if (!drv) drv = L.marker(ll, { icon: L.divIcon({ className: '', html: '<div class="driver-pin"></div>', iconSize: [26, 26], iconAnchor: [13, 13] }), zIndexOffset: 1000 }).addTo(map).bindTooltip(esc(o.driver.name), { permanent: false });
       else drv.setLatLng(ll);
-      if (!line) line = L.polyline([ll, [o.dest.lat, o.dest.lng]], { color: '#262420', weight: 2, dashArray: '1 8', lineCap: 'round' }).addTo(map);
+      if (!line) line = L.polyline([ll, [o.dest.lat, o.dest.lng]], { color: '#0B1410', weight: 4, dashArray: '2 10', lineCap: 'round' }).addTo(map);
       else line.setLatLngs([ll, [o.dest.lat, o.dest.lng]]);
       if (!fitted) { map.fitBounds(L.latLngBounds([ll, [o.dest.lat, o.dest.lng]]).pad(0.35)); fitted = true; }
     } else if (drv) { drv.remove(); drv = null; line?.remove(); line = null; }
