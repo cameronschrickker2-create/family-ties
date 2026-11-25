@@ -96,7 +96,7 @@ function renderBoard() {
         <div class="r" style="margin-top:4px"><b>${esc(o.customer.name)}</b><span>${R(o.total)}</span></div>
         <div class="r muted" style="font-size:13px"><span>${esc(o.suburb)}</span><span>${PAY[o.payment_method]}</span></div>
         <div class="items">${o.items.map(i => `${i.qty}× ${esc(i.name)}`).join(', ')}</div>
-        ${['accepted', 'packed', 'out_for_delivery'].includes(o.status) ? `<div class="muted" style="font-size:12px">ETA ${o.eta_minutes} min${o.driver ? ' · 🛵 ' + esc(o.driver.name) : ''}</div>` : ''}
+        ${['accepted', 'packed', 'out_for_delivery'].includes(o.status) ? `<div class="muted" style="font-size:12px">ETA ${o.eta_minutes} min${o.driver ? ' · ' + esc(o.driver.name) : ''}</div>` : ''}
         ${o.status === 'delivered' ? `<div class="muted" style="font-size:12px">Delivered ${tm(o.delivered_at)}${o.id_checked ? ' · ID ✓' : ''}</div>` : ''}
         ${o.status === 'cancelled' ? `<div class="muted" style="font-size:12px">Cancelled ${tm(o.cancelled_at)}</div>` : ''}
         ${['accepted', 'packed'].includes(o.status) ? `<select data-assign="${o.id}">${drvOpts(o.driver_id)}</select>` : ''}
@@ -148,26 +148,26 @@ function orderDrawer(id) {
   $('#cxl', d) && ($('#cxl', d).onclick = () => setStatus(id, 'cancelled'));
   $('#toCust', d).onclick = e => { e.preventDefault(); customerDrawer(o.customer.id); };
   const m = L.map($('#mm', d), { zoomControl: false }).setView([o.lat, o.lng], 14); A.drawerMap = m;
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OSM' }).addTo(m);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '© OSM © CARTO' }).addTo(m);
   L.marker([o.lat, o.lng], { icon: L.divIcon({ className: '', html: '<div class="opin"></div>', iconSize: [22, 22], iconAnchor: [11, 22] }) }).addTo(m);
-  if (o.driver?.lat != null) { L.marker([o.driver.lat, o.driver.lng], { icon: L.divIcon({ className: '', html: '<div class="dpin">🛵</div>', iconSize: [30, 30], iconAnchor: [15, 15] }) }).addTo(m); m.fitBounds([[o.lat, o.lng], [o.driver.lat, o.driver.lng]], { padding: [30, 30] }); }
+  if (o.driver?.lat != null) { L.marker([o.driver.lat, o.driver.lng], { icon: L.divIcon({ className: '', html: '<div class="dpin"></div>', iconSize: [30, 30], iconAnchor: [15, 15] }) }).addTo(m); m.fitBounds([[o.lat, o.lng], [o.driver.lat, o.driver.lng]], { padding: [30, 30] }); }
 }
 
 // ---------- live map ----------
 function viewMap() {
   $('#main').innerHTML = `<div class="head"><h1>Live map</h1><span class="muted">Drivers update every few seconds while on a trip</span></div><div id="bigmap"></div>`;
   const m = L.map('bigmap').setView([A.settings.base.lat, A.settings.base.lng], 12); A.maps.push(m); A.bigmap = m; A.layer = L.layerGroup().addTo(m);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(m);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '© OpenStreetMap © CARTO' }).addTo(m);
   drawMap();
 }
 function drawMap() {
   if (A.tab !== 'map' || !A.layer) return;
   A.layer.clearLayers();
-  L.circleMarker([A.settings.base.lat, A.settings.base.lng], { radius: 8, color: '#0B1410', fillColor: '#C6FF3D', fillOpacity: 1 }).bindTooltip('Dispatch').addTo(A.layer);
+  L.circleMarker([A.settings.base.lat, A.settings.base.lng], { radius: 8, color: '#262420', fillColor: '#D9C7A4', fillOpacity: 1 }).bindTooltip('Dispatch').addTo(A.layer);
   for (const o of A.orders.values()) if (!['delivered', 'cancelled'].includes(o.status))
     L.marker([o.lat, o.lng], { icon: L.divIcon({ className: '', html: '<div class="opin"></div>', iconSize: [22, 22], iconAnchor: [11, 22] }) }).bindTooltip(`${esc(o.code)} · ${esc(o.customer.name)} · ${LABEL[o.status]}`).on('click', () => orderDrawer(o.id)).addTo(A.layer);
   for (const d of A.drivers) if (d.lat != null && d.active)
-    L.marker([d.lat, d.lng], { icon: L.divIcon({ className: '', html: '<div class="dpin">🛵</div>', iconSize: [30, 30], iconAnchor: [15, 15] }) }).bindTooltip(`${esc(d.name)} · ${ago(d.loc_at)}`).addTo(A.layer);
+    L.marker([d.lat, d.lng], { icon: L.divIcon({ className: '', html: '<div class="dpin"></div>', iconSize: [30, 30], iconAnchor: [15, 15] }) }).bindTooltip(`${esc(d.name)} · ${ago(d.loc_at)}`).addTo(A.layer);
 }
 
 // ---------- customers (CRM) ----------
@@ -211,7 +211,7 @@ async function viewMenu() {
   $('#main').innerHTML = `<div class="head"><h1>Menu & prices</h1><button class="btn lime" id="np">+ Add product</button></div>
     <div class="panel"><table><tr><th>Product</th><th>Category</th><th>Price</th><th>Live</th><th></th></tr>
     ${ps.map(p => `<tr><td><b>${esc(p.name)}</b><br><span class="muted">${esc(p.badge)} ${esc(p.strength)}</span></td><td>${esc(p.category)}</td><td>${price(p)}</td>
-      <td><input type="checkbox" data-live="${p.id}" ${p.active ? 'checked' : ''} style="width:20px;height:20px;accent-color:#0B1410"></td><td><button class="btn ghost sm" data-ed="${p.id}">Edit</button></td></tr>`).join('')}</table></div>`;
+      <td><input type="checkbox" data-live="${p.id}" ${p.active ? 'checked' : ''} style="width:20px;height:20px;accent-color:#262420"></td><td><button class="btn ghost sm" data-ed="${p.id}">Edit</button></td></tr>`).join('')}</table></div>`;
   $('#np').onclick = () => productDrawer({ category: 'Flower', name: '', description: '', badge: '', strength: '', image: '', base_price: 0, options: [{ name: 'Size', type: 'single', required: true, choices: [{ label: '1g', price: 100 }] }], active: 1, sort: ps.length });
   $$('[data-ed]').forEach(b => b.onclick = () => productDrawer(ps.find(p => p.id === +b.dataset.ed)));
   $$('[data-live]').forEach(cb => cb.onchange = async () => { const p = ps.find(x => x.id === +cb.dataset.live); p.active = cb.checked ? 1 : 0; await api('/api/admin/products/' + p.id, { method: 'PUT', body: JSON.stringify(p) }); toast(cb.checked ? 'Now live on the store' : 'Hidden from the store'); });
@@ -265,7 +265,7 @@ async function viewDrivers() {
       <input class="input" id="dn" placeholder="Full name"><input class="input" id="dp" placeholder="Mobile number"><input class="input" id="dpin" placeholder="PIN (4–8 digits)" inputmode="numeric"><button class="btn" id="dadd">Add</button></div>
       <p class="muted" style="font-size:13px;margin-bottom:0">Drivers log in at <b>${location.origin}/driver</b> with their mobile number and PIN.</p></div>
     <div class="panel"><table><tr><th>Name</th><th>Phone</th><th>Last location</th><th>Active</th><th></th></tr>
-    ${A.drivers.map(d => `<tr><td><b>${esc(d.name)}</b></td><td>${esc(d.phone)}</td><td>${d.loc_at ? ago(d.loc_at) : '—'}</td><td><input type="checkbox" data-da="${d.id}" ${d.active ? 'checked' : ''} style="width:20px;height:20px;accent-color:#0B1410"></td><td><button class="btn ghost sm" data-rp="${d.id}">Reset PIN</button></td></tr>`).join('') || '<tr><td class="muted">No drivers yet</td></tr>'}</table></div>`;
+    ${A.drivers.map(d => `<tr><td><b>${esc(d.name)}</b></td><td>${esc(d.phone)}</td><td>${d.loc_at ? ago(d.loc_at) : '—'}</td><td><input type="checkbox" data-da="${d.id}" ${d.active ? 'checked' : ''} style="width:20px;height:20px;accent-color:#262420"></td><td><button class="btn ghost sm" data-rp="${d.id}">Reset PIN</button></td></tr>`).join('') || '<tr><td class="muted">No drivers yet</td></tr>'}</table></div>`;
   $('#dadd').onclick = async () => { try { await api('/api/admin/drivers', { method: 'POST', body: JSON.stringify({ name: $('#dn').value, phone: $('#dp').value, pin: $('#dpin').value }) }); toast('Driver added'); viewDrivers(); } catch (e) { toast(e.message); } };
   $$('[data-da]').forEach(cb => cb.onchange = () => api('/api/admin/drivers/' + cb.dataset.da, { method: 'PATCH', body: JSON.stringify({ active: cb.checked }) }).then(viewDrivers));
   $$('[data-rp]').forEach(b => b.onclick = async () => { const pin = prompt('New PIN (4–8 digits):'); if (!pin) return; try { await api('/api/admin/drivers/' + b.dataset.rp, { method: 'PATCH', body: JSON.stringify({ pin }) }); toast('PIN updated'); } catch (e) { toast(e.message); } });

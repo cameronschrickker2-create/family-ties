@@ -1,10 +1,11 @@
-# Northside: ordering app, driver app and CRM
+# Northside: website, shop, driver app and CRM
 
-One small Node server runs three apps:
+One small Node server runs four apps:
 
 | URL | Who | What |
 |---|---|---|
-| `/` | Customers | 18+ age gate, menu with prices and options, cart, checkout with map pin, **live order tracking** (accepted → packed → on the way → delivered), driver's live location and ETA |
+| `/` | Everyone | Brand website: a live 3D gallery (three.js) where scrolling glides the camera between products on stone plinths, fullscreen snap sections, line-drawn delivery map, live delivery zones, 18+ gate |
+| `/shop` | Customers | 3D-rendered product shots, tilt cards, drag-to-rotate 3D product view, options and prices, cart, checkout with map pin, **live order tracking** (accepted → packed → on the way → delivered), driver's live location and ETA |
 | `/driver` | Drivers | Log in with phone + PIN, see assigned jobs, navigate, "Picked up" starts **live GPS sharing**, must tick "ID checked (18+)" before "Delivered" |
 | `/admin` | You | Live orders board with sound + browser alerts, accept/reject, mark packed, assign driver, dispatch, live map of drivers, **CRM** (customers, spend, order history, tags, notes, activity), menu & price editor, drivers, delivery zones and fees, open/close store, CSV export, webhook to an external CRM |
 
@@ -16,14 +17,15 @@ Needs Node 22.13 or newer.
 cd northside-app
 npm install
 ADMIN_PASSWORD='pick-a-strong-one' npm start
-# → http://localhost:3000        store
+# → http://localhost:3000        website
+# → http://localhost:3000/shop   shop
 # → http://localhost:3000/admin  admin / CRM
 # → http://localhost:3000/driver driver app
 ```
 
 First steps in `/admin`:
 1. **Drivers**: add each driver with name, mobile number and a PIN.
-2. **Menu & prices**: the menu ships with placeholder products and prices. Edit them, add photos (https URL), and hide what you don't stock.
+2. **Menu & prices**: the menu ships with placeholder products and prices. Edit them, and hide what you don't stock. Product images are rendered in 3D automatically from the category/name (jar, pre-rolls, gummies, chocolate, brownies, grinder, papers, pouch). Set a Photo URL to use a real photo instead.
 3. **Settings**: minimum order, free-delivery threshold, prep time, delivery fee per suburb, support WhatsApp number.
 
 ## How an order flows
@@ -48,7 +50,11 @@ Any host that runs a Node server with a persistent disk works (Render, Railway, 
 - `PORT`: defaults to 3000
 - `DATA_DIR`: folder for the SQLite database (put it on the persistent disk)
 
-Use HTTPS: phones only share GPS with the driver app over https. Map tiles come from OpenStreetMap. For real traffic, switch to a paid tile provider in `store.js`/`admin.js` (`L.tileLayer(...)`).
+Use HTTPS: phones only share GPS with the driver app over https. Maps use CARTO's free Positron tiles (OpenStreetMap data). For heavy traffic, get a CARTO or other paid tile key and swap the URL in `store.js`/`admin.js`.
+
+## Design
+
+Warm beige + charcoal with a sand accent, Cormorant Garamond + Inter, all set as tokens in `public/base.css`. The 3D models, lighting and gallery live in `public/js/scenes.js`. Devices without WebGL get a flat gradient fallback, and reduced-motion settings stop the camera drift and rotation.
 
 ## Tests
 

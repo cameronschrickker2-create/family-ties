@@ -11,21 +11,40 @@ async function api(path, opts = {}) {
 }
 function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.append(t); setTimeout(() => t.remove(), 2600); }
 
-const S = { config: null, menu: [], cart: store.get('ns_cart', []), suburb: store.get('ns_suburb', ''), cat: 'All', maps: [] };
+const S = { config: null, menu: [], cart: store.get('ns_cart', []), suburb: store.get('ns_suburb', ''), cat: new URLSearchParams(location.search).get('cat') || 'All', maps: [], thumbs: {}, viewer: null };
+const TILES = ['https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '© OpenStreetMap © CARTO' }];
+const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
 const saveCart = () => { store.set('ns_cart', S.cart); renderCartBar(); };
 
-// ---------- art ----------
-const ART = {
-  Flower: { bg: 'linear-gradient(135deg,#1E3A2B,#0B1410)', svg: '<svg viewBox="-60 -70 120 120"><g fill="#C6FF3D">' + [[-90, 1], [-58, .86], [-122, .86], [-28, .64], [-152, .64], [4, .36], [176, .36]].map(([a, l]) => `<ellipse rx="${28 * l}" ry="${6 * l}" cx="${28 * l}" transform="rotate(${a})"/>`).join('') + '<rect x="-2" y="0" width="4" height="22"/></g></svg>' },
-  'Pre-rolls': { bg: 'linear-gradient(135deg,#C6FF3D,#9BD11B)', svg: '<svg viewBox="0 0 100 100"><g transform="rotate(30 50 50)"><path d="M42 84h16l8-62H34z" fill="#F6F4EC" stroke="#0B1410" stroke-width="3"/><rect x="41" y="72" width="18" height="12" fill="#0B1410"/><path d="M34 22q16-10 32 0" fill="#F6F4EC" stroke="#0B1410" stroke-width="3"/></g></svg>' },
-  Edibles: { bg: 'linear-gradient(135deg,#FFE3D3,#FFC7A8)', svg: '<svg viewBox="0 0 100 100"><rect x="14" y="44" width="34" height="34" rx="10" fill="#FF6A2B" transform="rotate(-12 31 61)"/><rect x="40" y="22" width="34" height="34" rx="10" fill="#C6FF3D" transform="rotate(10 57 39)"/><rect x="52" y="52" width="34" height="34" rx="10" fill="#0B1410" transform="rotate(-4 69 69)"/></svg>' },
-  Accessories: { bg: 'linear-gradient(135deg,#ECEEE8,#D7DBD2)', svg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="#0B1410"/><circle cx="50" cy="50" r="20" fill="none" stroke="#C6FF3D" stroke-width="4" stroke-dasharray="6 5"/><circle cx="50" cy="50" r="6" fill="#C6FF3D"/></svg>' },
-};
-const art = p => ART[p.category] || ART.Accessories;
+// ---------- product imagery (3D renders) ----------
+function imgFor(p) { return p.image && /^https:\/\//.test(p.image) ? p.image : S.thumbs[p.id] || ''; }
 function thumb(p, cls = 'thumb', extra = '') {
-  const a = art(p);
-  const style = p.image && /^https:\/\//.test(p.image) ? `background-image:url('${encodeURI(p.image)}')` : `background:${a.bg}`;
-  return `<div class="${cls}" style="${style}">${p.image ? '' : a.svg}${extra}</div>`;
+  const src = imgFor(p);
+  return `<div class="${cls} ${src ? '' : 'loading'}" data-thumb="${p.id}">${src ? `<img src="${esc(src)}" alt="${esc(p.name)}" loading="lazy" draggable="false">` : ''}<span class="glare"></span>${extra}</div>`;
+}
+// Render studio shots of every product with the 3D toolkit, then swap them in
+function renderThumbs() {
+  if (!window.NS3D || !S.menu.length || S.thumbsStarted || !NS3D.webglOK) return;
+  S.thumbsStarted = true;
+  const todo = S.menu.filter(p => !imgFor(p));
+  document.fonts.load('italic 400 40px "Cormorant Garamond"').catch(() => {}).then(() => NS3D.renderThumbs(todo.map(p => NS3D.modelFor(p)), 640)).then(urls => {
+    todo.forEach((p, i) => { S.thumbs[p.id] = urls[i]; });
+    document.querySelectorAll('[data-thumb]').forEach(el => { const p = S.menu.find(m => m.id === +el.dataset.thumb); const src = p && imgFor(p); if (src && !el.querySelector('img')) { el.classList.remove('loading'); el.insertAdjacentHTML('afterbegin', `<img src="${esc(src)}" alt="${esc(p.name)}" draggable="false">`); } });
+  }).catch(e => console.warn('thumbs', e));
+}
+window.addEventListener('ns3d', renderThumbs);
+// Subtle 3D tilt with a moving glare (pointer devices only)
+function bindTilt(root) {
+  if (!fine || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  root.querySelectorAll('.item').forEach(el => {
+    el.addEventListener('pointermove', e => {
+      const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      el.style.transition = 'transform .12s ease-out';
+      el.style.transform = `rotateY(${(x - .5) * 10}deg) rotateX(${(.5 - y) * 8}deg) translateZ(0)`;
+      el.style.setProperty('--gx', x * 100 + '%'); el.style.setProperty('--gy', y * 100 + '%');
+    });
+    el.addEventListener('pointerleave', () => { el.style.transition = ''; el.style.transform = ''; });
+  });
 }
 const fromPrice = p => {
   let min = p.base_price;
@@ -67,8 +86,8 @@ function gate() {
 }
 
 // ---------- sheets ----------
-function openSheet(html, onMount) { $('#sheet').innerHTML = html; $('#sheetWrap').classList.remove('hidden'); document.body.style.overflow = 'hidden'; onMount && onMount($('#sheet')); }
-function closeSheet() { $('#sheetWrap').classList.add('hidden'); document.body.style.overflow = ''; }
+function openSheet(html, onMount) { S.viewer?.dispose(); S.viewer = null; $('#sheet').className = 'sheet'; $('#sheet').innerHTML = html; $('#sheetWrap').classList.remove('hidden'); document.body.style.overflow = 'hidden'; onMount && onMount($('#sheet')); }
+function closeSheet() { S.viewer?.dispose(); S.viewer = null; $('#sheetWrap').classList.add('hidden'); $('#sheet').className = 'sheet'; document.body.style.overflow = ''; }
 $('#sheetWrap').addEventListener('click', e => { if (e.target.id === 'sheetWrap') closeSheet(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
 
@@ -86,13 +105,15 @@ function productSheet(p, editIndex = null) {
   const sel = existing ? JSON.parse(JSON.stringify(existing.selections)) : {};
   if (!existing) p.options.forEach(o => { if (o.required && o.type === 'single') sel[o.name] = [o.choices[0].label]; });
   let qty = existing ? existing.qty : 1;
-  openSheet(`${thumb(p, 'hero-img', '<button class="close" aria-label="Close">×</button>')}
-    <div class="body"><div class="tags">${p.badge ? `<span class="chip lime">${esc(p.badge)}</span>` : ''}${p.strength ? `<span class="chip">${esc(p.strength)}</span>` : ''}</div>
-    <h2 style="margin-top:10px">${esc(p.name)}</h2><p class="muted">${esc(p.description)}</p></div>
+  openSheet(`<div class="stage" id="stage"><button class="close" aria-label="Close">×</button>${imgFor(p) ? `<img class="fallback" src="${esc(imgFor(p))}" alt="">` : ''}<span class="hint">Drag to rotate</span></div><div class="scroll">
+    <div class="body"><div class="tags">${p.badge ? `<span class="chip">${esc(p.badge)}</span>` : ''}${p.strength ? `<span class="chip">${esc(p.strength)}</span>` : ''}</div>
+    <h2>${esc(p.name)}</h2><p class="desc">${esc(p.description)}</p></div>
     ${p.options.map((o, oi) => `<div class="opt"><div class="opt-head"><b>${esc(o.name)}</b><span class="chip ${o.required ? 'dark' : ''}">${o.required ? 'Required' : 'Optional'}</span></div>
       ${o.choices.map((c, ci) => `<label class="choice"><input type="${o.type === 'single' ? 'radio' : 'checkbox'}" name="o${oi}" data-o="${oi}" data-c="${ci}" ${[].concat(sel[o.name] || []).includes(c.label) ? 'checked' : ''}><span>${esc(c.label)}</span><b>${c.price ? (o.type === 'multi' || !o.required ? '+' : '') + R(c.price) : ''}</b></label>`).join('')}</div>`).join('')}
     <div class="sheet-foot"><div class="stepper"><button id="qm" aria-label="Less">−</button><b id="qn">${qty}</b><button id="qp" aria-label="More">+</button></div>
-    <button class="btn block" id="addBtn"></button></div>`, el => {
+    <button class="btn block" id="addBtn"></button></div></div>`, el => {
+    el.classList.add('product');
+    if (window.NS3D?.webglOK && !(p.image && /^https:/.test(p.image))) { try { S.viewer = NS3D.createViewer($('#stage', el), NS3D.modelFor(p)); $('#stage .fallback', el)?.remove(); } catch (e) { console.warn(e); } }
     const upd = () => { $('#qn', el).textContent = qty; $('#addBtn', el).textContent = `${existing ? 'Update' : 'Add to cart'} · ${R(linePrice(p, sel) * qty)}`; };
     el.querySelectorAll('input[data-o]').forEach(inp => inp.onchange = () => {
       const o = p.options[inp.dataset.o], c = o.choices[inp.dataset.c];
@@ -150,25 +171,25 @@ function viewMenu() {
   const cats = ['All', ...new Set(S.menu.map(p => p.category))];
   const groups = cats.slice(1).filter(c => S.cat === 'All' || S.cat === c);
   $('#view').innerHTML = `
-    <section class="hero"><span class="chip lime">Northern Suburbs delivery</span>
-      <h1>The spot<br><em>comes to you.</em></h1><p>Top-shelf flower, pre-rolls and edibles, delivered discreetly.</p>
-      <div class="meta"><span class="chip">⏱ ~${S.config.prep_minutes + 15}–${S.config.prep_minutes + 35} min</span><span class="chip">Free delivery over ${R(S.config.free_delivery_over)}</span><span class="chip">18+ · ID on delivery</span></div></section>
+    <section class="intro"><div><p class="eyebrow">The collection</p><h1>Shop <em>Northside.</em></h1></div>
+      <div class="meta"><span>Delivered in ~${S.config.prep_minutes + 15}–${S.config.prep_minutes + 40} min</span><span>Free delivery over ${R(S.config.free_delivery_over)}</span><span>18+ · ID checked at the door</span></div></section>
     ${S.config.store_open ? '' : '<div class="closed">We’re closed right now. You can browse the menu, and ordering opens again soon.</div>'}
     <nav class="cats">${cats.map(c => `<button class="${c === S.cat ? 'on' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}</nav>
-    ${groups.map(c => `<h2 class="sec-title">${esc(c)}</h2><div class="grid">${S.menu.filter(p => p.category === c).map(p => `
-      <button class="item" data-id="${p.id}"><div class="info"><h3>${esc(p.name)}</h3><p>${esc(p.description)}</p>
-      <div class="tags">${p.badge ? `<span class="chip">${esc(p.badge)}</span>` : ''}${p.strength ? `<span class="chip">${esc(p.strength)}</span>` : ''}</div>
-      <span class="price">${hasPriceRange(p) ? 'from ' : ''}${R(fromPrice(p))}</span></div>${thumb(p, 'thumb', '<span class="add">+</span>')}</button>`).join('')}</div>`).join('')}
+    ${groups.map(c => { const list = S.menu.filter(p => p.category === c); return `<h2 class="sec-title">${esc(c)}<small>${list.length} ${list.length === 1 ? 'item' : 'items'}</small></h2><div class="grid">${list.map(p => `
+      <button class="item" data-id="${p.id}">${thumb(p, 'thumb', '<span class="add">+</span>')}<div class="info">
+      <span class="tagline">${[p.badge, p.strength].filter(Boolean).map(esc).join(' · ') || esc(p.category)}</span><h3>${esc(p.name)}</h3><p>${esc(p.description)}</p>
+      <span class="price">${hasPriceRange(p) ? 'From ' : ''}${R(fromPrice(p))}</span></div></button>`).join('')}</div>`; }).join('')}
     <p class="legal">18+ only. For private adult use. ID is checked on every delivery.<br>Don’t drive or operate machinery under the influence. Keep out of reach of children and pets.<br>Know your local laws.</p>`;
   document.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => { S.cat = b.dataset.cat; viewMenu(); });
   document.querySelectorAll('.item').forEach(b => b.onclick = () => productSheet(S.menu.find(p => p.id === +b.dataset.id)));
+  bindTilt($('#view')); renderThumbs();
 }
 
 function viewCheckout() {
   const t = totals();
   if (!t.lines.length) { location.hash = '#/'; return; }
   const me = store.get('ns_me', {}), zone = S.config.zones.find(z => z.name === S.suburb) || S.config.zones[0];
-  $('#view').innerHTML = `<div class="page"><a href="#/" class="muted">← Back to menu</a><h1>Checkout</h1>
+  $('#view').innerHTML = `<div class="page"><a href="#/" class="back">← Back to the collection</a><h1>Checkout</h1>
     <form id="co" novalidate>
     <div class="card"><h2>Delivery address</h2>
       <div class="field"><label for="suburb">Suburb</label><select class="input" id="suburb">${S.config.zones.map(z => `<option ${z.name === zone.name ? 'selected' : ''}>${esc(z.name)}</option>`).join('')}</select></div>
@@ -200,8 +221,8 @@ function viewCheckout() {
   S.suburb = zone.name; store.set('ns_suburb', zone.name); $('#suburbLabel').textContent = zone.name; updTot();
   const start = me.lat && me.suburb === zone.name ? [me.lat, me.lng] : [zone.lat, zone.lng];
   const map = L.map('pinmap', { zoomControl: true, attributionControl: true }).setView(start, 15); S.maps.push(map);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
-  const pin = L.marker(start, { draggable: true, icon: L.divIcon({ className: '', html: '<div class="home-pin"></div>', iconSize: [30, 30], iconAnchor: [15, 30] }) }).addTo(map);
+  L.tileLayer(...TILES).addTo(map);
+  const pin = L.marker(start, { draggable: true, icon: L.divIcon({ className: '', html: '<div class="home-pin"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }) }).addTo(map);
   map.on('click', e => pin.setLatLng(e.latlng));
   $('#suburb').onchange = e => { const z = S.config.zones.find(z => z.name === e.target.value); S.suburb = z.name; store.set('ns_suburb', z.name); $('#suburbLabel').textContent = z.name; pin.setLatLng([z.lat, z.lng]); map.setView([z.lat, z.lng], 15); updTot(); };
   $('#locate').onclick = () => {
@@ -242,8 +263,8 @@ function viewTrack(token) {
         <div class="card"><h2>Progress</h2><ul class="steps" id="steps"></ul></div><div class="card" id="sum"></div>
         ${S.config.whatsapp ? `<a class="btn ghost block" target="_blank" rel="noopener" href="https://wa.me/${esc(S.config.whatsapp.replace(/\D/g, '').replace(/^0/, '27'))}?text=${encodeURIComponent('Hi, about order ' + o.code)}">Need help? WhatsApp us</a>` : ''}</div>`;
       map = L.map('tmap', { zoomControl: false }); S.maps.push(map);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
-      home = L.marker([o.dest.lat, o.dest.lng], { icon: L.divIcon({ className: '', html: '<div class="home-pin"></div>', iconSize: [30, 30], iconAnchor: [15, 30] }) }).addTo(map);
+      L.tileLayer(...TILES).addTo(map);
+      home = L.marker([o.dest.lat, o.dest.lng], { icon: L.divIcon({ className: '', html: '<div class="home-pin"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }) }).addTo(map);
       map.setView([o.dest.lat, o.dest.lng], 14);
     }
     const etaTime = o.eta_at ? fmt(o.eta_at) : '';
@@ -259,9 +280,9 @@ function viewTrack(token) {
       <p class="muted" style="font-size:13px;margin:0">Have your ID ready. The driver will check that you’re 18+.</p>`;
     if (o.driver && o.driver.lat != null) {
       const ll = [o.driver.lat, o.driver.lng];
-      if (!drv) drv = L.marker(ll, { icon: L.divIcon({ className: '', html: '<div class="driver-pin">🛵</div>', iconSize: [36, 36], iconAnchor: [18, 18] }), zIndexOffset: 1000 }).addTo(map).bindTooltip(esc(o.driver.name), { permanent: false });
+      if (!drv) drv = L.marker(ll, { icon: L.divIcon({ className: '', html: '<div class="driver-pin"></div>', iconSize: [26, 26], iconAnchor: [13, 13] }), zIndexOffset: 1000 }).addTo(map).bindTooltip(esc(o.driver.name), { permanent: false });
       else drv.setLatLng(ll);
-      if (!line) line = L.polyline([ll, [o.dest.lat, o.dest.lng]], { color: '#0B1410', weight: 4, dashArray: '2 10', lineCap: 'round' }).addTo(map);
+      if (!line) line = L.polyline([ll, [o.dest.lat, o.dest.lng]], { color: '#262420', weight: 2, dashArray: '1 8', lineCap: 'round' }).addTo(map);
       else line.setLatLngs([ll, [o.dest.lat, o.dest.lng]]);
       if (!fitted) { map.fitBounds(L.latLngBounds([ll, [o.dest.lat, o.dest.lng]]).pad(0.35)); fitted = true; }
     } else if (drv) { drv.remove(); drv = null; line?.remove(); line = null; }
@@ -280,7 +301,7 @@ function viewTrack(token) {
 
 function viewOrders() {
   const mine = store.get('ns_orders', []);
-  $('#view').innerHTML = `<div class="page"><a href="#/" class="muted">← Back to menu</a><h1>My orders</h1>
+  $('#view').innerHTML = `<div class="page"><a href="#/" class="back">← Back to the collection</a><h1>My orders</h1>
     ${mine.length ? mine.map(o => `<a class="card" style="display:block;text-decoration:none" href="#/track/${esc(o.token)}"><b>${esc(o.code)}</b><div class="muted">${new Date(o.at).toLocaleString('en-ZA')}</div></a>`).join('') : '<div class="empty">No orders on this device yet.</div>'}</div>`;
 }
 
@@ -301,7 +322,7 @@ window.addEventListener('hashchange', route);
   try {
     [S.config, S.menu] = await Promise.all([api('/api/config'), api('/api/menu')]);
   } catch (e) { $('#view').innerHTML = `<div class="empty">Couldn’t load the store. ${esc(e.message)}</div>`; return; }
-  $('#storeName').textContent = S.config.store_name.toUpperCase();
+  $('#storeName').textContent = S.config.store_name;
   if (S.suburb && !S.config.zones.some(z => z.name === S.suburb)) S.suburb = '';
   $('#suburbLabel').textContent = S.suburb || 'Choose suburb';
   S.cart = S.cart.filter(l => S.menu.some(p => p.id === l.product_id));

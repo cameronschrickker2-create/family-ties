@@ -3,38 +3,117 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0B1410">
+<meta name="theme-color" content="#E6DCCD">
 <meta name="robots" content="noindex">
-<title>Northside · Order</title>
-<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+<title>Northside</title>
+<meta name="description" content="Considered cannabis, delivered across Cape Town's Northern Suburbs. 18+ only.">
 <link rel="stylesheet" href="/base.css">
-<link rel="stylesheet" href="/store.css">
+<link rel="stylesheet" href="/landing.css">
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 </head>
 <body>
-<header class="top">
-  <a class="brand" href="#/"><span class="mark"><span>N</span></span><span id="storeName">NORTHSIDE</span></a>
-  <button class="deliver-to" id="deliverTo" type="button"><small>Deliver to</small><b id="suburbLabel">Choose suburb</b></button>
-  <a class="orders-link" href="#/orders" aria-label="My orders">Orders</a>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="gl-fallback" id="glFallback"></div>
+
+<header class="nav">
+  <a class="brand" href="#top"><span class="mark"><span>N</span></span>Northside</a>
+  <nav class="links"><a href="#flower">Collection</a><a href="#how">How it works</a><a href="#areas">Delivery</a></nav>
+  <a class="btn sm" href="/shop">Shop</a>
 </header>
-<main id="view"></main>
 
-<div class="cartbar hidden" id="cartBar"><button class="btn block" id="openCart"><span class="count" id="cartCount">0</span><span>View cart</span><span id="cartTotal">R0</span></button></div>
+<aside class="rail" aria-hidden="true"><span id="railNum">01</span><i><b id="railBar"></b></i><span>07</span></aside>
 
-<div class="sheet-wrap hidden" id="sheetWrap"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<main id="snap">
+  <section class="s s-hero" id="top" data-station="0">
+    <div class="copy">
+      <p class="eyebrow reveal">Cape Town · Northern Suburbs</p>
+      <h1 class="reveal">Considered cannabis,<br><em>delivered.</em></h1>
+      <p class="lede reveal">Top-shelf flower, pre-rolls and edibles, packed discreetly and brought to your door. Track it live, from the shelf to your street.</p>
+      <div class="ctas reveal"><a class="btn" href="/shop">Enter the shop</a><a class="btn ghost" href="#flower">View the collection</a></div>
+    </div>
+    <div class="scroll-hint"><span>Scroll</span><i></i></div>
+  </section>
+
+  <section class="s s-product" id="flower" data-station="1">
+    <div class="copy">
+      <p class="eyebrow reveal"><span class="idx">02</span> Flower</p>
+      <h2 class="reveal">Indoor. Greenhouse.<br><em>Craft.</em></h2>
+      <p class="lede reveal">Sativa, indica and house hybrids, cured slowly and sealed in glass. Weighed to the gram, from 1g to 28g.</p>
+      <p class="price reveal">From <span data-from="Flower">R100</span></p>
+      <a class="link reveal" href="/shop?cat=Flower">Shop flower <span>→</span></a>
+    </div>
+  </section>
+
+  <section class="s s-product" id="prerolls" data-station="2">
+    <div class="copy">
+      <p class="eyebrow reveal"><span class="idx">03</span> Pre-rolls</p>
+      <h2 class="reveal">Rolled fresh.<br><em>Ready when you are.</em></h2>
+      <p class="lede reveal">One-gram pre-rolls in singles, threes and fives, plus an infused roll for experienced smokers.</p>
+      <p class="price reveal">From <span data-from="Pre-rolls">R70</span></p>
+      <a class="link reveal" href="/shop?cat=Pre-rolls">Shop pre-rolls <span>→</span></a>
+    </div>
+  </section>
+
+  <section class="s s-product" id="edibles" data-station="3">
+    <div class="copy">
+      <p class="eyebrow reveal"><span class="idx">04</span> Edibles</p>
+      <h2 class="reveal">Measured.<br><em>Consistent.</em></h2>
+      <p class="lede reveal">Vegan gummies, 70% dark chocolate and brownie bites, each dosed per piece. Start low, go slow.</p>
+      <p class="price reveal">From <span data-from="Edibles">R160</span></p>
+      <a class="link reveal" href="/shop?cat=Edibles">Shop edibles <span>→</span></a>
+    </div>
+  </section>
+
+  <section class="s s-how solid" id="how">
+    <div class="how-grid">
+      <div>
+        <p class="eyebrow reveal"><span class="idx">05</span> How it works</p>
+        <h2 class="reveal">From our shelf<br>to your <em>street.</em></h2>
+        <ol class="steps">
+          <li class="reveal"><b>Order</b><span>Choose your strain and size. Pay cash, card or EFT on delivery.</span></li>
+          <li class="reveal"><b>Accepted &amp; packed</b><span>We confirm in minutes and pack it in plain, smell-proof packaging.</span></li>
+          <li class="reveal"><b>Tracked live</b><span>Watch your driver on the map with a live ETA.</span></li>
+          <li class="reveal"><b>ID at the door</b><span>18+ only. No ID, no handover.</span></li>
+        </ol>
+      </div>
+      <svg class="plan" id="plan" viewBox="0 0 1000 760" role="img" aria-label="Line drawing of the delivery route across the Northern Suburbs"></svg>
+    </div>
+  </section>
+
+  <section class="s s-areas dark" id="areas">
+    <div class="areas-wrap">
+      <p class="eyebrow reveal"><span class="idx">06</span> Delivery</p>
+      <h2 class="reveal">The Northern Suburbs,<br><em>covered.</em></h2>
+      <div class="zones reveal" id="zones"></div>
+      <p class="fine reveal" id="zoneNote"></p>
+    </div>
+  </section>
+
+  <section class="s s-end solid" id="end">
+    <div class="end-wrap">
+      <p class="eyebrow reveal"><span class="idx">07</span> Northside</p>
+      <h2 class="big reveal">The spot<br><em>comes to you.</em></h2>
+      <div class="ctas reveal"><a class="btn" href="/shop">Enter the shop</a></div>
+      <footer class="legal reveal">
+        <p>18+ only. ID is checked on every delivery. For private adult use.</p>
+        <p>Don’t drive or operate machinery under the influence. Keep out of reach of children and pets. Know your local laws.</p>
+        <p class="small">© Northside · Brackenfell, Cape Town</p>
+      </footer>
+    </div>
+  </section>
+</main>
 
 <div class="gate hidden" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
   <div class="gate-card">
-    <div class="brand big"><span class="mark"><span>N</span></span>NORTHSIDE</div>
-    <h1 id="gateTitle">Are you 18 or older?</h1>
-    <p class="muted">You must be 18+ to enter this site and to order. Your ID will be checked on delivery.</p>
+    <div class="brand"><span class="mark"><span>N</span></span>Northside</div>
+    <h1 id="gateTitle">Are you <em>18 or older?</em></h1>
+    <p class="muted">You must be 18+ to enter. Your ID will be checked on delivery.</p>
     <div class="field"><label for="gateDob">Date of birth</label><input class="input" id="gateDob" type="date"></div>
     <div class="error hidden" id="gateErr"></div>
-    <button class="btn lime block" id="gateYes">Enter</button>
-    <button class="btn ghost block" id="gateNo" style="margin-top:8px">I'm under 18</button>
-    <p class="fine">For private adult use. Don't drive under the influence. Keep out of reach of children and pets.</p>
+    <button class="btn block" id="gateYes">Enter</button>
+    <button class="btn ghost block" id="gateNo" style="margin-top:8px">I’m under 18</button>
   </div>
 </div>
-<script src="/vendor/leaflet/leaflet.js"></script>
-<script src="/store.js"></script>
+<script type="module" src="/landing.js"></script>
 </body>
 </html>

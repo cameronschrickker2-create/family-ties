@@ -55,13 +55,14 @@ const step = m => console.log('✓', m);
   assert.equal(r.status, 201); step('driver created');
 
   // ---- browsers ----
-  const browser = await chromium.launch();
-  const cust = await (await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })).newPage();
+  const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const cust = await (await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true })).newPage();
   const adm = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 })).newPage();
   const drv = await (await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true })).newPage();
   for (const [n, p] of [['customer', cust], ['admin', adm], ['driver', drv]]) p.on('pageerror', e => { console.error(`[${n} page error]`, e.message); process.exitCode = 1; });
   const shot = (p, name) => p.screenshot({ path: path.join(SHOTS, name + '.png') });
 
+  // website
   await cust.goto(BASE + '/');
   await cust.waitForSelector('#gate:not(.hidden)');
   await shot(cust, '01-age-gate');
@@ -69,11 +70,18 @@ const step = m => console.log('✓', m);
   await cust.waitForSelector('#gateErr:not(.hidden)'); step('age gate blocks a 14-year-old');
   await cust.fill('#gateDob', '1995-04-02'); await cust.click('#gateYes');
   await cust.waitForSelector('#gate.hidden', { state: 'attached' });
+  await cust.waitForSelector('#zones .zone');
+  assert.equal(await cust.$$eval('#zones .zone', z => z.length), 10); step('website loads with live delivery zones');
+  await cust.click('.s-hero a:has-text("Enter the shop")');
+  await cust.waitForURL('**/shop');
   await cust.waitForSelector('.item');
+  await cust.waitForSelector('.thumb img', { timeout: 30000 }); step('shop shows 3D-rendered product images');
   await shot(cust, '02-menu');
   await cust.click('.item:has-text("Table Mountain Kush")');
   await cust.click('label.choice:has-text("7g")');
   await cust.click('label.choice:has-text("Rolling papers")');
+  await cust.waitForSelector('#stage canvas'); step('product sheet has live 3D viewer');
+  await cust.waitForTimeout(1500);
   await shot(cust, '03-product-options');
   assert.match(await cust.textContent('#addBtn'), /R845/); step('options priced in sheet: 7g + papers = R845');
   await cust.click('#addBtn');

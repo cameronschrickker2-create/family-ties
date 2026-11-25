@@ -15,6 +15,8 @@ app.set('trust proxy', 1);
 app.use(express.json({ limit: '100kb' }));
 app.use((req, res, next) => { res.set('X-Content-Type-Options', 'nosniff'); res.set('Referrer-Policy', 'same-origin'); next(); });
 app.use('/vendor/leaflet', express.static(path.join(__dirname, 'node_modules/leaflet/dist')));
+app.use('/vendor/three', express.static(path.join(__dirname, 'node_modules/three'), { maxAge: '7d' }));
+app.use('/vendor/fonts', express.static(path.join(__dirname, 'node_modules/@fontsource'), { maxAge: '30d' }));
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
 // ---------- helpers ----------

@@ -12,8 +12,11 @@
     "node": ">=22.13"
   },
   "dependencies": {
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
     "express": "^4.22.3",
     "leaflet": "^1.9.4",
+    "three": "^0.170.0",
     "ws": "^8.23.0"
   }
 }
