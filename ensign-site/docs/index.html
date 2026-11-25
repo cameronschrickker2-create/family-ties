@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ensign Studio</title>
+<meta name="description" content="Ensign Studio builds your whole brand: research, identity, 3D websites, shops, CRMs and launch videos, in about three weeks. Cape Town.">
+<meta name="theme-color" content="#F7F5F0">
+<meta property="og:title" content="Ensign Studio: your brand, flown high">
+<meta property="og:description" content="Research, identity, 3D websites, shops, CRMs and launch videos, built as one system in about three weeks.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>
+/* Ensign Studio: deep ink, paper, signal red (the flag). Unbounded display, Inter body, JetBrains Mono labels. */
+:root{
+  --ink:#F7F5F0;--ink2:#FFFFFF;--ink3:#F1EDE6;--line:#E7E2D9;--paper:#1F232C;--paper2:#EEE9E0;
+  --signal:#F2704E;--signal2:#F58A6D;--soft:#FCE9E2;--sky:#DCEBF7;--gold:#E7B45A;--muted:#6C7280;--muted2:#9A9FA9;
+  --display:Unbounded,"Arial Black",sans-serif;--sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--ink)}
+body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+h1,h2,h3{font-family:var(--display);font-weight:800;letter-spacing:-.02em;line-height:.98;text-wrap:balance;margin:0}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.label{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--signal)}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:15px 24px;border-radius:999px;border:2px solid var(--signal);background:var(--signal);color:#fff;box-shadow:0 10px 24px -12px rgba(242,112,78,.6);font-family:var(--display);font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;transition:transform .15s cubic-bezier(.3,1.6,.5,1),background .2s,color .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.ghost{background:#fff;color:var(--paper);border-color:var(--line);box-shadow:none}
+.btn.ghost:hover{border-color:var(--paper)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* nav */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;padding-top:env(safe-area-inset-top,0px);transition:background .3s}
+.nav.solid{background:rgba(247,245,240,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:24px;height:68px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:-.01em}
+.logo svg{width:28px;height:28px}
+.nav .links{margin-left:auto;display:flex;gap:26px}
+.nav .links a{font-size:14px;font-weight:500;text-decoration:none;color:var(--muted)}
+.nav .links a:hover{color:var(--paper)}
+.nav .btn{padding:10px 18px;font-size:13px;white-space:nowrap}
+@media(max-width:420px){.logo{font-size:16px}.nav .btn{padding:9px 14px;font-size:12px}}
+@media(max-width:820px){.nav .links{display:none}.nav .btn{margin-left:auto}}
+
+/* hero */
+.hero{position:relative;min-height:100svh;display:grid;align-items:center;overflow:hidden;padding:100px 0 70px;background:radial-gradient(ellipse at 70% 35%,#FFFFFF 0%,rgba(255,255,255,0) 55%),radial-gradient(ellipse at 85% 80%,rgba(242,112,78,.10),transparent 50%),linear-gradient(180deg,#EEF4FA 0%,var(--ink) 70%)}
+.hero .wrap{display:grid;grid-template-columns:1.05fr 1fr;align-items:center;gap:20px;width:100%}
+.hero h1{font-size:clamp(48px,7.2vw,112px)}
+.hero h1 .hi{color:var(--signal)}
+.hero p.lede{font-size:clamp(17px,1.5vw,20px);line-height:1.6;color:#4E5462;max-width:540px;margin:26px 0 32px}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap}
+.hero .meta{display:flex;gap:22px;margin-top:38px;flex-wrap:wrap}
+.hero .meta div{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--muted)}
+.hero .meta b{display:block;font-family:var(--display);font-size:26px;color:var(--paper);letter-spacing:-.01em;margin-bottom:4px}
+.flag3d{position:absolute;inset:0;z-index:0}
+.hero .wrap{position:relative;z-index:1;pointer-events:none}
+.hero .wrap a,.hero .wrap button{pointer-events:auto}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(247,245,240,.94) 0%,rgba(247,245,240,.6) 36%,rgba(247,245,240,0) 58%);pointer-events:none;z-index:0}
+#flag{width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab}
+#flag:active{cursor:grabbing}
+.hint{position:absolute;right:max(20px,4vw);bottom:28px;z-index:2;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.now{position:absolute;right:max(20px,4vw);top:96px;z-index:2;text-align:right;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.now b{display:block;font-family:var(--display);font-size:20px;letter-spacing:-.01em;color:var(--paper);text-transform:none;margin-top:4px}
+.flag-fallback{position:absolute;inset:0;display:none;place-items:center}
+.no-gl #flag{display:none}.no-gl .flag-fallback{display:grid}
+@media(max-width:860px){.hero{align-items:end;padding-top:52vh}.hero .wrap{grid-template-columns:1fr}.flag3d{bottom:auto;height:58vh}.hero::after{background:linear-gradient(180deg,rgba(247,245,240,0) 30%,rgba(247,245,240,.95) 58%)}.now{top:80px}.hint{display:none}}
+
+/* ticker */
+.ticker{overflow:hidden;white-space:nowrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0;background:#fff}
+.ticker .track{display:inline-block;animation:marq 40s linear infinite;font-family:var(--display);font-weight:700;font-size:20px;color:var(--paper)}
+.ticker .track span{color:var(--signal);margin:0 18px}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+section{padding:110px 0}
+.head{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:46px;flex-wrap:wrap}
+.head h2{font-size:clamp(38px,5vw,72px);max-width:820px;margin-top:14px}
+.head p{color:var(--muted);max-width:380px;line-height:1.6;margin:0}
+
+/* modules */
+.mods{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;perspective:1200px}
+@media(max-width:1000px){.mods{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.mods{grid-template-columns:1fr}}
+.mod{position:relative;background:#fff;border:1px solid var(--line);box-shadow:0 14px 34px -26px rgba(31,35,44,.35);border-radius:22px;padding:24px;min-height:230px;display:flex;flex-direction:column;gap:10px;transition:transform .25s cubic-bezier(.2,.9,.2,1),border-color .2s;overflow:hidden}
+.mod:hover{border-color:var(--signal)}
+.mod .n{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--signal)}
+.mod h3{font-size:22px;margin-top:auto;letter-spacing:-.01em}
+.mod p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
+.mod svg{width:44px;height:44px}
+.mod::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at var(--gx,50%) var(--gy,0%),rgba(242,112,78,.14),transparent 50%);opacity:0;transition:opacity .3s;pointer-events:none}
+.mod:hover::after{opacity:1}
+
+/* work */
+.work{background:#EFF5FA;color:var(--paper)}
+.work .label{color:var(--signal)}
+.work .head p{color:#5D6475}
+.case{display:grid;grid-template-columns:1.2fr 1fr;gap:28px;background:#fff;color:var(--paper);box-shadow:0 20px 50px -34px rgba(31,35,44,.4);border-radius:30px;padding:28px;margin-bottom:18px;align-items:center}
+@media(max-width:860px){.case{grid-template-columns:1fr}}
+.case h3{font-size:clamp(34px,4vw,54px);margin:10px 0 14px}
+.case p{color:#5B6170;line-height:1.6;margin:0 0 16px}
+.case ul{margin:0 0 22px;padding:0;list-style:none;display:grid;gap:8px}
+.case li{display:flex;gap:10px;font-size:15px;color:var(--paper)}
+.case li::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--signal);margin-top:7px;flex:none}
+.phone{justify-self:center;width:min(280px,72vw);aspect-ratio:9/19.5;border-radius:40px;background:#1F232C;padding:11px;box-shadow:0 30px 60px -30px rgba(31,35,44,.45);transform:rotate(3deg)}
+.phone video{width:100%;height:100%;object-fit:cover;border-radius:30px;display:block;background:#000}
+.minis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media(max-width:760px){.minis{grid-template-columns:1fr}}
+.mini{background:#fff;border:1px solid var(--line);border-radius:26px;padding:26px;display:flex;flex-direction:column;gap:10px}
+.mini h3{font-size:30px}
+.mini p{margin:0;color:#4A5160;line-height:1.55}
+.mini .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.mini .tags span{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--soft);color:#8A3A24;padding:6px 10px;border-radius:999px}
+
+/* process */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;counter-reset:s;border-top:2px solid var(--line)}
+@media(max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.steps{grid-template-columns:1fr}}
+.step{position:relative;padding:28px 22px 10px 0}
+.step::before{content:"";position:absolute;top:-8px;left:0;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--signal)}
+.step .when{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--signal);letter-spacing:.1em;text-transform:uppercase}
+.step h3{font-size:24px;margin:10px 0}
+.step p{color:var(--muted);line-height:1.55;margin:0;font-size:15px}
+
+/* pricing */
+.tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media(max-width:900px){.tiers{grid-template-columns:1fr}}
+.tier{background:#fff;border:1px solid var(--line);border-radius:26px;padding:28px;display:flex;flex-direction:column;gap:12px}
+.tier.hot{background:var(--soft);color:var(--paper);border-color:var(--signal2)}
+.tier .t{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.tier h3{font-size:30px}
+.tier .price{font-family:var(--display);font-weight:800;font-size:44px;letter-spacing:-.02em}
+.tier .price small{font-family:var(--sans);font-size:14px;font-weight:500;opacity:.7;letter-spacing:0}
+.tier ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px;font-size:15px}
+.tier li::before{content:"→ ";color:var(--signal)}
+.tier.hot li::before{color:var(--signal)}
+.plans{margin-top:18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media(max-width:900px){.plans{grid-template-columns:1fr}}
+.plan{border:1px dashed var(--line);border-radius:20px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.plan b{font-family:var(--display);font-size:18px}
+.plan span{color:var(--muted);font-size:14px}
+.plan i{font-style:normal;font-family:var(--display);font-weight:700;white-space:nowrap}
+.fine{color:var(--muted2);font-size:13px;margin-top:16px}
+
+/* contact */
+.contact{background:linear-gradient(160deg,var(--soft) 0%,#EEF4FA 100%);color:var(--paper)}
+.contact .grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+@media(max-width:860px){.contact .grid{grid-template-columns:1fr}}
+.contact h2{font-size:clamp(46px,7vw,110px)}
+.contact .label{color:var(--signal)}
+.contact p.lede{font-size:18px;line-height:1.6;max-width:460px}
+form{background:#fff;color:var(--paper);box-shadow:0 24px 60px -36px rgba(31,35,44,.45);border-radius:28px;padding:26px;display:grid;gap:14px}
+label{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:grid;gap:7px}
+input,textarea,select{font:inherit;font-family:var(--sans);font-size:16px;color:var(--paper);background:#F9F7F3;border:1px solid var(--line);border-radius:14px;padding:13px 14px;width:100%;text-transform:none;letter-spacing:0}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--signal)}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills label{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:9px 14px;cursor:pointer;color:var(--paper);font-family:var(--sans);font-size:14px;font-weight:500;letter-spacing:0;text-transform:none}
+.pills input{width:auto;accent-color:var(--signal)}
+.pills label:has(input:checked){border-color:var(--signal);background:var(--soft)}
+.sent{display:none;padding:14px;border-radius:14px;background:var(--ink3);color:var(--paper);font-size:15px;line-height:1.5}
+.sent.on{display:block}
+.sent code{font-family:var(--mono);font-size:13px;white-space:pre-wrap;display:block;margin-top:8px;color:var(--muted)}
+footer{padding:46px 0 60px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.rv{transition:opacity .8s,transform .8s cubic-bezier(.2,.9,.2,1)}
+.js .rv:not(.in){opacity:0;transform:translateY(28px)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.ticker .track{animation:none}.js .rv:not(.in){opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<header class="nav" id="nav"><div class="wrap">
+  <a class="logo" href="#top" aria-label="Ensign Studio home"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="2" width="2.4" height="25" rx="1.2" fill="#1F232C"/><path d="M6 3h18l-3.2 5L24 13H6z" fill="#F2704E"/><path d="M10 5.5h7M10 8h5M10 10.5h7" stroke="#1F232C" stroke-width="1.6" stroke-linecap="round"/></svg>Ensign Studio</a>
+  <nav class="links"><a href="#build">What we build</a><a href="#work">Work</a><a href="#process">Process</a><a href="#pricing">Pricing</a></nav>
+  <a class="btn" href="#start">Start a build</a>
+</div></header>
+
+<section class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <p class="label">Brand studio · Cape Town</p>
+      <h1 style="margin-top:18px">Your brand,<br><span class="hi">flown high.</span></h1>
+      <p class="lede">An ensign is the flag a ship raises to tell the world who it is. We build yours: research, identity, a 3D website, shop, CRM and launch videos, as one connected system, in about three weeks.</p>
+      <div class="ctas"><a class="btn" href="#start">Start a build →</a><a class="btn ghost" href="#work">See the work</a></div>
+      <div class="meta"><div><b>8</b>modules, one system</div><div><b>~3 wks</b>brief to launch</div><div><b>1</b>team, start to finish</div></div>
+    </div>
+    <div></div>
+  </div>
+  <div class="flag3d"><canvas id="flag" aria-label="A person standing in front of a curved wall of brands, scrolling through them on a phone" role="img"></canvas>
+    <div class="flag-fallback" aria-hidden="true"><svg viewBox="0 0 200 200" width="40%"><rect x="40" y="20" width="8" height="170" rx="4" fill="#1F232C"/><path d="M50 26h120l-18 32 18 32H50z" fill="#F2704E"/><path d="M75 42h48M75 58h34M75 74h48" stroke="#1F232C" stroke-width="9" stroke-linecap="round"/></svg></div>
+  </div>
+  <p class="now" aria-live="polite">Now viewing<b id="nowName">Northside</b></p>
+  <p class="hint">Drag or scroll to browse brands →</p>
+  </div>
+</section>
+
+<div class="ticker" aria-hidden="true"><div class="track" id="ticker"></div></div>
+
+<section id="build"><div class="wrap">
+  <div class="head rv"><div><p class="label">What we build</p><h2>Everything a brand needs to launch, built to work together.</h2></div><p>Buy the modules you need, or the full build. Every piece shares one design system, so your site, shop, CRM and ads look and feel like one brand.</p></div>
+  <div class="mods" id="mods"></div>
+</div></section>
+
+<section class="work" id="work"><div class="wrap">
+  <div class="head rv"><div><p class="label">Work</p><h2>Brands we've raised.</h2></div><p>Real builds for real local businesses, from a delivery service to an electrician and a car wash.</p></div>
+  <article class="case rv">
+    <div>
+      <p class="label">Delivery service · Northern Suburbs</p>
+      <h3>Northside</h3>
+      <p>A full launch in days: a beat-synced motion-graphics ad, a 3D website and a shop with live order tracking.</p>
+      <ul><li>26-second ad with an original score</li><li>3D website with a swipeable product carousel</li><li>Shop, live driver tracking and an admin CRM</li><li>Rebrand turned around in under an hour</li></ul>
+      <a class="btn" href="https://cameronschrickker2-create.github.io/northside/" target="_blank" rel="noopener">Visit the live site ↗</a>
+    </div>
+    <div class="phone"><video src="media/northside-ad.mp4" poster="media/northside-ad.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Northside launch ad"></video></div>
+  </article>
+  <div class="minis">
+    <article class="mini rv"><p class="label">Electrical contractor</p><h3>IsiMork Electrical</h3><p>An office CRM that tracks clients and jobs and sends quotes and invoices as PDFs, plus a new website and a vertical promo clip.</p><div class="tags"><span>CRM</span><span>PDF quotes</span><span>Website</span><span>Video</span></div></article>
+    <article class="mini rv"><p class="label">Car wash</p><h3>CleanSlate</h3><p>A website with online booking, email alerts for every booking, an AI assistant for customer questions and WhatsApp replies.</p><div class="tags"><span>Booking app</span><span>AI assistant</span><span>WhatsApp</span><span>Website</span></div></article>
+  </div>
+</div></section>
+
+<section id="process"><div class="wrap">
+  <div class="head rv"><div><p class="label">Process</p><h2>Three weeks from brief to launch.</h2></div><p>You sign off at the end of each week, so there are no surprises at the end.</p></div>
+  <div class="steps rv">
+    <div class="step"><p class="when">Day 1</p><h3>Intake</h3><p>A 45-minute call about your business, customers, products, and the rules that apply. We check your name isn't taken.</p></div>
+    <div class="step"><p class="when">Week 1</p><h3>Identity</h3><p>Research report, brand identity, and the script and storyboard for your launch ad.</p></div>
+    <div class="step"><p class="when">Week 2</p><h3>Build</h3><p>Website, shop and CRM on a working preview link, plus the first cut of your ad.</p></div>
+    <div class="step"><p class="when">Week 3</p><h3>Launch</h3><p>Apps, final ad, end-to-end tests, hosting and domain. Then training, and we keep it running.</p></div>
+  </div>
+</div></section>
+
+<section id="pricing" style="background:#FBFAF7"><div class="wrap">
+  <div class="head rv"><div><p class="label">Pricing</p><h2>Clear packages. No surprises.</h2></div><p>Starting prices in rand, excluding VAT. 50% deposit starts the build, the balance is due at launch.</p></div>
+  <div class="tiers rv">
+    <div class="tier"><p class="t">1 week</p><h3>Launch Kit</h3><div class="price">R12 000</div><ul><li>Research and name check</li><li>Brand identity</li><li>Website</li><li>One 9:16 launch ad</li></ul></div>
+    <div class="tier hot"><p class="t">2 weeks · most popular</p><h3>Growth Build</h3><div class="price">R35 000</div><ul><li>Everything in Launch Kit</li><li>Shop and online ordering</li><li>CRM and dashboards</li><li>Two ads (9:16 and 16:9)</li></ul></div>
+    <div class="tier"><p class="t">3 weeks</p><h3>Full Build</h3><div class="price">R75 000</div><ul><li>All eight modules</li><li>Live tracking and staff or driver app</li><li>End-to-end tested launch</li><li>Training and runbook</li></ul></div>
+  </div>
+  <div class="plans rv">
+    <div class="plan"><div><b>Care</b><br><span>Hosting, updates, monthly report</span></div><i>R2 500/mo</i></div>
+    <div class="plan"><div><b>Grow</b><br><span>Care + 2 new ads a month</span></div><i>R6 500/mo</i></div>
+    <div class="plan"><div><b>Partner</b><br><span>Grow + weekly content, campaigns</span></div><i>R12 000/mo</i></div>
+  </div>
+</div></section>
+
+<section class="contact" id="start"><div class="wrap grid">
+  <div class="rv"><p class="label">Start a build</p><h2 style="margin:16px 0 22px">Raise your flag.</h2><p class="lede">Tell us about your business and what you need. We'll reply within one working day with a plan and a price.</p></div>
+  <form id="brief" class="rv" novalidate>
+    <label for="f-name">Your name<input id="f-name" name="name" autocomplete="name" required></label>
+    <label for="f-biz">Business name<input id="f-biz" name="business" required></label>
+    <label for="f-what">What does your business do?<input id="f-what" name="what" placeholder="e.g. mobile car wash in Durbanville"></label>
+    <label>What do you need?<div class="pills" id="needs"></div></label>
+    <label for="f-msg">Anything else<textarea id="f-msg" name="msg" rows="3"></textarea></label>
+    <button class="btn" type="submit" style="justify-self:start">Send my brief →</button>
+    <div class="sent" id="sent" role="status"></div>
+  </form>
+</div></section>
+
+<footer><div class="wrap"><a class="logo" href="#top"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="2" width="2.4" height="25" rx="1.2" fill="#1F232C"/><path d="M6 3h18l-3.2 5L24 13H6z" fill="#F2704E"/><path d="M10 5.5h7M10 8h5M10 10.5h7" stroke="#1F232C" stroke-width="1.6" stroke-linecap="round"/></svg>Ensign Studio</a><span>Brands, flown high · Cape Town, South Africa</span><span>© <span id="yr"></span> Ensign Studio</span></div></footer>
+
+<script>
+// ===== Contact details: fill these in to receive briefs =====
+window.ENSIGN_CONTACT = { email: '', whatsapp: '' }; // e.g. email:'hello@ensign.studio', whatsapp:'27821234567'
+</script>
+<script type="module">
+document.documentElement.classList.add('js');
+const $ = s => document.querySelector(s);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+$('#yr').textContent = new Date().getFullYear();
+
+// ticker
+const T = ['Research', 'Identity', '3D websites', 'Shops', 'Live tracking', 'CRMs', 'Dashboards', 'Motion graphics', 'Launch'];
+$('#ticker').innerHTML = (T.map(t => `${t}<span>✦</span>`).join('')).repeat(2);
+
+// modules
+const ICON = {
+  research:'<circle cx="19" cy="19" r="11" fill="none" stroke="#F2704E" stroke-width="3"/><path d="M27 27l10 10" stroke="#1F232C" stroke-width="3" stroke-linecap="round"/>',
+  identity:'<rect x="9" y="5" width="3" height="34" rx="1.5" fill="#1F232C"/><path d="M13 6h22l-4 7 4 7H13z" fill="#F2704E"/>',
+  web:'<rect x="4" y="8" width="36" height="26" rx="4" fill="none" stroke="#1F232C" stroke-width="3"/><path d="M15 27l7-12 7 12z" fill="#F2704E"/>',
+  shop:'<path d="M8 14h28l-3 20H11z" fill="none" stroke="#1F232C" stroke-width="3" stroke-linejoin="round"/><path d="M15 14a7 7 0 0 1 14 0" fill="none" stroke="#F2704E" stroke-width="3"/>',
+  ops:'<circle cx="22" cy="20" r="6" fill="#F2704E"/><path d="M22 4a16 16 0 0 1 16 16c0 11-16 20-16 20S6 31 6 20A16 16 0 0 1 22 4z" fill="none" stroke="#1F232C" stroke-width="3"/>',
+  crm:'<rect x="6" y="24" width="7" height="14" rx="2" fill="#1F232C"/><rect x="18" y="14" width="7" height="24" rx="2" fill="#F2704E"/><rect x="30" y="6" width="7" height="32" rx="2" fill="#1F232C"/>',
+  video:'<rect x="12" y="3" width="20" height="38" rx="5" fill="none" stroke="#1F232C" stroke-width="3"/><path d="M19 16l9 6-9 6z" fill="#F2704E"/>',
+  launch:'<path d="M22 4c8 6 9 16 6 24h-12c-3-8-2-18 6-24z" fill="none" stroke="#1F232C" stroke-width="3"/><path d="M17 32l-4 8 9-4 9 4-4-8" fill="#F2704E"/>',
+};
+const MODS = [
+  ['01','research','Research and data','Market, competitors, pricing and your area. Plus a name and trademark check before any design.'],
+  ['02','identity','Brand identity','Name, logo, colours, type and tone of voice, in one design system every module shares.'],
+  ['03','web','3D website','A fast site with motion and interactive 3D that makes people stop scrolling.'],
+  ['04','shop','Shop and ordering','Menu, options, cart and checkout, with age or ID rules where the law needs them.'],
+  ['05','ops','Operations apps','Live order tracking, and staff or driver apps with GPS and real-time updates.'],
+  ['06','crm','CRM and dashboards','Customers, spend, orders, notes and your key numbers, all in one place.'],
+  ['07','video','Launch videos','Motion-graphics ads cut to the beat, with original music and voiceover.'],
+  ['08','launch','Launch and handover','Hosting, domain, full end-to-end tests, training and a written runbook.'],
+];
+$('#mods').innerHTML = MODS.map(([n, ic, t, d]) => `<article class="mod rv"><span class="n">${n}</span><svg viewBox="0 0 44 44" aria-hidden="true">${ICON[ic]}</svg><h3>${t}</h3><p>${d}</p></article>`).join('');
+if (matchMedia('(hover: hover) and (pointer: fine)').matches && !reduced) document.querySelectorAll('.mod').forEach(el => {
+  el.addEventListener('pointermove', e => { const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height; el.style.transform = `rotateY(${(x - .5) * 10}deg) rotateX(${(.5 - y) * 8}deg)`; el.style.setProperty('--gx', x * 100 + '%'); el.style.setProperty('--gy', y * 100 + '%'); });
+  el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+});
+
+// nav + reveals
+addEventListener('scroll', () => $('#nav').classList.toggle('solid', scrollY > 30), { passive: true });
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+// brief form
+const NEEDS = ['Brand identity', 'Website', 'Shop', 'CRM', 'Booking', 'Launch video', 'Everything'];
+$('#needs').innerHTML = NEEDS.map((n, i) => `<label><input type="checkbox" name="need" value="${n}" id="need-${i}">${n}</label>`).join('');
+$('#brief').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = new FormData(e.target), name = (f.get('name') || '').trim(), biz = (f.get('business') || '').trim();
+  const out = $('#sent');
+  if (!name || !biz) { out.className = 'sent on'; out.textContent = 'Add your name and your business name, then send again.'; return; }
+  const text = `New brief for Ensign Studio\nName: ${name}\nBusiness: ${biz}\nWhat they do: ${f.get('what') || '-'}\nNeeds: ${f.getAll('need').join(', ') || '-'}\nNotes: ${f.get('msg') || '-'}`;
+  const c = window.ENSIGN_CONTACT || {};
+  if (c.whatsapp) { location.href = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(text)}`; return; }
+  if (c.email) { location.href = `mailto:${c.email}?subject=${encodeURIComponent('Brief: ' + biz)}&body=${encodeURIComponent(text)}`; return; }
+  out.className = 'sent on'; out.innerHTML = 'Thanks! Our contact details are being set up. Copy your brief below and send it to us once they are live.<code></code>'; out.querySelector('code').textContent = text;
+});
+
+// ===== 3D: a person standing in front of a wall of brands, scrolling through them =====
+let gl = false; try { const c = document.createElement('canvas'); gl = !!(c.getContext('webgl2') || c.getContext('webgl')); } catch {}
+if (!gl) document.body.classList.add('no-gl');
+else {
+  const THREE = await import('three');
+  await Promise.all(['800 60px Unbounded', '700 30px "JetBrains Mono"', '600 30px Inter'].map(f => document.fonts.load(f))).catch(() => {});
+  const canvas = $('#flag');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  const scene = new THREE.Scene(); scene.fog = new THREE.Fog(0xF3F1EC, 12, 26);
+  const cam = new THREE.PerspectiveCamera(34, 1, 0.1, 60);
+  scene.add(new THREE.HemisphereLight(0xFFFFFF, 0xE9E2D6, 1.6));
+  const key = new THREE.DirectionalLight(0xFFF4EA, 1.8); key.position.set(-4, 7, 6); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.radius = 10; key.shadow.bias = -0.0004; scene.add(key);
+  const rim = new THREE.DirectionalLight(0xFFD9CC, 1.2); rim.position.set(3, 3, -6); scene.add(rim);
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(14, 64), new THREE.ShadowMaterial({ opacity: .12 })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+  const glow = new THREE.Mesh(new THREE.CircleGeometry(2.4, 48), new THREE.MeshBasicMaterial({ color: 0xF2704E, transparent: true, opacity: .08 })); glow.rotation.x = -Math.PI / 2; glow.position.y = .01; scene.add(glow);
+
+  // ---- brand panels (real work + clearly tagged concepts) ----
+  const BRANDS = [
+    { name: 'Northside', tag: 'Client · delivery', bg: '#0B1410', fg: '#F2EEDF', ac: '#3CF0A0', draw: (x, w, h, b) => { big(x, 'NORTH', w * .08, h * .48, h * .26, b.fg); big(x, 'SIDE.', w * .08, h * .76, h * .26, b.ac); pin(x, w * .8, h * .38, h * .12, b.ac, b.bg); } },
+    { name: 'IsiMork Electrical', tag: 'Client · electrical', bg: '#111317', fg: '#F5F5F0', ac: '#FFD23F', draw: (x, w, h, b) => { bolt(x, w * .76, h * .5, h * .5, b.ac); big(x, 'ISIMORK', w * .08, h * .5, h * .19, b.fg); small(x, 'ELECTRICAL', w * .085, h * .68, h * .08, b.ac); } },
+    { name: 'CleanSlate', tag: 'Client · car wash', bg: '#EEF4FF', fg: '#0E2A66', ac: '#2F6BFF', draw: (x, w, h, b) => { bubbles(x, w, h, b.ac); big(x, 'Clean', w * .08, h * .5, h * .22, b.fg); big(x, 'Slate.', w * .08, h * .75, h * .22, b.ac); } },
+    { name: 'Your brand', tag: 'Next · you', bg: '#F2704E', fg: '#0C0E13', ac: '#1F232C', draw: (x, w, h, b) => { flagMark(x, w * .78, h * .5, h * .5, b.ac, b.fg); big(x, 'YOUR', w * .08, h * .48, h * .22, b.fg); big(x, 'BRAND.', w * .08, h * .74, h * .22, b.ac); } },
+    { name: 'Rise & Crumb', tag: 'Concept · bakery', bg: '#F4E7D3', fg: '#3B2416', ac: '#C8742E', draw: (x, w, h, b) => { ring(x, w * .78, h * .5, h * .22, b.ac); big(x, 'Rise &', w * .08, h * .48, h * .2, b.fg); big(x, 'Crumb', w * .08, h * .72, h * .2, b.ac); } },
+    { name: 'Ironveld Gym', tag: 'Concept · gym', bg: '#1A1B1E', fg: '#EDEDED', ac: '#FF7A00', draw: (x, w, h, b) => { bars(x, w * .7, h * .32, h * .36, b.ac); big(x, 'IRON', w * .08, h * .48, h * .24, b.fg); big(x, 'VELD', w * .08, h * .76, h * .24, b.ac); } },
+    { name: 'Kaap Roast', tag: 'Concept · coffee', bg: '#22352B', fg: '#F2E9DA', ac: '#E8B04B', draw: (x, w, h, b) => { bean(x, w * .78, h * .5, h * .2, b.ac); big(x, 'KAAP', w * .08, h * .48, h * .24, b.fg); small(x, 'ROAST CO.', w * .085, h * .7, h * .1, b.ac); } },
+    { name: 'Fynn & Co', tag: 'Concept · salon', bg: '#F7D9DF', fg: '#4A1C2B', ac: '#C2456A', draw: (x, w, h, b) => { ring(x, w * .78, h * .5, h * .2, b.ac); big(x, 'Fynn', w * .08, h * .5, h * .24, b.fg); small(x, '& CO · HAIR', w * .085, h * .7, h * .09, b.ac); } },
+  ];
+  function big(x, t, X, Y, S, c) { x.fillStyle = c; x.font = `800 ${S}px Unbounded, sans-serif`; x.textBaseline = 'alphabetic'; x.fillText(t, X, Y); }
+  function small(x, t, X, Y, S, c) { x.fillStyle = c; x.font = `700 ${S}px "JetBrains Mono", monospace`; x.fillText(t, X, Y); }
+  function pin(x, cx, cy, r, c, ink) { x.fillStyle = c; x.beginPath(); x.arc(cx, cy, r, Math.PI * .8, Math.PI * .2); x.lineTo(cx, cy + r * 1.8); x.closePath(); x.fill(); x.fillStyle = ink; x.beginPath(); x.arc(cx, cy, r * .4, 0, 7); x.fill(); }
+  function bolt(x, cx, cy, s, c) { x.fillStyle = c; x.beginPath(); x.moveTo(cx + s * .1, cy - s * .55); x.lineTo(cx - s * .25, cy + s * .05); x.lineTo(cx, cy + s * .05); x.lineTo(cx - s * .1, cy + s * .55); x.lineTo(cx + s * .25, cy - s * .08); x.lineTo(cx, cy - s * .08); x.closePath(); x.fill(); }
+  function bubbles(x, w, h, c) { x.strokeStyle = c; x.lineWidth = h * .02; [[.78, .35, .13], [.88, .58, .08], [.7, .66, .06]].forEach(([a, b2, r]) => { x.beginPath(); x.arc(w * a, h * b2, h * r, 0, 7); x.stroke(); }); }
+  function flagMark(x, cx, cy, s, c, ink) { x.fillStyle = c; x.fillRect(cx - s * .45, cy - s * .55, s * .06, s * 1.1); x.fillStyle = ink; x.beginPath(); x.moveTo(cx - s * .38, cy - s * .52); x.lineTo(cx + s * .45, cy - s * .52); x.lineTo(cx + s * .28, cy - s * .27); x.lineTo(cx + s * .45, cy - s * .02); x.lineTo(cx - s * .38, cy - s * .02); x.fill(); }
+  function ring(x, cx, cy, r, c) { x.strokeStyle = c; x.lineWidth = r * .28; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); }
+  function bars(x, X, Y, s, c) { x.fillStyle = c; for (let i = 0; i < 3; i++) x.fillRect(X + i * s * .32, Y + (2 - i) * s * .25, s * .22, s * (.5 + i * .25)); }
+  function bean(x, cx, cy, r, c) { x.fillStyle = c; x.beginPath(); x.ellipse(cx, cy, r * .75, r, .4, 0, 7); x.fill(); x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = r * .12; x.beginPath(); x.moveTo(cx - r * .3, cy - r * .7); x.quadraticCurveTo(cx + r * .3, cy, cx - r * .2, cy + r * .75); x.stroke(); }
+  function brandCanvas(b, w = 800, h = 500) {
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+    x.fillStyle = b.bg; x.fillRect(0, 0, w, h); b.draw(x, w, h, b);
+    x.font = `700 ${h * .055}px "JetBrains Mono", monospace`; x.fillStyle = b.fg; x.globalAlpha = .6; x.fillText(b.tag.toUpperCase(), w * .08, h * .17); x.globalAlpha = 1;
+    return c;
+  }
+  const texes = BRANDS.map(b => { const t = new THREE.CanvasTexture(brandCanvas(b)); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; });
+  const wall = new THREE.Group(); scene.add(wall);
+  const R = 6.2, STEP = 0.42, PW = 2.4, PH = 1.5;
+  const panels = BRANDS.map((b, i) => {
+    const g = new THREE.Group();
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(PW, PH), new THREE.MeshStandardMaterial({ map: texes[i], roughness: .55, emissive: 0xffffff, emissiveMap: texes[i], emissiveIntensity: .35 }));
+    const frame = new THREE.Mesh(new THREE.PlaneGeometry(PW + .08, PH + .08), new THREE.MeshBasicMaterial({ color: 0xFFFFFF })); frame.position.z = -.01;
+    g.add(frame, m); wall.add(g); return { g, m, frame };
+  });
+
+  // ---- the person: a stylised figure, back three-quarter view, phone in the right hand ----
+  const skin = new THREE.MeshStandardMaterial({ color: 0xE9DCCB, roughness: .6 });
+  const cloth = new THREE.MeshStandardMaterial({ color: 0xC9D6E3, roughness: .85 });
+  const jacket = new THREE.MeshStandardMaterial({ color: 0xF58A6D, roughness: .8 });
+  const cap = (r, l, mat) => { const m = new THREE.Mesh(new THREE.CapsuleGeometry(r, l, 8, 16), mat); m.castShadow = true; return m; };
+  const person = new THREE.Group();
+  const legL = cap(.13, .85, cloth), legR = cap(.13, .85, cloth); legL.position.set(-.16, .58, 0); legR.position.set(.16, .58, 0); legL.rotation.z = .03; legR.rotation.z = -.03;
+  const torso = cap(.3, .55, jacket); torso.position.y = 1.42; torso.scale.set(1, 1, .7);
+  const neck = cap(.07, .08, skin); neck.position.y = 1.9;
+  const head = new THREE.Group(); head.position.y = 2.12;
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(.2, 32, 24), skin); skull.scale.set(.92, 1.08, 1); skull.castShadow = true;
+  const hair = new THREE.Mesh(new THREE.SphereGeometry(.215, 32, 24, 0, Math.PI * 2, 0, Math.PI * .55), new THREE.MeshStandardMaterial({ color: 0x5A4334, roughness: .9 })); hair.position.y = .03; hair.rotation.x = -.25;
+  head.add(skull, hair);
+  const armL = cap(.085, .62, jacket); armL.position.set(-.38, 1.38, 0); armL.rotation.z = .12;
+  const shoulderR = new THREE.Group(); shoulderR.position.set(.36, 1.68, 0);
+  const upperR = cap(.085, .38, jacket); upperR.position.y = -.24; shoulderR.add(upperR);
+  const elbowR = new THREE.Group(); elbowR.position.y = -.48; shoulderR.add(elbowR);
+  const foreR = cap(.075, .3, skin); foreR.position.y = -.2; elbowR.add(foreR);
+  const phone = new THREE.Mesh(new THREE.BoxGeometry(.2, .38, .025), new THREE.MeshStandardMaterial({ color: 0x0A0B0E, roughness: .3, metalness: .5 })); phone.position.set(0, -.44, .02);
+  const screenMat = new THREE.MeshBasicMaterial({ map: texes[0] }); const screen = new THREE.Mesh(new THREE.PlaneGeometry(.17, .34), screenMat); screen.position.z = .014; phone.add(screen);
+  const phoneGlow = new THREE.PointLight(0xFFFFFF, .6, 1.4); phoneGlow.position.z = .2; phone.add(phoneGlow);
+  elbowR.add(phone);
+  shoulderR.rotation.x = -.55; elbowR.rotation.x = -1.1; shoulderR.rotation.z = .15;
+  person.add(legL, legR, torso, neck, head, armL, shoulderR);
+  scene.add(person);
+
+  // ---- layout & camera ----
+  let portrait = false;
+  function layout() {
+    const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
+    renderer.setSize(w, h, false); cam.aspect = w / h; portrait = cam.aspect < .9; cam.updateProjectionMatrix();
+    // wall centre sits in front of the person; desktop shifts the scene right of the copy
+    const cx = portrait ? .6 : 4.3;
+    person.position.set(cx - 1.25, 0, 2.6); person.rotation.y = Math.PI + .42;
+    wall.position.set(cx, 0, 2.6);
+    glow.position.set(cx - 1.25, .01, 2.6);
+    if (portrait) { cam.position.set(cx - 2.4, 2.9, 14.1); cam.lookAt(cx - .2, 2.05, -1); } else { cam.position.set(.6, 2.9, 12); cam.lookAt(.9, 2.05, -1); }
+  }
+  new ResizeObserver(layout).observe(canvas); layout();
+
+  // ---- interaction: drag, wheel over the stage, page scroll, auto-advance ----
+  let pos = 0, target = 0, drag = null, lastInput = 0, shown = -1, lastAuto = 0;
+  const N = BRANDS.length, clampT = v => Math.max(0, Math.min(N - 1, v));
+  canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, s: target }; canvas.setPointerCapture(e.pointerId); lastInput = performance.now(); });
+  canvas.addEventListener('pointermove', e => { if (drag) { target = clampT(drag.s - (e.clientX - drag.x) / 160); lastInput = performance.now(); } });
+  const end = () => { if (drag) { target = Math.round(target); drag = null; } };
+  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+  let wheelAcc = 0; canvas.addEventListener('wheel', e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { e.preventDefault(); wheelAcc += e.deltaX; if (Math.abs(wheelAcc) > 60) { target = clampT(Math.round(target) + Math.sign(wheelAcc)); wheelAcc = 0; lastInput = performance.now(); } } }, { passive: false });
+  addEventListener('scroll', () => { const v = Math.min(1, scrollY / (innerHeight * .9)); if (v > 0.02) { target = clampT(Math.round(v * (N - 1))); lastInput = performance.now(); } }, { passive: true });
+  addEventListener('keydown', e => { if (scrollY > innerHeight) return; if (e.key === 'ArrowRight') { target = clampT(Math.round(target) + 1); lastInput = performance.now(); } if (e.key === 'ArrowLeft') { target = clampT(Math.round(target) - 1); lastInput = performance.now(); } });
+  let visible = true; new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) requestAnimationFrame(loop); }).observe(canvas);
+  const clock = new THREE.Clock();
+  function loop() {
+    if (!visible) return;
+    const t = clock.getElapsedTime(), now = performance.now();
+    if (!reduced && !drag && scrollY < 20 && now - lastInput > 4000 && t - lastAuto > 2.6) { lastAuto = t; target = (Math.round(target) + 1) % N; }
+    pos += (target - pos) * (reduced ? 1 : 0.08);
+    panels.forEach(({ g, m, frame }, i) => {
+      const a = (i - pos) * STEP, d = Math.abs(i - pos);
+      g.position.set(Math.sin(a) * R, 2.75 + Math.sin(t * .8 + i) * .04, -Math.cos(a) * R);
+      g.rotation.y = -a; const s = 1 + Math.max(0, 1 - d) * .18; g.scale.setScalar(s);
+      m.material.emissiveIntensity = .3 + Math.max(0, 1 - d) * .35; frame.material.color.setHex(d < .5 ? 0xF2704E : 0xFFFFFF);
+      g.visible = d < (portrait ? 4.5 : 2.6);
+    });
+    // the person follows the brand in front of them: head turns, thumb "scrolls"
+    const look = Math.max(-.5, Math.min(.5, (Math.round(pos) - pos) * -.9));
+    head.rotation.y = look * .6 + Math.sin(t * .6) * .04; head.rotation.x = -.08 + Math.sin(t * 1.3) * .02;
+    torso.rotation.y = look * .15; person.position.y = Math.sin(t * 1.6) * .008;
+    phone.rotation.x = .3 + Math.sin(t * 7) * (Math.abs(target - pos) > .05 ? .04 : .005);
+    const k = Math.round(pos);
+    if (k !== shown) { shown = k; screenMat.map = texes[k]; screenMat.needsUpdate = true; $('#nowName').textContent = BRANDS[k].name; }
+    renderer.render(scene, cam);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
