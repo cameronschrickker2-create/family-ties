@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Ensign Studio</title>
-<meta name="description" content="Ensign Studio builds your whole brand: research, identity, 3D websites, shops, CRMs and launch videos, in about three weeks. Cape Town.">
+<meta name="description" content="Ensign Studio builds your whole brand: research, identity, websites, shops, CRMs and launch videos, in about three weeks. Cape Town.">
 <meta name="theme-color" content="#F7F5F0">
 <meta property="og:title" content="Ensign Studio: your brand, flown high">
-<meta property="og:description" content="Research, identity, 3D websites, shops, CRMs and launch videos, built as one system in about three weeks.">
+<meta property="og:description" content="Research, identity, websites, shops, CRMs and launch videos, built as one system in about three weeks.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
@@ -287,7 +287,7 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
     <div>
       <p class="label">Brand studio in Cape Town</p>
       <h1 style="margin-top:18px">Your brand,<br><span class="hi">flown high</span></h1>
-      <p class="lede">An ensign is the flag a ship raises to tell the world who it is. We build yours: research, identity, a 3D website, shop, CRM and launch videos, as one connected system, in about three weeks.</p>
+      <p class="lede">An ensign is the flag a ship raises to tell the world who it is. We build yours: research, identity, a website, shop, CRM and launch videos, as one connected system, in about three weeks.</p>
       <div class="ctas"><a class="btn" href="#start">Start a build →</a><a class="btn ghost" href="#work">See the work</a></div>
       <div class="meta"><div><b>8</b>modules, one system</div><div><b>~3 wks</b>brief to launch</div><div><b>1</b>team, start to finish</div></div>
     </div>
@@ -315,8 +315,8 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
     <div>
       <p class="label">Delivery service · Northern Suburbs</p>
       <h3>Northside</h3>
-      <p>A full launch in days: a beat-synced motion-graphics ad, a 3D website and a shop with live order tracking.</p>
-      <ul><li>26-second ad with an original score</li><li>3D website with a swipeable product carousel</li><li>Shop, live driver tracking and an admin CRM</li><li>Rebrand turned around in under an hour</li></ul>
+      <p>A full launch in days: a beat-synced motion-graphics ad, a website and a shop with live order tracking.</p>
+      <ul><li>26-second ad with an original score</li><li>Website with a swipeable product carousel</li><li>Shop, live driver tracking and an admin CRM</li><li>Rebrand turned around in under an hour</li></ul>
       <a class="btn" href="https://cameronschrickker2-create.github.io/northside/" target="_blank" rel="noopener">Visit the live site ↗</a>
     </div>
     <div class="phone-wrap"><span class="c c1"></span><span class="c c2"></span><span class="c c3"></span><span class="c c4"></span><div class="phone" id="phone"><video src="media/northside-ad.mp4" poster="media/northside-ad.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Northside launch ad"></video></div><span class="tagline">REC · northside_ad_9x16.mp4</span></div>
@@ -400,7 +400,7 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 $('#yr').textContent = new Date().getFullYear();
 
 // ticker
-const T = ['Research', 'Identity', '3D websites', 'Shops', 'Live tracking', 'CRMs', 'Dashboards', 'Motion graphics', 'Launch'];
+const T = ['Research', 'Identity', 'Websites', 'Shops', 'Live tracking', 'CRMs', 'Dashboards', 'Motion graphics', 'Launch'];
 $('#ticker').innerHTML = T.map((t, i) => i ? `<span>/</span>${t}` : t).join('');
 
 // modules
@@ -417,7 +417,7 @@ const ICON = {
 const MODS = [
   ['01','research','Research and data','Market, competitors, pricing and your area. Plus a name and trademark check before any design.'],
   ['02','identity','Brand identity','Name, logo, colours, type and tone of voice, in one design system every module shares.'],
-  ['03','web','3D website','A fast site with motion and interactive 3D that makes people stop scrolling.'],
+  ['03','web','Website','A fast, interactive site built to make people stop scrolling.'],
   ['04','shop','Shop and ordering','Menu, options, cart and checkout, with age or ID rules where the law needs them.'],
   ['05','ops','Operations apps','Live order tracking, and staff or driver apps with GPS and real-time updates.'],
   ['06','crm','CRM and dashboards','Customers, spend, orders, notes and your key numbers, all in one place.'],
@@ -584,7 +584,7 @@ if (phone && !reduced) addEventListener('scroll', () => { const r = phone.getBou
   }
 }
 
-// ===== 3D hero: a real man in a dark studio, HD brand screens drifting past him =====
+// ===== hero: a real man in a dark studio, HD brand screens drifting past him =====
 let gl = false; try { const c = document.createElement('canvas'); gl = !!(c.getContext('webgl2') || c.getContext('webgl')); } catch {}
 if (!gl) document.body.classList.add('no-gl');
 else {
