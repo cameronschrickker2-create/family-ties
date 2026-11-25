@@ -54,7 +54,7 @@ Use HTTPS: phones only share GPS with the driver app over https. Maps use CARTO'
 
 ## Design
 
-Warm beige + charcoal with a sand accent, Cormorant Garamond + Inter, all set as tokens in `public/base.css`. The 3D models, lighting and gallery live in `public/js/scenes.js`. Devices without WebGL get a flat gradient fallback, and reduced-motion settings stop the camera drift and rotation.
+Warm beige + charcoal with a sand accent, Cormorant Garamond + Inter, all set as tokens in `public/base.css`. The 3D models and lighting live in `public/js/scenes.js`: golden-hour sun filtered through cannabis leaves (soft dappled shadows that sway gently), limewashed arches and travertine plinths. Devices without WebGL get a flat gradient fallback, and reduced-motion settings stop the camera drift and rotation.
 
 ## Tests
 

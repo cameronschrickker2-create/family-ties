@@ -133,6 +133,58 @@ function pouch() {
   return shadowAll(g);
 }
 
+
+// ---------- Leaf gobo: cannabis-leaf silhouettes that cast dappled "sunlight through leaves" shadows ----------
+function leafCanvas(seed) {
+  const r = rng(seed), S = 1024, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
+  x.fillStyle = '#000'; x.strokeStyle = '#000'; x.lineCap = 'round';
+  const leaf = (cx, cy, size, rot) => {
+    x.save(); x.translate(cx, cy); x.rotate(rot);
+    [[-90, 1], [-60, .86], [-120, .86], [-30, .62], [-150, .62], [0, .34], [180, .34]].forEach(([a, l]) => {
+      x.save(); x.rotate(a * Math.PI / 180); const len = size * l, w = len * 0.16; x.beginPath(); x.moveTo(0, 0);
+      const N = 16; for (let i = 1; i <= N; i++) { const t = i / N, hw = w * Math.pow(Math.sin(Math.PI * Math.min(t, .999)), .85) * (i % 2 ? 1 : .8); x.lineTo(len * t, -hw); }
+      for (let i = N; i >= 0; i--) { const t = i / N, hw = w * Math.pow(Math.sin(Math.PI * Math.min(t, .999)), .85) * (i % 2 ? 1 : .8); x.lineTo(len * t, hw); }
+      x.fill(); x.restore();
+    });
+    x.lineWidth = size * 0.035; x.beginPath(); x.moveTo(0, 0); x.lineTo(0, size * 0.45); x.stroke(); x.restore();
+  };
+  // a few branches with leaves along them, leaving gaps of light between
+  for (let b = 0; b < 4; b++) {
+    let px = r() * S, py = -40, ang = Math.PI / 2 + (r() - .5) * 0.9; x.lineWidth = 7 + r() * 5;
+    x.beginPath(); x.moveTo(px, py);
+    const pts = [];
+    for (let k = 0; k < 6; k++) { ang += (r() - .5) * 0.5; px += Math.cos(ang) * 200; py += Math.sin(ang) * 200; x.lineTo(px, py); pts.push([px, py, ang]); }
+    x.stroke();
+    pts.forEach(([lx, ly, la], k) => { const side = k % 2 ? 1 : -1; leaf(lx + side * 60, ly, 110 + r() * 90, la + side * (0.9 + r() * 0.5) - Math.PI / 2); });
+  }
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t;
+}
+function makeGobo(size, seed, repeat = 1) {
+  const tex = leafCanvas(seed); if (repeat !== 1) { tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(repeat, repeat); }
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide, colorWrite: false, depthWrite: false }));
+  m.castShadow = true; m.receiveShadow = false;
+  m.customDepthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: tex, alphaTest: 0.5, side: THREE.DoubleSide });
+  return m;
+}
+// put the gobo between the light and its target, facing the light; returns a sway(t) function for a gentle breeze
+function placeGobo(gobo, light, at = 0.4) {
+  const base = new THREE.Vector3();
+  const update = t => {
+    base.copy(light.target.position).lerp(light.position, at);
+    gobo.position.copy(base); gobo.position.x += Math.sin(t * 0.5) * 0.08; gobo.position.y += Math.sin(t * 0.37 + 1) * 0.05;
+    gobo.lookAt(light.position); gobo.rotateZ(Math.sin(t * 0.43) * 0.035);
+  };
+  update(0); return update;
+}
+function plasterTex(seed = 3) {
+  const r = rng(seed);
+  return canvasTex(1024, 1024, (x, w, h) => {
+    x.fillStyle = '#E8DECF'; x.fillRect(0, 0, w, h);
+    for (let i = 0; i < 160; i++) { const g = x.createRadialGradient(0, 0, 0, 0, 0, 1); const a = 0.025 + r() * 0.05; g.addColorStop(0, r() > .5 ? `rgba(255,250,240,${a})` : `rgba(160,140,115,${a})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+      x.save(); x.translate(r() * w, r() * h); x.scale(40 + r() * 160, 30 + r() * 120); x.fillStyle = g; x.beginPath(); x.arc(0, 0, 1, 0, 7); x.fill(); x.restore(); }
+  });
+}
+
 // Pick a model from a menu product
 export function modelFor(p) {
   const n = (p.name || '').toLowerCase(), b = (p.badge || '').toLowerCase();
@@ -178,21 +230,25 @@ export function createGallery(canvas, stations) {
   const GAP = 7, len = (stations.length + 2) * GAP;
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(len, 20), std(PALETTE.floor, { roughness: 0.42, map: (() => { const t = stoneTex(5); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(len / 4, 5); return t; })() }));
   floor.rotation.x = -Math.PI / 2; floor.position.x = len / 2 - GAP; floor.receiveShadow = true; scene.add(floor);
-  const wall = new THREE.Mesh(new THREE.PlaneGeometry(len, 9), std(PALETTE.wall, { roughness: 0.95 })); wall.position.set(len / 2 - GAP, 4.5, -3.2); wall.receiveShadow = true; scene.add(wall);
-  // shadow-gap reveal line at floor + recessed ceiling cove light
+  const wtex = plasterTex(3); wtex.wrapS = wtex.wrapT = THREE.RepeatWrapping; wtex.repeat.set(len / 9, 1);
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(len, 9), std(0xffffff, { map: wtex, roughness: 0.97 })); wall.position.set(len / 2 - GAP, 4.5, -3.2); wall.receiveShadow = true; scene.add(wall);
   const reveal = new THREE.Mesh(new THREE.BoxGeometry(len, 0.04, 0.05), std(0x8F8170)); reveal.position.set(len / 2 - GAP, 0.02, -3.17); scene.add(reveal);
-  const cove = new THREE.Mesh(new THREE.BoxGeometry(len, 0.04, 0.3), new THREE.MeshBasicMaterial({ color: 0xFFF1DA })); cove.position.set(len / 2 - GAP, 5.2, -3.0); scene.add(cove);
-  scene.add(new THREE.HemisphereLight(0xFFF6EA, 0xBFAE96, 0.55));
-  const sun = new THREE.DirectionalLight(0xFFF0DD, 1.6); sun.position.set(4, 9, 6); sun.castShadow = true; sun.shadow.mapSize.set(1536, 1536); sun.shadow.radius = 6; sun.shadow.bias = -0.0004;
-  Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 }); scene.add(sun, sun.target);
+  // Golden-hour sun, low from the front-left, filtered through cannabis leaves
+  scene.add(new THREE.HemisphereLight(0xFFF3E3, 0xC4B29A, 0.85));
+  const sun = new THREE.DirectionalLight(0xFFD3A0, 2.6); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.02;
+  Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: 0.5, far: 40 }); scene.add(sun, sun.target);
+  const gobo = makeGobo(14, 21, 2.2); scene.add(gobo);
+  const sway = placeGobo(gobo, sun, 0.42);
   const models = [];
   stations.forEach((spec, i) => {
     const x = i * GAP;
+    // limewashed arch niche behind each plinth
+    const sh = new THREE.Shape(); sh.moveTo(-1.45, 0); sh.lineTo(-1.45, 3.3); sh.absarc(0, 3.3, 1.45, Math.PI, 0, true); sh.lineTo(1.45, 0); sh.lineTo(-1.45, 0);
+    const atex = plasterTex(10 + i); atex.wrapS = atex.wrapT = THREE.RepeatWrapping; atex.repeat.set(0.35, 0.22);
+    const arch = new THREE.Mesh(new THREE.ShapeGeometry(sh, 48), std(0xD9CBB6, { map: atex, roughness: 1 })); arch.position.set(x, 0, -3.18); arch.receiveShadow = true; scene.add(arch);
     const p = plinth(i + 2, spec.plinthH || 0.95); p.position.x = x; scene.add(p);
     const m = buildModel(spec); m.position.set(x, (spec.plinthH || 0.95) + 0.001, 0); m.scale.setScalar(spec.scale || 1.1); scene.add(m); models.push(m);
-    // wall-washer scallop + key spot on the object
-    const wash = new THREE.SpotLight(0xFFE6C4, 28, 9, Math.PI / 7, 0.85, 1.6); wash.position.set(x, 5.1, -2.7); wash.target.position.set(x, 1.5, -3.2); scene.add(wash, wash.target);
-    const key = new THREE.SpotLight(0xFFF4E6, 40, 12, Math.PI / 11, 0.6, 1.4); key.position.set(x + 1.5, 6, 2.5); key.target.position.set(x, 1, 0); scene.add(key, key.target);
+    const key = new THREE.SpotLight(0xFFF4E6, 16, 12, Math.PI / 10, 0.7, 1.4); key.position.set(x + 2, 5, 4); key.target.position.set(x, 1.2, 0); scene.add(key, key.target);
   });
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 60);
   let target = 0, cur = 0, mx = 0, my = 0, smx = 0, smy = 0, raf, visible = true;
@@ -210,7 +266,7 @@ export function createGallery(canvas, stations) {
     const dist = portrait ? 8.4 : 7.4, side = portrait ? 0 : -1.55;
     camera.position.set(x + side + smx * 0.6, 2.25 + smy * -0.25 + (portrait ? 0.4 : 0), dist);
     camera.lookAt(x + side, portrait ? 1.75 : 1.35, 0);
-    sun.position.set(x + 4, 9, 6); sun.target.position.set(x, 0, 0);
+    sun.position.set(x - 7, 7.5, 7); sun.target.position.set(x, 1.2, -2.2); sway(reduced ? 0 : t);
     if (!reduced) models.forEach((m, i) => { m.rotation.y = t * 0.18 + i; });
     renderer.render(scene, camera);
     raf = visible ? requestAnimationFrame(frame) : null;
@@ -229,10 +285,11 @@ export async function renderThumbs(specs, size = 640) {
   const canvas = document.createElement('canvas'); canvas.width = canvas.height = size;
   const renderer = setupRenderer(canvas, true); renderer.setPixelRatio(1); renderer.setSize(size, size, false);
   const scene = new THREE.Scene(); envFor(renderer, scene);
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.ShadowMaterial({ opacity: 0.22 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
-  scene.add(new THREE.HemisphereLight(0xFFF6EA, 0xBFAE96, 0.8));
-  const key = new THREE.DirectionalLight(0xFFF1DE, 2.2); key.position.set(2.5, 5, 3); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.radius = 8; key.shadow.bias = -0.0004;
-  Object.assign(key.shadow.camera, { left: -2, right: 2, top: 2, bottom: -2 }); scene.add(key);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.ShadowMaterial({ opacity: 0.2 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+  scene.add(new THREE.HemisphereLight(0xFFF6EA, 0xBFAE96, 0.9));
+  const key = new THREE.DirectionalLight(0xFFDDB3, 2.6); key.position.set(-3, 5, 3.5); key.castShadow = true; key.shadow.mapSize.set(1536, 1536); key.shadow.bias = -0.0005; key.shadow.normalBias = 0.02;
+  Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3 }); scene.add(key, key.target);
+  const gobo = makeGobo(5, 7); scene.add(gobo); placeGobo(gobo, key, 0.45);
   const rim = new THREE.DirectionalLight(0xFFE2BE, 1.2); rim.position.set(-3, 2, -3); scene.add(rim);
   const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
   const out = [];
@@ -257,7 +314,9 @@ export function createViewer(container, spec) {
   const scene = new THREE.Scene(); envFor(renderer, scene);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.ShadowMaterial({ opacity: 0.2 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
   scene.add(new THREE.HemisphereLight(0xFFF6EA, 0xBFAE96, 0.8));
-  const key = new THREE.DirectionalLight(0xFFF1DE, 2.2); key.position.set(2.5, 5, 3); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.radius = 8; scene.add(key);
+  const key = new THREE.DirectionalLight(0xFFDDB3, 2.6); key.position.set(-3, 5, 3.5); key.castShadow = true; key.shadow.mapSize.set(1536, 1536); key.shadow.bias = -0.0005; key.shadow.normalBias = 0.02;
+  Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3 }); scene.add(key, key.target);
+  const gobo = makeGobo(5, 7); scene.add(gobo); const sway = placeGobo(gobo, key, 0.45); const clock = new THREE.Clock();
   const m = buildModel(spec); scene.add(m);
   const box = new THREE.Box3().setFromObject(m), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()), r = Math.max(s.x, s.y * 1.2, s.z);
   const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50); cam.position.set(c.x + r * 1.4, c.y + r * 1.0, c.z + r * 2.5);
@@ -266,6 +325,6 @@ export function createViewer(container, spec) {
   let alive = true;
   const resize = () => { const w = container.clientWidth, h = container.clientHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
   resize(); const ro = new ResizeObserver(resize); ro.observe(container);
-  (function loop() { if (!alive) return; ctl.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
+  (function loop() { if (!alive) return; if (!reduced) sway(clock.getElapsedTime()); ctl.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
   return { dispose() { alive = false; ro.disconnect(); ctl.dispose(); renderer.dispose(); renderer.forceContextLoss(); canvas.remove(); } };
 }
