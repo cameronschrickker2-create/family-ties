@@ -175,9 +175,70 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
 .rv{transition:opacity .8s,transform .8s cubic-bezier(.2,.9,.2,1)}
 .js .rv:not(.in){opacity:0;transform:translateY(28px)}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.ticker .track{animation:none}.js .rv:not(.in){opacity:1;transform:none}}
+
+/* ===== motion system (matches the hero) ===== */
+@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+.prog{position:fixed;top:0;left:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--signal),#FFB199);z-index:60;pointer-events:none}
+.ticker .track{animation:marq 38s linear infinite;font-family:var(--mono);font-weight:500;font-size:14px;letter-spacing:.12em;text-transform:uppercase}
+.ticker{text-align:left}
+section .label:not(.hero .label){font-family:var(--mono);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase}
+.label .ix{color:var(--muted2);margin-right:10px}
+.wipe .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.06em;margin-bottom:-.06em}
+.wipe .w>span{display:inline-block;transform:translateY(105%);transition:transform .9s cubic-bezier(.2,.9,.2,1);transition-delay:calc(var(--i)*55ms)}
+.wipe.in .w>span{transform:none}
+.glow{--mx:50%;--my:50%;position:relative;isolation:isolate}
+.glow::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(420px circle at var(--mx) var(--my),rgba(242,112,78,.13),transparent 45%);opacity:0;transition:opacity .3s;z-index:-1;pointer-events:none}
+.glow::after{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:radial-gradient(260px circle at var(--mx) var(--my),rgba(242,112,78,.9),transparent 55%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .3s;pointer-events:none}
+.glow:hover::before,.glow:hover::after{opacity:1}
+.tilt{transition:transform .5s cubic-bezier(.2,.9,.2,1),opacity .8s,border-color .2s;will-change:transform}
+.mods .rv,.tiers .tier,.minis .rv,.plans .plan{transition-delay:calc(var(--i,0)*70ms)}
+.draw [data-len]{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);transition:stroke-dashoffset 1.2s cubic-bezier(.6,.1,.2,1) .25s}
+.draw.in [data-len]{stroke-dashoffset:0}
+.draw [data-fill]{opacity:0;transform:scale(.6);transform-box:fill-box;transform-origin:center;transition:opacity .5s .9s,transform .6s cubic-bezier(.2,1.4,.4,1) .9s}
+.draw.in [data-fill]{opacity:1;transform:none}
+.mod .n::after{content:"";display:inline-block;width:18px;height:1px;background:var(--signal);vertical-align:middle;margin-left:10px;transform:scaleX(0);transform-origin:0;transition:transform .6s .5s}
+.mod.in .n::after{transform:scaleX(1)}
+/* work goes dark, like the hero */
+.work{background:var(--night);color:var(--nfg);position:relative;overflow:hidden}
+.work::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--nline) 1px,transparent 1px),linear-gradient(90deg,var(--nline) 1px,transparent 1px);background-size:64px 64px;opacity:.35;-webkit-mask:radial-gradient(ellipse at 50% 30%,#000 10%,transparent 70%);mask:radial-gradient(ellipse at 50% 30%,#000 10%,transparent 70%);animation:gridmove 18s linear infinite;pointer-events:none}
+@keyframes gridmove{to{background-position:0 64px,64px 0}}
+.work .wrap{position:relative}
+.work .label{color:var(--signal)}
+.work .head p{color:var(--nmuted)}
+.work .case,.work .mini{background:rgba(255,255,255,.035);border:1px solid var(--nline);color:var(--nfg);box-shadow:none;backdrop-filter:blur(6px)}
+.work .case p,.work .mini p{color:var(--nmuted)}
+.work .case li{color:var(--nfg)}
+.work .mini .tags span{background:rgba(242,112,78,.12);color:#FFB49F;border:1px solid rgba(242,112,78,.25)}
+.phone{position:relative;background:#0A0C10;box-shadow:0 0 0 1px var(--nline),0 40px 80px -30px rgba(242,112,78,.35)}
+.phone::after{content:"";position:absolute;left:11px;right:11px;top:11px;height:24%;border-radius:30px 30px 0 0;background:linear-gradient(180deg,rgba(242,112,78,0),rgba(242,112,78,.16) 85%,rgba(255,200,180,.55) 100%);mix-blend-mode:screen;animation:scan 3.6s cubic-bezier(.6,0,.4,1) infinite;pointer-events:none}
+@keyframes scan{0%{transform:translateY(-10%);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateY(330%);opacity:0}}
+.phone-wrap{position:relative;justify-self:center;padding:26px}
+.phone-wrap .c{position:absolute;width:20px;height:20px;border:0 solid rgba(255,255,255,.35)}
+.phone-wrap .c1{top:0;left:0;border-top-width:1px;border-left-width:1px}.phone-wrap .c2{top:0;right:0;border-top-width:1px;border-right-width:1px}.phone-wrap .c3{bottom:0;left:0;border-bottom-width:1px;border-left-width:1px}.phone-wrap .c4{bottom:0;right:0;border-bottom-width:1px;border-right-width:1px}
+.phone-wrap .tagline{position:absolute;bottom:-4px;left:26px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--nmuted);transform:translateY(100%)}
+/* process: a line that fills as you scroll */
+.steps{position:relative}
+.steps::after{content:"";position:absolute;left:0;right:0;top:-2px;height:2px;background:linear-gradient(90deg,var(--signal),#FFB199);transform-origin:0 50%;transform:scaleX(var(--p,0))}
+.step::before{transition:background .4s,box-shadow .4s,transform .4s;z-index:1}
+.step.on::before{background:var(--signal);transform:scale(1.15);box-shadow:0 0 0 6px rgba(242,112,78,.18)}
+.step h3,.step p{transition:opacity .5s}
+.steps.going .step:not(.on) h3,.steps.going .step:not(.on) p{opacity:.45}
+@media(max-width:860px){.steps::after{display:none}}
+/* pricing */
+.tier.hot{position:relative;border-color:transparent;background:linear-gradient(var(--soft),var(--soft)) padding-box,conic-gradient(from var(--a),var(--signal),#FFD0C2,var(--signal2),var(--signal)) border-box;border:1.5px solid transparent;animation:spin 6s linear infinite}
+@keyframes spin{to{--a:360deg}}
+.plan{transition:border-color .3s}.plan:hover{border-color:var(--signal)}
+/* contact */
+.contact{position:relative;overflow:hidden}
+.contact::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(201,71,43,.22) 1px,transparent 1.4px);background-size:22px 22px;-webkit-mask:linear-gradient(110deg,transparent 30%,#000 70%);mask:linear-gradient(110deg,transparent 30%,#000 70%);animation:dots 30s linear infinite;pointer-events:none}
+@keyframes dots{to{background-position:220px 0}}
+.contact .wrap{position:relative}
+input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14)}
+@media (prefers-reduced-motion:reduce){.ticker .track,.work::before,.contact::before,.phone::after,.tier.hot{animation:none}.wipe .w>span{transform:none;transition:none}.draw [data-len]{stroke-dashoffset:0}.draw [data-fill]{opacity:1;transform:none}}
 </style>
 </head>
 <body>
+<div class="prog" id="prog" aria-hidden="true"></div>
 <header class="nav" id="nav"><div class="wrap">
   <a class="logo" href="#top" aria-label="Ensign Studio home"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="2" width="2.4" height="25" rx="1.2" fill="#1F232C"/><path d="M6 3h18l-3.2 5L24 13H6z" fill="#F2704E"/><path d="M10 5.5h7M10 8h5M10 10.5h7" stroke="#1F232C" stroke-width="1.6" stroke-linecap="round"/></svg>Ensign Studio</a>
   <nav class="links"><a href="#build">What we build</a><a href="#work">Work</a><a href="#process">Process</a><a href="#pricing">Pricing</a></nav>
@@ -221,7 +282,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
       <ul><li>26-second ad with an original score</li><li>3D website with a swipeable product carousel</li><li>Shop, live driver tracking and an admin CRM</li><li>Rebrand turned around in under an hour</li></ul>
       <a class="btn" href="https://cameronschrickker2-create.github.io/northside/" target="_blank" rel="noopener">Visit the live site ↗</a>
     </div>
-    <div class="phone"><video src="media/northside-ad.mp4" poster="media/northside-ad.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Northside launch ad"></video></div>
+    <div class="phone-wrap"><span class="c c1"></span><span class="c c2"></span><span class="c c3"></span><span class="c c4"></span><div class="phone" id="phone"><video src="media/northside-ad.mp4" poster="media/northside-ad.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Northside launch ad"></video></div><span class="tagline">REC · northside_ad_9x16.mp4</span></div>
   </article>
   <div class="minis">
     <article class="mini rv"><p class="label">Electrical contractor</p><h3>IsiMork Electrical</h3><p>An office CRM that tracks clients and jobs and sends quotes and invoices as PDFs, plus a new website and a vertical promo clip.</p><div class="tags"><span>CRM</span><span>PDF quotes</span><span>Website</span><span>Video</span></div></article>
@@ -239,7 +300,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
   </div>
 </div></section>
 
-<section id="pricing" style="background:#FBFAF7"><div class="wrap">
+<section id="pricing" style="background:#EDEAE3"><div class="wrap">
   <div class="head rv"><div><p class="label">Pricing</p><h2>Clear packages, no surprises</h2></div><p>Starting prices in rand, excluding VAT. 50% deposit starts the build, the balance is due at launch.</p></div>
   <div class="tiers rv">
     <div class="tier"><p class="t">1 week</p><h3>Launch Kit</h3><div class="price">R12 000</div><ul><li>Research and name check</li><li>Brand identity</li><li>Website</li><li>One 9:16 launch ad</li></ul></div>
@@ -323,6 +384,78 @@ $('#brief').addEventListener('submit', e => {
   if (c.email) { location.href = `mailto:${c.email}?subject=${encodeURIComponent('Brief: ' + biz)}&body=${encodeURIComponent(text)}`; return; }
   out.className = 'sent on'; out.innerHTML = 'Thanks! Our contact details are being set up. Copy your brief below and send it to us once they are live.<code></code>'; out.querySelector('code').textContent = text;
 });
+
+
+// ===== motion system =====
+const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+// scroll progress
+const prog = $('#prog');
+const onScroll = () => { const h = document.documentElement.scrollHeight - innerHeight; prog.style.transform = `scaleX(${h > 0 ? scrollY / h : 0})`; };
+addEventListener('scroll', onScroll, { passive: true }); onScroll();
+// ticker: seamless loop
+$('#ticker').innerHTML += '<span>/</span>' + $('#ticker').innerHTML + '<span>/</span>';
+// section labels: index + decode effect
+const GL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/<>#';
+function decode(el) {
+  const txt = el.dataset.t; if (reduced) { el.lastChild.textContent = txt; return; }
+  let f = 0; const total = 22;
+  const tick = () => { f++; el.lastChild.textContent = txt.split('').map((c, i) => c === ' ' ? ' ' : i < (f / total) * txt.length ? c : GL[(Math.random() * GL.length) | 0]).join(''); if (f < total) requestAnimationFrame(tick); else el.lastChild.textContent = txt; };
+  tick();
+}
+document.querySelectorAll('section:not(.hero) .head .label, .contact .label:first-child').forEach((el, i) => {
+  el.dataset.t = el.textContent; el.innerHTML = `<span class="ix">[0${i + 1}]</span><span></span>`; el.lastChild.textContent = el.dataset.t;
+  new IntersectionObserver(([e], o) => { if (e.isIntersecting) { decode(el); o.disconnect(); } }, { threshold: 1 }).observe(el);
+});
+// headings: word-by-word wipe
+document.querySelectorAll('section:not(.hero) h2').forEach(h => {
+  const words = h.textContent.trim().split(/\s+/);
+  h.setAttribute('aria-label', h.textContent.trim());
+  h.innerHTML = words.map((w, i) => `<span class="w" aria-hidden="true"><span style="--i:${i}">${w}</span></span>`).join(' ');
+  h.classList.add('wipe'); io.observe(h);
+});
+// stagger grid children
+['#mods', '.tiers', '.minis', '.plans'].forEach(sel => document.querySelectorAll(sel + ' > *').forEach((el, i) => el.style.setProperty('--i', i)));
+// icons draw themselves
+document.querySelectorAll('.mod').forEach(m => {
+  m.classList.add('draw');
+  m.querySelectorAll('svg *').forEach(sh => {
+    if (sh.getAttribute('stroke') && sh.getAttribute('fill') === 'none') { const L = Math.ceil(sh.getTotalLength?.() || 200); sh.dataset.len = L; sh.style.setProperty('--len', L); }
+    else sh.dataset.fill = '';
+  });
+});
+// spotlight + tilt cards
+document.querySelectorAll('.mod, .case, .mini, .tier, .plan').forEach(el => {
+  el.classList.add('glow');
+  if (!fine) return;
+  const tilt = el.matches('.mod, .tier, .mini'); if (tilt) el.classList.add('tilt');
+  el.addEventListener('pointermove', e => {
+    const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    el.style.setProperty('--mx', x * 100 + '%'); el.style.setProperty('--my', y * 100 + '%');
+    if (tilt && !reduced) el.style.transform = `perspective(900px) rotateY(${(x - .5) * 7}deg) rotateX(${(.5 - y) * 6}deg) translateY(-4px)`;
+  });
+  el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+});
+// process line fills with scroll; steps light up in turn
+const steps = $('.steps'), stepEls = [...document.querySelectorAll('.step')];
+const onSteps = () => {
+  const r = steps.getBoundingClientRect(); const p = Math.min(1, Math.max(0, (innerHeight * .78 - r.top) / (innerHeight * .55)));
+  steps.style.setProperty('--p', p); steps.classList.toggle('going', p > 0 && p < 1);
+  stepEls.forEach((s, i) => s.classList.toggle('on', p >= i / stepEls.length + .02 || p >= 1));
+};
+addEventListener('scroll', onSteps, { passive: true }); onSteps();
+// prices count up
+document.querySelectorAll('.tier .price, .plan i').forEach(el => {
+  const m = el.textContent.match(/R([\d\s]+)/); if (!m || reduced) return;
+  const target = +m[1].replace(/\s/g, ''), tail = el.textContent.slice(m.index + m[0].length).trim(), sep = m[0].includes(' ');
+  const fmt = n => 'R' + (sep ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : n) + (tail ? (tail.startsWith('/') ? '' : ' ') + tail : '');
+  el.textContent = fmt(0);
+  new IntersectionObserver(([e], o) => { if (!e.isIntersecting) return; o.disconnect(); const t0 = performance.now();
+    const run = now => { const k = Math.min(1, (now - t0) / 1300), v = Math.round(target * (1 - Math.pow(1 - k, 3)) / 100) * 100; el.textContent = fmt(k < 1 ? v : target); if (k < 1) requestAnimationFrame(run); };
+    requestAnimationFrame(run); }, { threshold: .6 }).observe(el);
+});
+// phone floats with scroll
+const phone = $('#phone');
+if (phone && !reduced) addEventListener('scroll', () => { const r = phone.getBoundingClientRect(), k = (r.top + r.height / 2 - innerHeight / 2) / innerHeight; phone.style.transform = `translateY(${k * -40}px) rotate(${3 - k * 6}deg)`; }, { passive: true });
 
 // ===== 3D hero: a real man in a dark studio, HD brand screens drifting past him =====
 let gl = false; try { const c = document.createElement('canvas'); gl = !!(c.getContext('webgl2') || c.getContext('webgl')); } catch {}
