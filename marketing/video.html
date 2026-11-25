@@ -22,7 +22,7 @@ const BRAND = {
 };
 // =======================================
 const W=1080,H=1920,BPM=112,B=60/BPM,END_BEAT=48;
-const C={ink:'#0B1410',ink2:'#121F18',forest:'#1E3A2B',line:'#24402F',lime:'#C6FF3D',cream:'#F2EEDF',orange:'#FF6A2B',mute:'#8FA196'};
+const C={ink:'#0B1410',ink2:'#121F18',forest:'#1E3A2B',line:'#24402F',lime:'#3CF0A0',cream:'#F2EEDF',orange:'#FF6A2B',mute:'#8FA196'};
 const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
 const p=(x,a,b)=>clamp((x-a)/(b-a));
 const lerp=(a,b,x)=>a+(b-a)*x;
@@ -98,16 +98,16 @@ function pointAt(pts,L,d){const tot=L[L.length-1]*d;for(let i=1;i<pts.length;i++
 function s0(c,b,t){
   bg(c,C.ink);
   // faint frame guides
-  c.strokeStyle='rgba(198,255,61,.08)';c.lineWidth=2;c.strokeRect(60,60,W-120,H-120);
+  c.strokeStyle='rgba(60,240,160,.08)';c.lineWidth=2;c.strokeRect(60,60,W-120,H-120);
   const lab='CAPE TOWN — NORTHERN SUBURBS';const n=Math.floor(p(b,0.15,2.0)*lab.length);
   txt(c,lab.slice(0,n)+((Math.floor(t*4)%2||n<lab.length)?'▌':''),90,170,30,'Mono',C.cream,'left',400,3);
   const blink=Math.floor(t*2)%2;c.fillStyle=blink?C.orange:'transparent';c.beginPath();c.arc(105,H-150,10,0,7);c.fill();
   txt(c,'REC  00:00:'+String(Math.floor(t*30)%100).padStart(2,'0'),130,H-140,26,'Mono',C.mute,'left',400,3);
   const push=1+0.35*eIO(p(b,3.3,4));
   c.save();c.translate(W/2,960);c.scale(push,push);c.translate(-W/2,-960);
-  const s1=fit(c,'YOU KNOW','Anton',860,330);
-  rise(c,'YOU KNOW',W/2,900,s1,'Anton',C.cream,p(b,1,1.6));
-  rise(c,'THE SPOT.',W/2,900+s1*1.02,s1,'Anton',C.lime,p(b,2,2.6));
+  const s1=fit(c,'NORTHSIDE.','Anton',900,330);
+  rise(c,'THIS IS',W/2,900,s1,'Anton',C.cream,p(b,1,1.6));
+  rise(c,'NORTHSIDE.',W/2,900+s1*1.02,s1,'Anton',C.lime,p(b,2,2.6));
   c.restore();
 }
 const HITS=[[4,'BRACKENFELL'],[5,'DURBANVILLE'],[6,'BELLVILLE'],[7,'KUILS RIVER'],[8,'KRAAIFONTEIN'],[8.5,'PAROW'],[9,'GOODWOOD'],[9.5,'PLATTEKLOOF'],[10,'EDGEMEAD'],[10.5,'BOTHASIG'],[11,'& SURROUNDS']];
@@ -166,7 +166,7 @@ function s2(c,b,t){
   g=c.createLinearGradient(0,1380,0,H);g.addColorStop(0,'rgba(11,20,16,0)');g.addColorStop(.4,C.ink);c.fillStyle=g;c.fillRect(0,1380,W,H-1380);
   const hs=fit(c,'COMES TO YOU.','Anton',940,230);
   txt(c,'LIVE TRACKING',90,150,28,'Mono',C.lime,'left',700,4);
-  rise(c,'NOW THE SPOT',W/2,180+hs,hs,'Anton',C.cream,p(lb,0,0.5));
+  rise(c,'NORTHSIDE',W/2,180+hs,hs,'Anton',C.cream,p(lb,0,0.5));
   rise(c,'COMES TO YOU.',W/2,180+hs*2.02,hs,'Anton',C.lime,p(lb,2,2.5));
   // status card
   const cp=eExpo(p(lb,3,3.8));if(cp>0){const y=lerp(H,1450,cp);c.save();rrect(c,70,y,W-140,250,28);c.fillStyle=C.ink2;c.fill();c.strokeStyle=C.forest;c.lineWidth=3;c.stroke();

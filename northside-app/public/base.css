@@ -7,7 +7,7 @@
 @import url(/vendor/fonts/inter/600.css);
 :root{
   /* Same brand as the promo video: deep ink, acid lime, cream, a little orange. */
-  --ink:#0B1410;--ink-2:#13221A;--forest:#1E3A2B;--lime:#C6FF3D;--lime-d:#B2EB24;--cream:#F2EEDF;--orange:#FF6A2B;
+  --ink:#0B1410;--ink-2:#13221A;--forest:#1E3A2B;--lime:#3CF0A0;--lime-d:#22D88A;--cream:#F2EEDF;--orange:#FF6A2B;
   --bg:#F2EEDF;--surface:#E6E1D0;--line:#D6D0BD;--muted:#5E6B62;--danger:#D93A2B;--warn:#E8A317;--ok:#1F9D55;
   --radius:14px;--shadow:0 18px 40px -18px rgba(11,20,16,.45);
   --display:Anton,"Arial Narrow",Impact,sans-serif;
@@ -55,7 +55,7 @@ h1 em,h2 em,h3 em{font-style:normal;background:var(--ink);color:var(--lime);disp
 @media (prefers-reduced-motion:reduce){.grain{animation:none}.btn:hover{transform:none}}
 /* depth-of-field carousel (shop + website) */
 .flow{position:relative;background:var(--ink);color:var(--cream);border-radius:30px;padding:26px 0 24px;overflow:hidden;user-select:none}
-.flow-word{position:absolute;left:0;right:0;top:46%;transform:translateY(-50%);text-align:center;font-family:var(--display);text-transform:uppercase;font-size:clamp(110px,22vw,340px);line-height:.8;color:transparent;-webkit-text-stroke:2px rgba(198,255,61,.22);white-space:nowrap;pointer-events:none}
+.flow-word{position:absolute;left:0;right:0;top:46%;transform:translateY(-50%);text-align:center;font-family:var(--display);text-transform:uppercase;font-size:clamp(110px,22vw,340px);line-height:.8;color:transparent;-webkit-text-stroke:2px rgba(60,240,160,.22);white-space:nowrap;pointer-events:none}
 .flow-stage{position:relative;height:clamp(260px,40vw,440px);cursor:grab;touch-action:pan-y;outline:none}
 .flow-stage:active{cursor:grabbing}
 .flow-stage:focus-visible{box-shadow:inset 0 0 0 3px var(--lime)}

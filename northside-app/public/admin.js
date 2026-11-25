@@ -163,7 +163,7 @@ function viewMap() {
 function drawMap() {
   if (A.tab !== 'map' || !A.layer) return;
   A.layer.clearLayers();
-  L.circleMarker([A.settings.base.lat, A.settings.base.lng], { radius: 8, color: '#0B1410', fillColor: '#C6FF3D', fillOpacity: 1 }).bindTooltip('Dispatch').addTo(A.layer);
+  L.circleMarker([A.settings.base.lat, A.settings.base.lng], { radius: 8, color: '#0B1410', fillColor: '#3CF0A0', fillOpacity: 1 }).bindTooltip('Dispatch').addTo(A.layer);
   for (const o of A.orders.values()) if (!['delivered', 'cancelled'].includes(o.status))
     L.marker([o.lat, o.lng], { icon: L.divIcon({ className: '', html: '<div class="opin"></div>', iconSize: [22, 22], iconAnchor: [11, 22] }) }).bindTooltip(`${esc(o.code)} · ${esc(o.customer.name)} · ${LABEL[o.status]}`).on('click', () => orderDrawer(o.id)).addTo(A.layer);
   for (const d of A.drivers) if (d.lat != null && d.active)

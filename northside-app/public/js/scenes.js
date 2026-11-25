@@ -289,7 +289,7 @@ export async function renderThumbs(specs, size = 640, look = 'dark') {
   scene.add(new THREE.HemisphereLight(0xFFF6EA, 0xBFAE96, 0.9));
   const key = new THREE.DirectionalLight(0xFFDDB3, 2.6); key.position.set(-3, 5, 3.5); key.castShadow = true; key.shadow.mapSize.set(1536, 1536); key.shadow.bias = -0.0005; key.shadow.normalBias = 0.02;
   Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3 }); scene.add(key, key.target);
-  if (look === 'dark') { ground.material.opacity = 0.45; const lime = new THREE.DirectionalLight(0xC6FF3D, 3.2); lime.position.set(3, 1.5, -3); scene.add(lime); const back = new THREE.DirectionalLight(0xC6FF3D, 1.4); back.position.set(-3, 3, -2); scene.add(back); }
+  if (look === 'dark') { ground.material.opacity = 0.45; const lime = new THREE.DirectionalLight(0x3CF0A0, 3.2); lime.position.set(3, 1.5, -3); scene.add(lime); const back = new THREE.DirectionalLight(0x3CF0A0, 1.4); back.position.set(-3, 3, -2); scene.add(back); }
   else { const gobo = makeGobo(5, 7); scene.add(gobo); placeGobo(gobo, key, 0.45); }
   const rim = new THREE.DirectionalLight(0xFFE2BE, 1.0); rim.position.set(-3, 2, -3); scene.add(rim);
   const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
@@ -318,7 +318,7 @@ export function createViewer(container, spec, look = 'dark') {
   const key = new THREE.DirectionalLight(0xFFDDB3, 2.6); key.position.set(-3, 5, 3.5); key.castShadow = true; key.shadow.mapSize.set(1536, 1536); key.shadow.bias = -0.0005; key.shadow.normalBias = 0.02;
   Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3 }); scene.add(key, key.target);
   let sway = () => {}; const clock = new THREE.Clock();
-  if (look === 'dark') { ground.material.opacity = 0.45; const lime = new THREE.DirectionalLight(0xC6FF3D, 3.2); lime.position.set(3, 1.5, -3); scene.add(lime); const back = new THREE.DirectionalLight(0xC6FF3D, 1.4); back.position.set(-3, 3, -2); scene.add(back); }
+  if (look === 'dark') { ground.material.opacity = 0.45; const lime = new THREE.DirectionalLight(0x3CF0A0, 3.2); lime.position.set(3, 1.5, -3); scene.add(lime); const back = new THREE.DirectionalLight(0x3CF0A0, 1.4); back.position.set(-3, 3, -2); scene.add(back); }
   else { const gobo = makeGobo(5, 7); scene.add(gobo); sway = placeGobo(gobo, key, 0.45); }
   const m = buildModel(spec); scene.add(m);
   const box = new THREE.Box3().setFromObject(m), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()), r = Math.max(s.x, s.y * 1.2, s.z);
@@ -338,8 +338,8 @@ export function createHero(canvas, spec) {
   const scene = new THREE.Scene(); envFor(renderer, scene); scene.environmentIntensity = 0.35;
   scene.add(new THREE.HemisphereLight(0xFFF3E3, 0x0B1410, 0.6));
   const key = new THREE.DirectionalLight(0xFFE6C8, 2.4); key.position.set(-3, 4, 4); scene.add(key);
-  const lime = new THREE.DirectionalLight(0xC6FF3D, 5); lime.position.set(4, 1, -3); scene.add(lime);
-  const lime2 = new THREE.PointLight(0xC6FF3D, 6, 6); lime2.position.set(-2, -1, -1.5); scene.add(lime2);
+  const lime = new THREE.DirectionalLight(0x3CF0A0, 5); lime.position.set(4, 1, -3); scene.add(lime);
+  const lime2 = new THREE.PointLight(0x3CF0A0, 6, 6); lime2.position.set(-2, -1, -1.5); scene.add(lime2);
   const holder = new THREE.Group(); scene.add(holder);
   let model = buildModel(spec); holder.add(model);
   const fit = () => { const b = new THREE.Box3().setFromObject(model), c = b.getCenter(new THREE.Vector3()); model.position.sub(c); };
