@@ -237,31 +237,41 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
 @media (prefers-reduced-motion:reduce){.ticker .track,.work::before,.contact::before,.phone::after,.tier.hot{animation:none}.wipe .w>span{transform:none;transition:none}.draw [data-len]{stroke-dashoffset:0}.draw [data-fill]{opacity:1;transform:none}}
 
 /* IsiMork case: stacked browser windows */
-.case.flip{grid-template-columns:1fr 1.25fr}
+.case.flip{grid-template-columns:1.35fr 1fr}
 .case.flip .screens{order:-1}
 @media(max-width:860px){.case.flip{grid-template-columns:1fr}.case.flip .screens{order:0}}
 .minis{grid-template-columns:1fr}
-.screens{position:relative;padding:26px 26px 64px}
+.screens{position:relative;padding:26px 26px 70px}
 .screens .c{position:absolute;width:20px;height:20px;border:0 solid rgba(255,255,255,.35)}
 .screens .c1{top:0;left:0;border-top-width:1px;border-left-width:1px}.screens .c2{top:0;right:0;border-top-width:1px;border-right-width:1px}.screens .c3{bottom:0;left:0;border-bottom-width:1px;border-left-width:1px}.screens .c4{bottom:0;right:0;border-bottom-width:1px;border-right-width:1px}
-.stack{display:grid;padding:30px 7% 0 0}
-.win{grid-area:1/1;margin:0;border-radius:14px;overflow:hidden;background:#0A0C10;box-shadow:0 0 0 1px var(--nline),0 40px 80px -30px rgba(242,112,78,.35);transform:translate(8%,-30px) scale(.9);opacity:.55;filter:brightness(.55) blur(1px);z-index:1;transition:transform .9s cubic-bezier(.2,.9,.2,1),opacity .9s,filter .9s;position:relative}
-.win.on{transform:none;opacity:1;filter:none;z-index:2}
-.win img{display:block;width:100%;height:auto}
-.wbar{display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;background:#161A22;border-bottom:1px solid var(--nline)}
-.wbar i{width:9px;height:9px;border-radius:50%;background:#3A414E}.wbar i:first-child{background:#F2704E}
-.wbar span{margin-left:10px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--nmuted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.win.on::after{content:"";position:absolute;left:0;right:0;top:30px;height:22%;background:linear-gradient(180deg,rgba(242,112,78,0),rgba(242,112,78,.12) 85%,rgba(255,200,180,.45) 100%);mix-blend-mode:screen;animation:scan2 4s cubic-bezier(.6,0,.4,1) infinite;pointer-events:none}
-@keyframes scan2{0%{transform:translateY(-10%);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateY(360%);opacity:0}}
-.tabs{position:absolute;left:26px;bottom:18px;display:flex;gap:4px;padding:3px;border:1px solid var(--nline);border-radius:999px;background:rgba(255,255,255,.04)}
-.tabs button{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--nmuted);background:none;border:0;border-radius:999px;padding:7px 12px;cursor:pointer;position:relative;overflow:hidden}
+.tabs{position:absolute;left:26px;right:26px;bottom:18px;width:max-content;max-width:calc(100% - 52px);overflow-x:auto;scrollbar-width:none;display:flex;gap:4px;padding:3px;border:1px solid var(--nline);border-radius:999px;background:rgba(255,255,255,.04)}
+.tabs button{flex:none;white-space:nowrap;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--nmuted);background:none;border:0;border-radius:999px;padding:7px 12px;cursor:pointer;position:relative;overflow:hidden}
 .tabs button[aria-selected="true"]{background:rgba(242,112,78,.16);color:#FFB49F}
-.tabs button[aria-selected="true"]::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--signal);transform-origin:0;animation:tabfill 4.5s linear forwards}
+.tabs button[aria-selected="true"]::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--signal);transform-origin:0;}
 .screens.hold .tabs button::after{animation-play-state:paused}
 @keyframes tabfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-.screens .tagline{position:absolute;right:26px;bottom:26px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--nmuted)}
+.screens .tagline{position:absolute;right:26px;top:4px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--nmuted)}
 @media(max-width:520px){.screens .tagline{display:none}}
-@media (prefers-reduced-motion:reduce){.win.on::after,.tabs button::after{animation:none}}
+@media (prefers-reduced-motion:reduce){.lscan{display:none}}
+
+.lapscene{position:relative;aspect-ratio:1600/1044;border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px var(--nline),0 40px 80px -30px rgba(242,112,78,.3)}
+.lap-photo{display:block;width:100%;height:100%;object-fit:cover;user-select:none}
+.lapscreen{position:absolute;left:0;top:0;width:1000px;height:625px;transform-origin:0 0;background:#0A0C10;overflow:hidden;visibility:hidden}
+.lapscreen.ready{visibility:visible}
+.lbar{display:flex;align-items:center;gap:8px;height:30px;padding:0 14px;background:#EDEFF2;border-bottom:1px solid #D8DCE1}
+.lbar i{width:10px;height:10px;border-radius:50%;background:#C9CDD3}.lbar i:first-child{background:#F2704E}
+.lbar span{margin-left:14px;flex:1;max-width:420px;height:20px;border-radius:6px;background:#fff;font:500 12px/20px var(--mono);color:#59606C;padding:0 10px;white-space:nowrap;overflow:hidden}
+.lview{position:absolute;left:0;right:0;top:30px;bottom:0;overflow-y:auto;scrollbar-width:none;cursor:grab;outline:none;background:#fff}
+.lview::-webkit-scrollbar{display:none}
+.lview.drag{cursor:grabbing}
+.lview img{display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none;transition:opacity .35s}
+.lview img.swap{opacity:0}
+.lglare{position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,0) 38%),radial-gradient(120% 80% at 50% 120%,rgba(0,0,0,.28),transparent 60%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
+.lscan{position:absolute;left:0;right:0;height:18%;pointer-events:none;background:linear-gradient(180deg,rgba(242,112,78,0),rgba(242,112,78,.10) 85%,rgba(255,200,180,.35));mix-blend-mode:multiply;animation:scan2 4.5s cubic-bezier(.6,0,.4,1) infinite}
+.lhint{position:absolute;left:16px;top:14px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:rgba(17,21,28,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 10px;transition:opacity .4s;pointer-events:none}
+.lhint.gone{opacity:0}
+.tabs button .bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--signal);transform-origin:0;transform:scaleX(var(--k,0))}
+@media(max-width:560px){.screens{padding:18px 0 62px}.screens .c{display:none}.tabs{left:0;max-width:100%}.lhint{font-size:10px;padding:5px 8px;left:10px;top:10px}}
 </style>
 </head>
 <body>
@@ -319,13 +329,18 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
       <ul><li>Website with services, recent jobs and a WhatsApp quote form</li><li>Office CRM for clients, quotes, job cards, invoices and payments</li><li>Branded PDF quotes, invoices and technician job sheets</li><li>Live dashboard: cash flow, job pipeline and quote win rate</li><li>Vertical promo clip for social</li></ul>
       <a class="btn" href="#start">Start a build like this →</a>
     </div>
-    <div class="screens" id="imScreens">
+    <div class="screens" id="imLap">
       <span class="c c1"></span><span class="c c2"></span><span class="c c3"></span><span class="c c4"></span>
-      <div class="stack">
-        <figure class="win on"><div class="wbar"><i></i><i></i><i></i><span>isimorkelectrical.co.za</span></div><img src="media/isimork-site.webp" alt="IsiMork Electrical website home page: Wired Right, with the IsiMork logo and a recent turnstile install" loading="lazy" width="1600" height="1000"></figure>
-        <figure class="win"><div class="wbar"><i></i><i></i><i></i><span>isimork office · dashboard</span></div><img src="media/isimork-office.webp" alt="IsiMork office app dashboard with cash flow chart, job pipeline, quote win rate and upcoming jobs" loading="lazy" width="1600" height="1000"></figure>
+      <div class="lapscene">
+        <img class="lap-photo" src="media/isimork/desk.webp" width="1600" height="1044" alt="A man at his laptop, browsing the IsiMork Electrical website and office app" loading="lazy">
+        <div class="lapscreen" id="lapScreen">
+          <div class="lbar"><i></i><i></i><i></i><span id="lapUrl">isimorkelectrical.co.za</span></div>
+          <div class="lview" id="lapView" tabindex="0" aria-label="IsiMork page preview. Scroll to browse."><img id="lapImg" src="media/isimork/site.webp" alt="" draggable="false"></div>
+          <div class="lglare" aria-hidden="true"></div>
+        </div>
+        <span class="lhint" id="lapHint">Scroll the screen ↕</span>
       </div>
-      <div class="tabs" role="tablist" aria-label="IsiMork screens"><button role="tab" aria-selected="true">Website</button><button role="tab" aria-selected="false">Office app</button></div>
+      <div class="tabs" role="tablist" aria-label="IsiMork pages" id="lapTabs"></div>
       <span class="tagline">Office app shown with example data</span>
     </div>
   </article>
@@ -502,18 +517,70 @@ document.querySelectorAll('.tier .price, .plan i').forEach(el => {
 const phone = $('#phone');
 if (phone && !reduced) addEventListener('scroll', () => { const r = phone.getBoundingClientRect(), k = (r.top + r.height / 2 - innerHeight / 2) / innerHeight; phone.style.transform = `translateY(${k * -40}px) rotate(${3 - k * 6}deg)`; }, { passive: true });
 
-// IsiMork screens: website and office app swap, like browsing between tabs
+// IsiMork laptop: a real photo with the website and office app mapped onto its screen, scrollable
 {
-  const box = $('#imScreens');
+  const box = $('#imLap');
   if (box) {
-    const wins = [...box.querySelectorAll('.win')], tabs = [...box.querySelectorAll('.tabs button')];
-    let k = 0, timer = null;
-    const show = i => { k = i; wins.forEach((w, j) => w.classList.toggle('on', j === i)); tabs.forEach((t, j) => { t.setAttribute('aria-selected', j === i); if (j === i) { t.style.animation = 'none'; t.offsetWidth; t.style.animation = ''; } }); };
-    const start = () => { if (reduced) return; clearInterval(timer); timer = setInterval(() => show((k + 1) % wins.length), 4500); };
-    tabs.forEach((t, i) => t.onclick = () => { show(i); start(); });
-    box.addEventListener('pointerenter', () => { clearInterval(timer); box.classList.add('hold'); });
-    box.addEventListener('pointerleave', () => { box.classList.remove('hold'); start(); });
-    new IntersectionObserver(([e]) => e.isIntersecting ? start() : clearInterval(timer)).observe(box);
+    const PAGES = [
+      ['Website', 'site', 'isimorkelectrical.co.za'],
+      ['Dashboard', 'office-dashboard', 'isimork office · dashboard'],
+      ['Job cards', 'office-jobs', 'isimork office · job cards'],
+      ['Quotes', 'office-quotes', 'isimork office · quotes'],
+      ['Invoices', 'office-invoices', 'isimork office · invoices'],
+      ['Clients', 'office-clients', 'isimork office · clients'],
+    ];
+    PAGES.forEach(([, f]) => { const i = new Image(); i.src = `media/isimork/${f}.webp`; });
+    const scene = box.querySelector('.lapscene'), scr = $('#lapScreen'), view = $('#lapView'), img = $('#lapImg'), url = $('#lapUrl'), tabs = $('#lapTabs'), hint = $('#lapHint');
+    tabs.innerHTML = PAGES.map(([t], i) => `<button role="tab" aria-selected="${i === 0}">${t}<span class="bar"></span></button>`).join('');
+    const btns = [...tabs.children];
+    // screen corners measured on the 1600px photo: top-left, top-right, bottom-right, bottom-left
+    const Q = [[502.6, 211.2], [1320.3, 228.6], [1293.3, 730.1], [469.0, 688.8]], SW = 1000, SH = 625;
+    const adj = m => [m[4]*m[8]-m[5]*m[7], m[2]*m[7]-m[1]*m[8], m[1]*m[5]-m[2]*m[4], m[5]*m[6]-m[3]*m[8], m[0]*m[8]-m[2]*m[6], m[2]*m[3]-m[0]*m[5], m[3]*m[7]-m[4]*m[6], m[1]*m[6]-m[0]*m[7], m[0]*m[4]-m[1]*m[3]];
+    const mm = (a, b) => { const c = []; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { let s = 0; for (let k = 0; k < 3; k++) s += a[3*i+k] * b[3*k+j]; c.push(s); } return c; };
+    const mv = (m, v) => [m[0]*v[0]+m[1]*v[1]+m[2]*v[2], m[3]*v[0]+m[4]*v[1]+m[5]*v[2], m[6]*v[0]+m[7]*v[1]+m[8]*v[2]];
+    const basis = (p) => { const m = [p[0][0], p[1][0], p[2][0], p[0][1], p[1][1], p[2][1], 1, 1, 1]; const v = mv(adj(m), [p[3][0], p[3][1], 1]); return mm(m, [v[0], 0, 0, 0, v[1], 0, 0, 0, v[2]]); };
+    function fit() {
+      const k = scene.clientWidth / 1600; if (!k) return;
+      const d = [Q[0], Q[1], Q[3], Q[2]].map(([x, y]) => [x * k, y * k]);
+      const t = mm(basis(d), adj(basis([[0, 0], [SW, 0], [0, SH], [SW, SH]]))).map((v, _, a) => v / a[8]);
+      scr.style.transform = `matrix3d(${[t[0], t[3], 0, t[6], t[1], t[4], 0, t[7], 0, 0, 1, 0, t[2], t[5], 0, t[8]].join(',')})`;
+      scr.classList.add('ready');
+    }
+    new ResizeObserver(fit).observe(scene); fit();
+    if (!reduced) { const sc = document.createElement('div'); sc.className = 'lscan'; scr.appendChild(sc); }
+    // pages and auto-browse
+    let cur = 0, last = 0, hold = 0, visible = false;
+    function show(i, user) {
+      cur = i; btns.forEach((b, j) => { b.setAttribute('aria-selected', j === i); b.style.setProperty('--k', 0); });
+      img.classList.add('swap');
+      setTimeout(() => { img.src = `media/isimork/${PAGES[i][1]}.webp`; url.textContent = PAGES[i][2]; view.scrollTop = 0; img.classList.remove('swap'); }, user ? 120 : 300);
+      hold = performance.now() + 1400;
+    }
+    btns.forEach((b, i) => b.onclick = () => { show(i, true); poke(); });
+    const poke = () => { last = performance.now(); hint.classList.add('gone'); };
+    // native wheel and touch scrolling work through the perspective; add mouse drag
+    let drag = null;
+    view.addEventListener('wheel', poke, { passive: true });
+    view.addEventListener('touchstart', poke, { passive: true });
+    view.addEventListener('keydown', poke);
+    view.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; drag = { y: e.clientY, s: view.scrollTop }; view.classList.add('drag'); view.setPointerCapture(e.pointerId); poke(); });
+    view.addEventListener('pointermove', e => { if (!drag) return; view.scrollTop = drag.s - (e.clientY - drag.y) * 1.6; last = performance.now(); });
+    const end = () => { drag = null; view.classList.remove('drag'); }; view.addEventListener('pointerup', end); view.addEventListener('pointercancel', end);
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) requestAnimationFrame(tick); }, { threshold: .25 }).observe(box);
+    let prev = performance.now(), dwell = 0, acc = 0;
+    function tick(now) {
+      if (!visible) return;
+      const dt = Math.min(.05, (now - prev) / 1000); prev = now;
+      const idle = now - last > 3500 && !drag && !reduced;
+      const max = view.scrollHeight - view.clientHeight;
+      const btn = btns[cur];
+      if (idle && now > hold) {
+        if (max > 4 && view.scrollTop < max - 1) { acc += dt * (max > 1200 ? 160 : 60); const st = Math.floor(acc); if (st) { view.scrollTop += st; acc -= st; } dwell = 0; }
+        else if ((dwell += dt) > 1.6) show((cur + 1) % PAGES.length);
+      }
+      btn.style.setProperty('--k', max > 4 ? Math.min(1, view.scrollTop / max) : Math.min(1, dwell / 1.6));
+      requestAnimationFrame(tick);
+    }
   }
 }
 
