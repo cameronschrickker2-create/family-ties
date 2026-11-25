@@ -275,6 +275,21 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
 .lhint.gone{opacity:0}
 .tabs button .bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--signal);transform-origin:0;transform:scaleX(var(--k,0))}
 @media(max-width:560px){.screens{padding:18px 0 62px}.screens .c{display:none}.tabs{left:0;max-width:100%}.lhint{font-size:10px;padding:5px 8px;left:10px;top:10px}}
+
+/* brief + booking */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:520px){.two{grid-template-columns:1fr}}
+.opt{font-weight:400;color:var(--muted2)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+#sendBtn[disabled]{opacity:.7;cursor:progress}
+.sent.ok{background:var(--night);color:var(--nfg);border:1px solid var(--nline)}
+.sent.ok b{display:block;font-family:var(--display);font-weight:500;font-size:20px;margin-bottom:6px}
+.sent .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.sent .acts .btn{padding:11px 18px;font-size:14px}
+.sent.ok .btn.ghost{background:transparent;color:var(--nfg);border-color:rgba(255,255,255,.3)}
+.book{margin-top:34px;padding:24px;border-radius:24px;background:var(--ink2);border:1px solid var(--line)}
+.book h3{font-size:24px;margin:10px 0 8px}.book p:not(.label){margin:0 0 16px;color:var(--muted);line-height:1.55}
+.calwrap{margin-top:16px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.calwrap iframe{display:block;width:100%;height:640px;border:0}
 </style>
 </head>
 <body>
@@ -378,14 +393,17 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
 </div></section>
 
 <section class="contact" id="start"><div class="wrap grid">
-  <div class="rv"><p class="label">Start a build</p><h2 style="margin:16px 0 22px">Raise your flag</h2><p class="lede">Tell us about your business and what you need, and we'll send back a plan and a price.</p></div>
+  <div class="rv"><p class="label">Start a build</p><h2 style="margin:16px 0 22px">Raise your flag</h2><p class="lede">Tell us about your business and what you need, and we'll send back a plan and a price.</p>
+    <div class="book" id="book" hidden><p class="label">Prefer to talk?</p><h3>Book a 30-minute intro call</h3><p>Pick a time that suits you. We'll talk through your business and what a build would look like.</p><button class="btn ghost" type="button" id="bookBtn">Pick a time →</button><div class="calwrap" id="calWrap" hidden></div></div></div>
   <form id="brief" class="rv" novalidate>
     <label for="f-name">Your name<input id="f-name" name="name" autocomplete="name" required></label>
     <label for="f-biz">Business name<input id="f-biz" name="business" required></label>
+    <div class="two"><label for="f-phone">WhatsApp or phone<input id="f-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required placeholder="e.g. 082 123 4567"></label><label for="f-email"><span>Email <span class="opt">(optional)</span></span><input id="f-email" name="email" type="email" autocomplete="email"></label></div>
     <label for="f-what">What does your business do?<input id="f-what" name="what" placeholder="e.g. mobile car wash in Durbanville"></label>
     <label>What do you need?<div class="pills" id="needs"></div></label>
     <label for="f-msg">Anything else<textarea id="f-msg" name="msg" rows="3"></textarea></label>
-    <button class="btn" type="submit" style="justify-self:start">Send my brief →</button>
+    <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button class="btn" type="submit" id="sendBtn" style="justify-self:start">Send my brief →</button>
     <div class="sent" id="sent" role="status"></div>
   </form>
 </div></section>
@@ -394,7 +412,11 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
 
 <script>
 // ===== Contact details: fill these in to receive briefs =====
-window.ENSIGN_CONTACT = { email: '', whatsapp: '27624784711' }; // e.g. email:'hello@ensign.studio', whatsapp:'27821234567'
+window.ENSIGN_CONTACT = {
+  whatsapp: '27624784711',   // number briefs and chats go to on WhatsApp (international format, no +)
+  web3formsKey: '',          // free key from web3forms.com: briefs are emailed to the address it was made for
+  calLink: '',               // Cal.com booking link, e.g. 'ensign/intro' or 'https://cal.com/ensign/intro'
+};
 </script>
 <script type="module">
 document.documentElement.classList.add('js');
@@ -436,16 +458,46 @@ document.querySelectorAll('.rv').forEach(el => io.observe(el));
 // brief form
 const NEEDS = ['Brand identity', 'Website', 'Shop', 'CRM', 'Booking', 'Launch video', 'Everything'];
 $('#needs').innerHTML = NEEDS.map((n, i) => `<label><input type="checkbox" name="need" value="${n}" id="need-${i}">${n}</label>`).join('');
-$('#brief').addEventListener('submit', e => {
+const C = window.ENSIGN_CONTACT || {};
+const waLink = text => `https://wa.me/${C.whatsapp}?text=${encodeURIComponent(text)}`;
+const calUrl = C.calLink ? (/^https?:/.test(C.calLink) ? C.calLink : 'https://cal.com/' + C.calLink.replace(/^\/+/, '')) : '';
+if (calUrl) {
+  $('#book').hidden = false;
+  $('#bookBtn').onclick = () => { const w = $('#calWrap'); if (!w.firstChild) w.innerHTML = `<iframe src="${calUrl}${calUrl.includes('?') ? '&' : '?'}embed=true&theme=light" title="Book an intro call with Ensign Studio" loading="lazy"></iframe>`; w.hidden = false; $('#bookBtn').hidden = true; };
+}
+$('#brief').addEventListener('submit', async e => {
   e.preventDefault();
-  const f = new FormData(e.target), name = (f.get('name') || '').trim(), biz = (f.get('business') || '').trim();
-  const out = $('#sent');
-  if (!name || !biz) { out.className = 'sent on'; out.textContent = 'Add your name and your business name, then send again.'; return; }
-  const text = `New brief for Ensign Studio\nName: ${name}\nBusiness: ${biz}\nWhat they do: ${f.get('what') || '-'}\nNeeds: ${f.getAll('need').join(', ') || '-'}\nNotes: ${f.get('msg') || '-'}`;
-  const c = window.ENSIGN_CONTACT || {};
-  if (c.whatsapp) { location.href = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(text)}`; return; }
-  if (c.email) { location.href = `mailto:${c.email}?subject=${encodeURIComponent('Brief: ' + biz)}&body=${encodeURIComponent(text)}`; return; }
-  out.className = 'sent on'; out.innerHTML = 'Thanks! Our contact details are being set up. Copy your brief below and send it to us once they are live.<code></code>'; out.querySelector('code').textContent = text;
+  const form = e.target, f = new FormData(form), out = $('#sent'), btn = $('#sendBtn');
+  const v = k => (f.get(k) || '').toString().trim();
+  const name = v('name'), biz = v('business'), phone = v('phone'), email = v('email');
+  if (!name || !biz || !phone) { out.className = 'sent on'; out.textContent = 'Add your name, business name and a number we can reach you on, then send again.'; return; }
+  if (f.get('botcheck')) return;
+  const needs = f.getAll('need').join(', ') || '-';
+  const text = `New brief for Ensign Studio\nName: ${name}\nBusiness: ${biz}\nPhone: ${phone}\nEmail: ${email || '-'}\nWhat they do: ${v('what') || '-'}\nNeeds: ${needs}\nNotes: ${v('msg') || '-'}`;
+  const chatText = `Hi Ensign, I'm ${name} from ${biz}. I just sent you a brief on your website.`;
+  const done = (title, body, chat) => {
+    out.className = 'sent on ok'; out.innerHTML = `<b></b><span></span><div class="acts"></div>`;
+    out.querySelector('b').textContent = title; out.querySelector('span').textContent = body;
+    const acts = out.querySelector('.acts');
+    if (chat && C.whatsapp) acts.insertAdjacentHTML('beforeend', `<a class="btn" href="${waLink(chatText)}" target="_blank" rel="noopener">Continue on WhatsApp →</a>`);
+    if (calUrl) acts.insertAdjacentHTML('beforeend', `<a class="btn ghost" href="#book">Book an intro call</a>`);
+    acts.querySelector('[href="#book"]')?.addEventListener('click', () => $('#bookBtn')?.click());
+  };
+  if (C.web3formsKey) {
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const r = await fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ access_key: C.web3formsKey, subject: `New brief: ${biz}`, from_name: 'Ensign Studio website', name, business: biz, phone, email: email || undefined, replyto: email || undefined, what: v('what'), needs, message: v('msg') || '-' }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.success === false) throw new Error(j.message || r.status);
+      form.reset(); done('Brief sent', `Thanks, ${name}. We'll come back to you with a plan and a price.`, true);
+    } catch (err) {
+      out.className = 'sent on'; out.innerHTML = `Your brief didn't send. Check your connection and try again, or <a href="${waLink(text)}" target="_blank" rel="noopener">send it on WhatsApp</a>.`;
+    } finally { btn.disabled = false; btn.textContent = 'Send my brief →'; }
+    return;
+  }
+  if (C.whatsapp) { window.open(waLink(text), '_blank', 'noopener'); done('Almost there', 'WhatsApp has opened with your brief typed out. Press send there and we\'ll take it from there.', false); return; }
+  out.className = 'sent on'; out.innerHTML = 'Our contact details are being set up. Copy your brief below and send it to us once they are live.<code></code>'; out.querySelector('code').textContent = text;
 });
 
 
@@ -465,7 +517,7 @@ function decode(el) {
   const tick = () => { f++; el.lastChild.textContent = txt.split('').map((c, i) => c === ' ' ? ' ' : i < (f / total) * txt.length ? c : GL[(Math.random() * GL.length) | 0]).join(''); if (f < total) requestAnimationFrame(tick); else el.lastChild.textContent = txt; };
   tick();
 }
-document.querySelectorAll('section:not(.hero) .head .label, .contact .label:first-child').forEach((el, i) => {
+document.querySelectorAll('section:not(.hero) .head .label, .contact .rv > .label:first-child').forEach((el, i) => {
   el.dataset.t = el.textContent; el.innerHTML = `<span class="ix">[0${i + 1}]</span><span></span>`; el.lastChild.textContent = el.dataset.t;
   new IntersectionObserver(([e], o) => { if (e.isIntersecting) { decode(el); o.disconnect(); } }, { threshold: 1 }).observe(el);
 });
