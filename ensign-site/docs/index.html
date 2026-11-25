@@ -413,7 +413,7 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
 <script>
 // ===== Contact details: fill these in to receive briefs =====
 window.ENSIGN_CONTACT = {
-  whatsapp: '27624784711',   // number briefs and chats go to on WhatsApp (international format, no +)
+  whatsapp: '',              // WhatsApp number, international format, no + (e.g. '27821234567'). Empty until the Ensign number is live on WhatsApp
   web3formsKey: '9a193727-7fba-4360-a4ad-84c24bf45d35',          // free key from web3forms.com: briefs are emailed to the address it was made for
   calLink: '',               // Cal.com booking link, e.g. 'ensign/intro' or 'https://cal.com/ensign/intro'
 };
@@ -492,7 +492,7 @@ $('#brief').addEventListener('submit', async e => {
       if (!r.ok || j.success === false) throw new Error(j.message || r.status);
       form.reset(); done('Brief sent', `Thanks, ${name}. We'll come back to you with a plan and a price.`, true);
     } catch (err) {
-      out.className = 'sent on'; out.innerHTML = `Your brief didn't send. Check your connection and try again, or <a href="${waLink(text)}" target="_blank" rel="noopener">send it on WhatsApp</a>.`;
+      out.className = 'sent on'; out.innerHTML = C.whatsapp ? `Your brief didn't send. Check your connection and try again, or <a href="${waLink(text)}" target="_blank" rel="noopener">send it on WhatsApp</a>.` : `Your brief didn't send. Check your connection and try again in a minute.`;
     } finally { btn.disabled = false; btn.textContent = 'Send my brief →'; }
     return;
   }
