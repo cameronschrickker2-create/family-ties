@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B1410">
+<meta name="robots" content="noindex">
+<title>Northside · Order</title>
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="/base.css">
+<link rel="stylesheet" href="/store.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/"><span class="mark"><span>N</span></span><span id="storeName">NORTHSIDE</span></a>
+  <button class="deliver-to" id="deliverTo" type="button"><small>Deliver to</small><b id="suburbLabel">Choose suburb</b></button>
+  <a class="orders-link" href="#/orders" aria-label="My orders">Orders</a>
+</header>
+<main id="view"></main>
+
+<div class="cartbar hidden" id="cartBar"><button class="btn block" id="openCart"><span class="count" id="cartCount">0</span><span>View cart</span><span id="cartTotal">R0</span></button></div>
+
+<div class="sheet-wrap hidden" id="sheetWrap"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+
+<div class="gate hidden" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="gate-card">
+    <div class="brand big"><span class="mark"><span>N</span></span>NORTHSIDE</div>
+    <h1 id="gateTitle">Are you 18 or older?</h1>
+    <p class="muted">You must be 18+ to enter this site and to order. Your ID will be checked on delivery.</p>
+    <div class="field"><label for="gateDob">Date of birth</label><input class="input" id="gateDob" type="date"></div>
+    <div class="error hidden" id="gateErr"></div>
+    <button class="btn lime block" id="gateYes">Enter</button>
+    <button class="btn ghost block" id="gateNo" style="margin-top:8px">I'm under 18</button>
+    <p class="fine">For private adult use. Don't drive under the influence. Keep out of reach of children and pets.</p>
+  </div>
+</div>
+<script src="/vendor/leaflet/leaflet.js"></script>
+<script src="/store.js"></script>
+</body>
+</html>

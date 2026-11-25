@@ -1,0 +1,32 @@
+:root{
+  --ink:#0B1410;--ink-2:#1B2A22;--forest:#1E3A2B;--lime:#C6FF3D;--lime-d:#A8E01F;--cream:#F6F4EC;
+  --bg:#FFFFFF;--surface:#F4F5F2;--line:#E4E7E1;--muted:#66736B;--danger:#D93A2B;--warn:#E8A317;--ok:#1F9D55;
+  --radius:16px;--shadow:0 6px 24px rgba(11,20,16,.10);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:14px 20px;font-weight:700;cursor:pointer;background:var(--ink);color:#fff;text-decoration:none;transition:transform .08s ease,opacity .15s}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.lime{background:var(--lime);color:var(--ink)}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+.btn.danger{background:#FCE9E7;color:var(--danger)}
+.btn.sm{padding:8px 14px;font-size:14px}
+.btn.block{width:100%}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+.input{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;outline:none}
+.input:focus{border-color:var(--ink)}
+.chip{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;background:var(--surface)}
+.chip.lime{background:var(--lime)}
+.chip.dark{background:var(--ink);color:var(--lime)}
+.muted{color:var(--muted)}
+.error{background:#FCE9E7;color:var(--danger);padding:12px 14px;border-radius:12px;font-weight:600;font-size:14px;margin:10px 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;z-index:999;box-shadow:var(--shadow);max-width:90vw}
+.brand{font-weight:900;letter-spacing:.04em;display:flex;align-items:center;gap:8px}
+.brand .mark{width:30px;height:30px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:var(--ink);display:grid;place-items:center}
+.brand .mark span{transform:rotate(45deg);color:var(--lime);font-weight:900;font-size:15px}
+.hidden{display:none!important}

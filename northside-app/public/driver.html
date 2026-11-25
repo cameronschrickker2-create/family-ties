@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B1410">
+<meta name="robots" content="noindex">
+<title>Northside · Driver</title>
+<link rel="stylesheet" href="/base.css">
+<style>
+body{background:var(--ink);color:#fff;min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:16px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:6px 0 16px}
+.top .brand .mark{background:var(--lime)} .top .brand .mark span{color:var(--ink)}
+.panel{background:#fff;color:var(--ink);border-radius:20px;padding:18px;margin-bottom:14px}
+.gps{display:flex;align-items:center;gap:10px;background:var(--ink-2);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-weight:600;font-size:14px}
+.gps i{width:10px;height:10px;border-radius:50%;background:#556}
+.gps.on i{background:var(--lime);box-shadow:0 0 0 5px rgba(198,255,61,.25)}
+.job h2{margin:0;font-size:22px}
+.job .addr{font-size:17px;font-weight:700;margin:10px 0 2px}
+.job .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.job .row .btn{flex:1}
+.job ul{padding-left:18px;margin:10px 0;font-size:14px}
+.status{display:inline-block;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:5px 10px;border-radius:999px;background:var(--surface)}
+.status.out_for_delivery{background:var(--lime)}
+.empty{text-align:center;color:#9FB0A6;padding:40px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand"><span class="mark"><span>N</span></span>DRIVER</div><button class="btn ghost sm hidden" id="logout">Log out</button></div>
+  <div id="app"></div>
+</div>
+<script src="/driver.js"></script>
+</body>
+</html>
