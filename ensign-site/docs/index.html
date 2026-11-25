@@ -235,6 +235,33 @@ section .label:not(.hero .label){font-family:var(--mono);font-size:12.5px;letter
 .contact .wrap{position:relative}
 input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14)}
 @media (prefers-reduced-motion:reduce){.ticker .track,.work::before,.contact::before,.phone::after,.tier.hot{animation:none}.wipe .w>span{transform:none;transition:none}.draw [data-len]{stroke-dashoffset:0}.draw [data-fill]{opacity:1;transform:none}}
+
+/* IsiMork case: stacked browser windows */
+.case.flip{grid-template-columns:1fr 1.25fr}
+.case.flip .screens{order:-1}
+@media(max-width:860px){.case.flip{grid-template-columns:1fr}.case.flip .screens{order:0}}
+.minis{grid-template-columns:1fr}
+.screens{position:relative;padding:26px 26px 64px}
+.screens .c{position:absolute;width:20px;height:20px;border:0 solid rgba(255,255,255,.35)}
+.screens .c1{top:0;left:0;border-top-width:1px;border-left-width:1px}.screens .c2{top:0;right:0;border-top-width:1px;border-right-width:1px}.screens .c3{bottom:0;left:0;border-bottom-width:1px;border-left-width:1px}.screens .c4{bottom:0;right:0;border-bottom-width:1px;border-right-width:1px}
+.stack{display:grid;padding:30px 7% 0 0}
+.win{grid-area:1/1;margin:0;border-radius:14px;overflow:hidden;background:#0A0C10;box-shadow:0 0 0 1px var(--nline),0 40px 80px -30px rgba(242,112,78,.35);transform:translate(8%,-30px) scale(.9);opacity:.55;filter:brightness(.55) blur(1px);z-index:1;transition:transform .9s cubic-bezier(.2,.9,.2,1),opacity .9s,filter .9s;position:relative}
+.win.on{transform:none;opacity:1;filter:none;z-index:2}
+.win img{display:block;width:100%;height:auto}
+.wbar{display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;background:#161A22;border-bottom:1px solid var(--nline)}
+.wbar i{width:9px;height:9px;border-radius:50%;background:#3A414E}.wbar i:first-child{background:#F2704E}
+.wbar span{margin-left:10px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--nmuted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.win.on::after{content:"";position:absolute;left:0;right:0;top:30px;height:22%;background:linear-gradient(180deg,rgba(242,112,78,0),rgba(242,112,78,.12) 85%,rgba(255,200,180,.45) 100%);mix-blend-mode:screen;animation:scan2 4s cubic-bezier(.6,0,.4,1) infinite;pointer-events:none}
+@keyframes scan2{0%{transform:translateY(-10%);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateY(360%);opacity:0}}
+.tabs{position:absolute;left:26px;bottom:18px;display:flex;gap:4px;padding:3px;border:1px solid var(--nline);border-radius:999px;background:rgba(255,255,255,.04)}
+.tabs button{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--nmuted);background:none;border:0;border-radius:999px;padding:7px 12px;cursor:pointer;position:relative;overflow:hidden}
+.tabs button[aria-selected="true"]{background:rgba(242,112,78,.16);color:#FFB49F}
+.tabs button[aria-selected="true"]::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--signal);transform-origin:0;animation:tabfill 4.5s linear forwards}
+.screens.hold .tabs button::after{animation-play-state:paused}
+@keyframes tabfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.screens .tagline{position:absolute;right:26px;bottom:26px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--nmuted)}
+@media(max-width:520px){.screens .tagline{display:none}}
+@media (prefers-reduced-motion:reduce){.win.on::after,.tabs button::after{animation:none}}
 </style>
 </head>
 <body>
@@ -273,7 +300,7 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
 </div></section>
 
 <section class="work" id="work"><div class="wrap">
-  <div class="head rv"><div><p class="label">Work</p><h2>Brands we've raised</h2></div><p>Real builds for real local businesses, from a delivery service to an electrician and a car wash.</p></div>
+  <div class="head rv"><div><p class="label">Work</p><h2>Brands we've raised</h2></div><p>Real builds for real local businesses: a delivery service, an electrician and a car wash.</p></div>
   <article class="case rv">
     <div>
       <p class="label">Delivery service · Northern Suburbs</p>
@@ -284,8 +311,26 @@ input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(242,112,78,.14
     </div>
     <div class="phone-wrap"><span class="c c1"></span><span class="c c2"></span><span class="c c3"></span><span class="c c4"></span><div class="phone" id="phone"><video src="media/northside-ad.mp4" poster="media/northside-ad.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Northside launch ad"></video></div><span class="tagline">REC · northside_ad_9x16.mp4</span></div>
   </article>
+  <article class="case flip rv">
+    <div>
+      <p class="label">Electrical contractor · Cape Town</p>
+      <h3>IsiMork Electrical</h3>
+      <p>A registered electrician since 2016 needed to look as professional as the work. We built a new website and an office system that runs the business behind it.</p>
+      <ul><li>Website with services, recent jobs and a WhatsApp quote form</li><li>Office CRM for clients, quotes, job cards, invoices and payments</li><li>Branded PDF quotes, invoices and technician job sheets</li><li>Live dashboard: cash flow, job pipeline and quote win rate</li><li>Vertical promo clip for social</li></ul>
+      <a class="btn" href="#start">Start a build like this →</a>
+    </div>
+    <div class="screens" id="imScreens">
+      <span class="c c1"></span><span class="c c2"></span><span class="c c3"></span><span class="c c4"></span>
+      <div class="stack">
+        <figure class="win on"><div class="wbar"><i></i><i></i><i></i><span>isimorkelectrical.co.za</span></div><img src="media/isimork-site.webp" alt="IsiMork Electrical website home page: Wired Right, with the IsiMork logo and a recent turnstile install" loading="lazy" width="1600" height="1000"></figure>
+        <figure class="win"><div class="wbar"><i></i><i></i><i></i><span>isimork office · dashboard</span></div><img src="media/isimork-office.webp" alt="IsiMork office app dashboard with cash flow chart, job pipeline, quote win rate and upcoming jobs" loading="lazy" width="1600" height="1000"></figure>
+      </div>
+      <div class="tabs" role="tablist" aria-label="IsiMork screens"><button role="tab" aria-selected="true">Website</button><button role="tab" aria-selected="false">Office app</button></div>
+      <span class="tagline">Office app shown with example data</span>
+    </div>
+  </article>
   <div class="minis">
-    <article class="mini rv"><p class="label">Electrical contractor</p><h3>IsiMork Electrical</h3><p>An office CRM that tracks clients and jobs and sends quotes and invoices as PDFs, plus a new website and a vertical promo clip.</p><div class="tags"><span>CRM</span><span>PDF quotes</span><span>Website</span><span>Video</span></div></article>
+    
     <article class="mini rv"><p class="label">Car wash</p><h3>CleanSlate</h3><p>A website with online booking, email alerts for every booking, an AI assistant for customer questions and WhatsApp replies.</p><div class="tags"><span>Booking app</span><span>AI assistant</span><span>WhatsApp</span><span>Website</span></div></article>
   </div>
 </div></section>
@@ -456,6 +501,21 @@ document.querySelectorAll('.tier .price, .plan i').forEach(el => {
 // phone floats with scroll
 const phone = $('#phone');
 if (phone && !reduced) addEventListener('scroll', () => { const r = phone.getBoundingClientRect(), k = (r.top + r.height / 2 - innerHeight / 2) / innerHeight; phone.style.transform = `translateY(${k * -40}px) rotate(${3 - k * 6}deg)`; }, { passive: true });
+
+// IsiMork screens: website and office app swap, like browsing between tabs
+{
+  const box = $('#imScreens');
+  if (box) {
+    const wins = [...box.querySelectorAll('.win')], tabs = [...box.querySelectorAll('.tabs button')];
+    let k = 0, timer = null;
+    const show = i => { k = i; wins.forEach((w, j) => w.classList.toggle('on', j === i)); tabs.forEach((t, j) => { t.setAttribute('aria-selected', j === i); if (j === i) { t.style.animation = 'none'; t.offsetWidth; t.style.animation = ''; } }); };
+    const start = () => { if (reduced) return; clearInterval(timer); timer = setInterval(() => show((k + 1) % wins.length), 4500); };
+    tabs.forEach((t, i) => t.onclick = () => { show(i); start(); });
+    box.addEventListener('pointerenter', () => { clearInterval(timer); box.classList.add('hold'); });
+    box.addEventListener('pointerleave', () => { box.classList.remove('hold'); start(); });
+    new IntersectionObserver(([e]) => e.isIntersecting ? start() : clearInterval(timer)).observe(box);
+  }
+}
 
 // ===== 3D hero: a real man in a dark studio, HD brand screens drifting past him =====
 let gl = false; try { const c = document.createElement('canvas'); gl = !!(c.getContext('webgl2') || c.getContext('webgl')); } catch {}
