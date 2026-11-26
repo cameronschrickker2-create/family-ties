@@ -119,16 +119,12 @@ for t, n_ in [(34.45, 'A4'), (35.2, 'D5'), (36.6, 'F#5')]:
 
 mus = verb(mus, .38); sfx_dry = sfx.copy(); sfx = verb(sfx, .18)
 
-# --- voiceover: cut the take into phrases and place them on the picture ---
-raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', 'raw/vo.mp3', '-ac', '1', '-ar', str(SR), '-f', 'f32le', '-'], capture_output=True).stdout
-vo_src = np.frombuffer(raw, np.float32).astype(float)
-P = [(0.00, 3.40, 1.25), (3.80, 5.45, 5.95), (5.80, 6.30, 8.55), (6.75, 7.22, 10.30), (7.62, 8.20, 11.55), (8.65, 12.25, 13.05),
-     (12.60, 14.45, 17.75), (14.60, 19.55, 19.65), (19.70, 21.55, 25.55), (21.60, 23.00, 27.75), (23.20, 24.30, 33.25), (24.40, 26.67, 34.40)]
-vo = np.zeros(N)
-for a, b, t in P:
-    seg = vo_src[at(a):at(b)].copy(); f = min(len(seg), at(.02)); seg[:f] *= np.linspace(0, 1, f); seg[-f:] *= np.linspace(1, 0, f)
-    add(vo, seg, t)
-vo = hp(vo, 90); vo = vo + fftconvolve(vo, IR)[:N] * .10
+# --- voiceover: placed word by word on the cuts by vo_place.py (narrator EQ, de-ess, compression already applied) ---
+import os
+VO_FILE = os.environ.get('VO', 'vo_placed.f32')
+vo = np.fromfile(VO_FILE, np.float32).astype(float)[:N]; vo = np.pad(vo, (0, N - len(vo)))
+vo /= max(1e-6, np.percentile(np.abs(vo[np.abs(vo) > 1e-4]), 99.5)) / .55
+vo = hp(vo, 90); vo = vo + fftconvolve(vo, IR)[:N] * .07
 # duck the music under the voice
 act = np.convolve((np.abs(vo) > .02).astype(float), np.ones(at(.25)) / at(.25), 'same'); act = np.clip(act * 4, 0, 1)
 act = lp(act, 6, 1); duck = 1 - .45 * act
