@@ -1,0 +1,443 @@
+<title>Ensign HQ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Ensign HQ: the crew's console. Left rail of sections, a status strip, then the working view. Committed dark look, like a bridge at night. */
+:root{
+  --bg:#0E1117;--panel:#151A22;--panel2:#1B212B;--line:#272E3A;--fg:#EEECE6;--muted:#9AA2AF;--faint:#6B7380;
+  --signal:#F2704E;--signal-soft:rgba(242,112,78,.14);--ok:#4CC793;--ok-soft:rgba(76,199,147,.13);--warn:#F2B84B;--warn-soft:rgba(242,184,75,.13);--bad:#F7708F;--bad-soft:rgba(247,112,143,.13);--sky:#7DB4F0;--sky-soft:rgba(125,180,240,.13);
+  --display:Unbounded,"Arial Black",sans-serif;--sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{font:14px/1.5 var(--sans);font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+a{color:var(--sky)}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+.app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+.rail{position:sticky;top:0;height:100vh;padding:20px 14px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:20px;background:var(--panel)}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px;font-family:var(--display);font-weight:600;font-size:16px}
+.brand svg{width:20px;height:23px}
+.brand small{display:block;font:500 10px var(--mono);letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+nav{display:flex;flex-direction:column;gap:2px}
+nav a{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:10px;color:var(--muted);text-decoration:none;font-weight:500}
+nav a:hover{background:var(--panel2);color:var(--fg)}
+nav a[aria-current="page"]{background:var(--signal-soft);color:var(--fg)}
+nav a .n{font:500 11px var(--mono);color:var(--faint)}
+.rail .kill{margin-top:auto;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:12px;color:var(--muted)}
+.rail .kill b{display:block;font-size:13px;color:var(--fg);margin-bottom:6px}
+main{min-width:0;padding-block:22px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.top h1{font-size:26px}.top p{margin:4px 0 0;color:var(--muted)}
+.label{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.kpi b{font-family:var(--display);font-weight:500;font-size:24px;letter-spacing:-.02em}
+.kpi span{color:var(--muted);font-size:12.5px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+.card h2{font-size:15px}
+.head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.crew{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.agent{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.agent .who{display:flex;align-items:center;gap:10px}
+.agent .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--signal-soft);color:var(--signal);font-family:var(--display);font-weight:600}
+.agent h3{font-size:16px}.agent .role{color:var(--muted);font-size:12.5px}
+.agent .sched{font:500 11px var(--mono);color:var(--faint);letter-spacing:.04em}
+.agent .last{font-size:13px;color:var(--fg);border-top:1px solid var(--line);padding-top:8px;min-height:40px}
+.agent .last small{display:block;color:var(--faint);font:500 11px var(--mono);margin-bottom:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 11.5px var(--sans);border-radius:999px;padding:2px 9px;background:var(--panel2);color:var(--muted);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}.chip.warn{background:var(--warn-soft);color:var(--warn)}.chip.bad{background:var(--bad-soft);color:var(--bad)}.chip.sig{background:var(--signal-soft);color:var(--signal)}.chip.sky{background:var(--sky-soft);color:var(--sky)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.funnel{display:flex;flex-direction:column;gap:8px}
+.frow{display:grid;grid-template-columns:110px 1fr 40px;gap:10px;align-items:center;font-size:13px}
+.bar{height:10px;background:var(--panel2);border-radius:99px;overflow:hidden}.bar span{display:block;height:100%;border-radius:99px;background:var(--signal)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;gap:2px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;border-radius:999px;padding:5px 11px;color:var(--muted);cursor:pointer;font-weight:500;font-size:12.5px}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+input[type=search],input[type=text],input[type=email],input[type=number],input[type=date],select,textarea{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+textarea{min-height:80px;resize:vertical}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:7px 13px;font-weight:600;font-size:13px;cursor:pointer}
+.btn:hover{border-color:var(--faint)}
+.btn.pri{background:var(--signal);border-color:var(--signal);color:#1A0F0B}
+.btn.danger{color:var(--bad)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td .sub{display:block;color:var(--muted);font-size:12px}
+td select{padding:4px 8px;width:auto}
+.num{text-align:right}
+.empty{padding:22px 10px;color:var(--muted);text-align:center}
+.board{display:grid;grid-template-columns:repeat(6,minmax(180px,1fr));gap:10px;overflow-x:auto;padding-bottom:4px}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:140px}
+.col h3{font:600 12.5px var(--sans);display:flex;justify-content:space-between;color:var(--muted)}
+.cc{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:4px;cursor:pointer}
+.cc b{font-size:13.5px}.cc span{color:var(--muted);font-size:12px}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.form label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);font-weight:500}
+.form .full{grid-column:1/-1}
+.switch{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;border:1px solid var(--line)}
+.switch input{width:18px;height:18px;accent-color:var(--signal)}
+.note{color:var(--muted);font-size:12.5px;margin:0}
+.banner{padding:10px 14px;border-radius:12px;background:var(--warn-soft);color:var(--warn);font-weight:500}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.log li{display:grid;grid-template-columns:92px 1fr;gap:10px;font-size:13px}
+.log li small{font:500 11px var(--mono);color:var(--faint)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;font-weight:600;z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--panel);border-left:1px solid var(--line);z-index:15;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-right:env(safe-area-inset-right,0px)}
+.drawer header{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--line)}
+.drawer .body{padding:16px;overflow:auto;display:flex;flex-direction:column;gap:12px;flex:1}
+.drawer footer{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:14}
+@media (max-width:1000px){.strip{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr}
+  .rail{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));border-right:0;border-top:1px solid var(--line);z-index:12;overflow-x:auto}
+  .rail .brand,.rail .kill{display:none}
+  nav{flex-direction:row;gap:2px}nav a{padding:8px 10px;font-size:12px;white-space:nowrap}nav a .n{display:none}
+  main{padding-bottom:90px}.form{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* the deck: a live workplace */
+.deck{position:relative;background:radial-gradient(120% 90% at 50% 0%,#1A2130 0%,#10141B 60%);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.deck svg{display:block;width:100%;height:auto}
+.st-screen{transition:fill .4s}
+.working .st-screen{fill:#F2704E;animation:glow 1.6s ease-in-out infinite}
+@keyframes glow{50%{fill:#FFB199}}
+.arm{transform-box:fill-box;transform-origin:50% 0}
+.working .arm.l{animation:type .32s ease-in-out infinite alternate}
+.working .arm.r{animation:type .32s ease-in-out infinite alternate-reverse}
+@keyframes type{to{transform:rotate(-9deg) translateY(-1.5px)}}
+.body{transform-box:fill-box;transform-origin:50% 100%;animation:breathe 4s ease-in-out infinite}
+@keyframes breathe{50%{transform:scaleY(1.015)}}
+.working .body{animation-duration:1.4s}
+.bubble{transition:opacity .3s}
+.packet{offset-rotate:0deg;animation:fly 1.6s cubic-bezier(.5,0,.3,1) forwards}
+@keyframes fly{from{offset-distance:0%;opacity:0}12%{opacity:1}88%{opacity:1}to{offset-distance:100%;opacity:0}}
+.stations{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.station{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.station b{font-family:var(--display);font-weight:600;font-size:14px}
+.station p{margin:0;color:var(--muted);font-size:12.5px;min-height:36px}
+@media (max-width:1000px){.stations{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){.working .arm,.body,.working .st-screen,.packet{animation:none!important}}
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand"><svg viewBox="0 0 56 64" aria-hidden="true"><rect x="0" y="0" width="9" height="64" fill="#EEECE6"/><path d="M8.5 0H56L49 7.5L56 15H8.5Z" fill="#F2704E"/><rect x="8.5" y="24.5" width="32.5" height="15" fill="#EEECE6"/><rect x="8.5" y="49" width="44.5" height="15" fill="#EEECE6"/></svg><div>Ensign HQ<small>Crew console</small></div></div>
+    <nav id="nav" aria-label="Sections"></nav>
+    <div class="kill" id="railKill"></div>
+  </aside>
+  <main><div class="wrap" id="view"><div class="empty">Opening the console…</div></div></main>
+</div>
+<div id="layer"></div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl = u => /^https:\/\//i.test(String(u || '')) ? String(u) : '';
+const fmtDate = s => s ? new Date(s).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' }) : '—';
+const fmtTime = s => s ? new Date(s).toLocaleString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+const money = (n, cur = 'ZAR') => { try { return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: cur || 'ZAR', maximumFractionDigits: 0 }).format(+n || 0); } catch { return 'R' + Math.round(+n || 0); } };
+function toast(m) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 2400); }
+
+const CREW = [
+  { id: 'lookout', name: 'Lookout', mark: 'L', role: 'Finds small businesses with a weak or missing online presence and scores them as leads.', sched: 'Weekdays 06:47 SAST' },
+  { id: 'herald', name: 'Herald', mark: 'H', role: 'Writes and sends personalised first emails and the follow-ups the law allows.', sched: 'Weekdays 08:23 SAST' },
+  { id: 'signalman', name: 'Signalman', mark: 'S', role: 'Reads every reply, bounce and opt-out, updates leads and flags the hot ones.', sched: 'Daily 09:13 · 12:13 · 15:13 · 20:13' },
+  { id: 'quartermaster', name: 'Quartermaster', mark: 'Q', role: 'Keeps clients and projects moving: stages, next actions, stalled work, Friday report.', sched: 'Weekdays 19:37 SAST' },
+  { id: 'purser', name: 'Purser', mark: 'P', role: 'Matches payments to invoices, flags overdue money and drafts polite reminders.', sched: 'Daily 07:52 SAST' },
+];
+const LEAD_STATES = ['new', 'qualified', 'contacted', 'followup', 'replied', 'interested', 'meeting', 'won', 'lost', 'optout', 'bounced', 'skip'];
+const LEAD_CHIP = { new: '', qualified: 'sky', contacted: 'sig', followup: 'sig', replied: 'warn', interested: 'ok', meeting: 'ok', won: 'ok', lost: 'bad', optout: 'bad', bounced: 'bad', skip: '' };
+const STAGES = ['brief', 'identity', 'build', 'launch', 'live', 'care'];
+const STAGE_NAME = { brief: 'Brief', identity: 'Week 1 · Identity', build: 'Week 2 · Build', launch: 'Week 3 · Launch', live: 'Launched', care: 'Monthly care' };
+const S = { leads: {}, emails: {}, clients: {}, invoices: {}, payments: {}, suppress: {}, runs: {}, settings: null, db: null, canEdit: false, loaded: false };
+const list = c => Object.values(S[c]);
+const ROUTES = [['deck', 'Deck'], ['crew', 'Crew'], ['pipeline', 'Pipeline'], ['outreach', 'Outreach'], ['clients', 'Clients'], ['money', 'Money'], ['settings', 'Settings']];
+const route = () => { const h = location.hash.slice(1); return ROUTES.some(r => r[0] === h) ? h : 'deck'; };
+addEventListener('hashchange', render);
+let leadFilter = 'all', leadQuery = '', regionFilter = 'all';
+
+function settings() { return Object.assign({ sendingEnabled: false, dailyCap: 10, senderName: 'Cam · Ensign Studio', senderEmail: '', signature: '', postalAddress: '', regions: ['cape-town', 'south-africa', 'international'] }, S.settings || {}); }
+
+function nav() {
+  const counts = { pipeline: list('leads').filter(l => ['new', 'qualified'].includes(l.status)).length, outreach: list('emails').filter(e => e.replyClass === 'interested' && !e.handled).length, clients: list('clients').filter(c => c.health === 'at-risk' || c.health === 'stalled').length, money: list('invoices').filter(i => invState(i).status === 'overdue').length };
+  $('#nav').innerHTML = ROUTES.map(([k, l]) => `<a href="#${k}" ${route() === k ? 'aria-current="page"' : ''}><span>${l}</span>${counts[k] ? `<span class="n">${counts[k]}</span>` : ''}</a>`).join('');
+  const st = settings();
+  $('#railKill').innerHTML = `<b>Sending is ${st.sendingEnabled ? 'on' : 'paused'}</b>${st.sendingEnabled ? `Herald may send up to ${esc(st.dailyCap)} first emails a day.` : 'Herald writes nothing out until you switch it on in Settings.'}`;
+}
+
+function invState(i) {
+  const paid = list('payments').filter(p => p.invoiceId === i.id).reduce((a, p) => a + (+p.amount || 0), 0) || (+i.paidAmount || 0);
+  const bal = Math.max(0, (+i.amount || 0) - paid);
+  let status = i.status === 'draft' ? 'draft' : bal <= .5 ? 'paid' : paid > 0 ? 'part-paid' : 'sent';
+  if (status !== 'paid' && status !== 'draft' && i.dueAt && new Date(i.dueAt) < new Date(new Date().toDateString())) status = 'overdue';
+  return { paid, bal, status };
+}
+
+function header(title, sub, actions = '') {
+  return `<div class="top"><div><p class="label">Ensign Studio</p><h1>${title}</h1><p>${sub}</p></div><div class="tools">${actions}</div></div>
+  ${!S.db ? '<div class="banner">Records load only when this page is open on claude.ai while signed in.</div>' : ''}
+  ${S.db && !S.canEdit ? '<div class="banner">You can view this console but not change it.</div>' : ''}`;
+}
+
+function strip() {
+  const leads = list('leads'), emails = list('emails'), now = Date.now(), wk = 7 * 864e5;
+  const sentWk = emails.filter(e => e.direction !== 'in' && e.sentAt && now - new Date(e.sentAt) < wk).length;
+  const contacted = leads.filter(l => l.contactedAt).length, replied = leads.filter(l => ['replied', 'interested', 'meeting', 'won'].includes(l.status)).length;
+  const rate = contacted ? Math.round(replied / contacted * 100) : 0;
+  const owed = list('invoices').reduce((a, i) => a + invState(i).bal, 0);
+  const active = list('clients').filter(c => c.stage !== 'care').length;
+  const k = (v, l) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`;
+  return `<div class="strip">${k(leads.filter(l => ['new', 'qualified'].includes(l.status)).length, 'leads ready')}${k(sentWk, 'emails sent this week')}${k(rate + '%', 'reply rate')}${k(active, 'active builds')}${k(money(owed), 'owed to you')}</div>`;
+}
+
+
+// ---------- the deck: stations laid out like a ship's bridge ----------
+const POS = { lookout: [150, 170], herald: [390, 120], signalman: [630, 170], quartermaster: [270, 330], purser: [510, 330] };
+const COLORS = { lookout: '#7DB4F0', herald: '#F2704E', signalman: '#F2B84B', quartermaster: '#4CC793', purser: '#C9A0F5' };
+let trig = null, lastSeen = {};
+function agentState(id) { const r = S.runs[id] || {}; const fresh = r.status === 'working' && r.heartbeat && Date.now() - new Date(r.heartbeat) < 20 * 60e3; return { r, working: fresh, state: fresh ? 'working' : r.status === 'error' ? 'error' : r.lastRun ? 'idle' : 'waiting' }; }
+function figure(id, x, y) {
+  const { r, working, state } = agentState(id), c = COLORS[id], a = CREW.find(a => a.id === id);
+  const bubble = working ? (r.current || 'On shift') : state === 'error' ? 'Needs a look' : r.summary ? 'Off shift' : 'Waiting for first shift';
+  const bw = Math.min(250, 26 + bubble.length * 6.4);
+  return `<g class="${working ? 'working' : ''}" transform="translate(${x} ${y})" aria-label="${esc(a.name)}: ${esc(bubble)}" role="img">
+    <ellipse cx="0" cy="62" rx="70" ry="14" fill="#000" opacity=".35"/>
+    <rect x="-62" y="20" width="124" height="12" rx="3" fill="#2A3242"/><rect x="-56" y="32" width="6" height="30" fill="#232A37"/><rect x="50" y="32" width="6" height="30" fill="#232A37"/>
+    <rect x="-34" y="-30" width="68" height="44" rx="5" fill="#0B0E13" stroke="#323B4C"/><rect class="st-screen" x="-30" y="-26" width="60" height="36" rx="3" fill="${working ? '#F2704E' : '#1C2431'}"/>
+    ${working ? `<g opacity=".8"><rect x="-24" y="-20" width="34" height="3" fill="#1A0F0B"/><rect x="-24" y="-13" width="44" height="3" fill="#1A0F0B"/><rect x="-24" y="-6" width="26" height="3" fill="#1A0F0B"/></g>` : ''}
+    <rect x="-6" y="14" width="12" height="6" fill="#323B4C"/>
+    <g transform="translate(0 0)"><rect class="body" x="-17" y="28" width="34" height="34" rx="12" fill="${c}"/>
+      <circle cx="0" cy="22" r="11" fill="#E9C9AE"/><path d="M-11 20a11 11 0 0 1 22 0c-4-5-18-5-22 0z" fill="#2B2420"/>
+      <rect class="arm l" x="-20" y="32" width="7" height="18" rx="3.5" fill="${c}" transform="rotate(28 -16 32)"/><rect class="arm r" x="13" y="32" width="7" height="18" rx="3.5" fill="${c}" transform="rotate(-28 16 32)"/></g>
+    <text x="0" y="92" text-anchor="middle" fill="#EEECE6" font-family="Unbounded,sans-serif" font-size="13" font-weight="600">${esc(a.name)}</text>
+    <text x="0" y="108" text-anchor="middle" fill="${working ? '#F2704E' : state === 'error' ? '#F7708F' : '#6B7380'}" font-family="JetBrains Mono,monospace" font-size="9.5" letter-spacing="1">${working ? 'ON SHIFT' : state.toUpperCase()}</text>
+    <g class="bubble" transform="translate(${-bw / 2} -78)"><rect width="${bw}" height="30" rx="15" fill="${working ? '#EEECE6' : '#1B212B'}" stroke="${working ? 'none' : '#272E3A'}"/><path d="M${bw / 2 - 6} 30l6 8 6-8z" fill="${working ? '#EEECE6' : '#1B212B'}"/>
+      <text x="${bw / 2}" y="19" text-anchor="middle" fill="${working ? '#0E1117' : '#9AA2AF'}" font-family="Inter,sans-serif" font-size="11.5" font-weight="500">${esc(bubble.length > 38 ? bubble.slice(0, 37) + '…' : bubble)}</text></g>
+  </g>`;
+}
+function viewDeck() {
+  const anyWorking = CREW.some(a => agentState(a.id).working);
+  const routes = [['lookout', 'herald'], ['herald', 'signalman'], ['signalman', 'quartermaster'], ['quartermaster', 'purser']];
+  const lanes = routes.map(([a, b]) => { const [x1, y1] = POS[a], [x2, y2] = POS[b]; return `<path d="M${x1} ${y1 + 40}Q${(x1 + x2) / 2} ${(y1 + y2) / 2 - 10} ${x2} ${y2 + 40}" stroke="#2A3242" stroke-width="2" stroke-dasharray="4 7" fill="none"/>`; }).join('');
+  const floor = [...Array(12)].map((_, i) => `<line x1="${i * 70}" y1="0" x2="${i * 70 - 120}" y2="460" stroke="#1A202B"/>`).join('');
+  const stations = CREW.map(a => { const { r, working, state } = agentState(a.id); const can = S.canEdit && r.triggerId;
+    return `<div class="station"><div class="tools" style="justify-content:space-between"><b style="color:${COLORS[a.id]}">${a.name}</b><span class="chip ${working ? 'sig' : state === 'error' ? 'bad' : r.lastRun ? 'ok' : ''}"><span class="dot"></span>${working ? 'on shift' : state}</span></div>
+      <p>${esc(working ? (r.current || 'Working') : (r.summary || a.role))}</p>
+      ${can ? `<button class="btn" data-fire="${esc(a.id)}" ${working ? 'disabled' : ''}>${working ? 'Working…' : 'Start shift now'}</button>` : `<span class="note">${esc(a.sched)}</span>`}</div>`; }).join('');
+  return header('The deck', anyWorking ? 'The crew is at work. Watch them pass work between stations.' : 'All quiet. Each agent comes on shift on its schedule, or when you send them.') +
+    `<div class="deck" id="deck"><svg viewBox="0 0 780 470" id="deckSvg"><g opacity=".9">${floor}</g>
+      <text x="22" y="34" fill="#6B7380" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="2">ENSIGN STUDIO · CREW DECK</text>
+      <text x="758" y="34" text-anchor="end" fill="${anyWorking ? '#F2704E' : '#6B7380'}" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="2">${anyWorking ? '● LIVE' : '○ IDLE'}</text>
+      ${lanes}${CREW.map(a => figure(a.id, ...POS[a.id])).join('')}<g id="packets"></g></svg></div>
+    <div class="stations">${stations}</div>` + strip();
+}
+// a packet flies along a lane whenever an agent logs a hand-off
+function flyPackets() {
+  const g = document.getElementById('packets'); if (!g) return;
+  CREW.forEach(a => { const log = (S.runs[a.id] || {}).log || []; const top = log[0]; if (!top) return; const key = top.at + top.text;
+    if (lastSeen[a.id] && lastSeen[a.id] !== key && top.to && POS[top.to]) {
+      const [x1, y1] = POS[a.id], [x2, y2] = POS[top.to];
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'g'); p.setAttribute('class', 'packet');
+      p.style.offsetPath = `path("M${x1} ${y1 - 10}Q${(x1 + x2) / 2} ${Math.min(y1, y2) - 90} ${x2} ${y2 - 10}")`;
+      p.innerHTML = `<rect x="-11" y="-8" width="22" height="16" rx="3" fill="${COLORS[a.id]}"/><path d="M-11 -8l11 9 11-9" stroke="#0E1117" stroke-width="1.6" fill="none"/>`;
+      g.appendChild(p); setTimeout(() => p.remove(), 1700);
+    }
+    lastSeen[a.id] = key; });
+}
+async function fire(id) {
+  const r = S.runs[id] || {}; if (!r.triggerId) return;
+  try {
+    const mcp = await claude.use('mcp'); if (!mcp) return toast('Starting a shift needs this page open on claude.ai.');
+    await mcp.callTool('Claude Code Remote', 'fire_trigger', { trigger_id: r.triggerId, text: 'Started from Ensign HQ by Cam.' });
+    await save('runs', id, { status: 'working', current: 'Getting to the station…', heartbeat: new Date().toISOString() }, true);
+    toast(CREW.find(a => a.id === id).name + ' is on the way');
+  } catch (e) { toast(e && e.code === 'not_granted' ? 'Allow HQ to use Claude Code Remote to start shifts.' : 'Couldn\'t start the shift. It will still run on schedule.'); }
+}
+
+function viewCrew() {
+  const cards = CREW.map(a => { const r = S.runs[a.id] || {}; const ok = r.status === 'ok', err = r.status === 'error';
+    return `<article class="agent"><div class="who"><span class="ic" aria-hidden="true">${a.mark}</span><div><h3>${a.name}</h3><span class="sched">${a.sched}</span></div></div>
+      <p class="role" style="margin:0">${a.role}</p>
+      <div class="last"><small>${r.lastRun ? 'Last run ' + esc(fmtTime(r.lastRun)) : 'Not run yet'} ${r.status ? `<span class="chip ${ok ? 'ok' : err ? 'bad' : 'warn'}"><span class="dot"></span>${esc(r.status)}</span>` : ''}</small>${esc(r.summary || 'Waiting for its first shift.')}</div></article>`; }).join('');
+  const log = CREW.flatMap(a => ((S.runs[a.id] || {}).log || []).map(e => ({ ...e, agent: a.name }))).sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 40);
+  return header('The crew', 'Five agents run the outreach, the inbox, the clients and the money. This is what they did last.') + strip() +
+    `<div class="crew">${cards}</div>
+    <div class="card"><div class="head"><h2>Ship's log</h2><span class="label">latest 40</span></div>
+    ${log.length ? `<ul class="log">${log.map(e => `<li><small>${esc(fmtTime(e.at))}</small><div><b>${esc(e.agent)}</b> · ${esc(e.text)}</div></li>`).join('')}</ul>` : '<p class="empty">Entries appear here after each agent\'s shift.</p>'}</div>`;
+}
+
+function viewPipeline() {
+  const leads = list('leads'), byS = s => leads.filter(l => l.status === s).length, max = Math.max(1, ...LEAD_STATES.map(byS));
+  const funnel = ['new', 'qualified', 'contacted', 'followup', 'replied', 'interested', 'meeting', 'won'].map(s => `<div class="frow"><span>${s[0].toUpperCase() + s.slice(1)}</span><div class="bar"><span style="width:${byS(s) / max * 100}%"></span></div><b class="num">${byS(s)}</b></div>`).join('');
+  const regions = { 'cape-town': 'Cape Town', 'south-africa': 'South Africa', 'international': 'International' };
+  const rows = leads.filter(l => (leadFilter === 'all' || l.status === leadFilter) && (regionFilter === 'all' || l.region === regionFilter) && (!leadQuery || [l.name, l.city, l.country, l.niche, l.email].join(' ').toLowerCase().includes(leadQuery.toLowerCase())))
+    .sort((a, b) => (b.score || 0) - (a.score || 0));
+  const seg = ['all', 'new', 'qualified', 'contacted', 'replied', 'interested'].map(s => `<button data-lf="${s}" aria-pressed="${leadFilter === s}">${s === 'all' ? 'All' : s[0].toUpperCase() + s.slice(1)}</button>`).join('');
+  const rseg = [['all', 'All regions'], ...Object.entries(regions)].map(([k, l]) => `<button data-rf="${k}" aria-pressed="${regionFilter === k}">${l}</button>`).join('');
+  return header('Pipeline', `${leads.length} leads found by Lookout. Herald contacts the qualified ones.`, `<button class="btn" data-new="lead">Add a lead</button>`) +
+    `<div class="grid2"><div class="card"><div class="head"><h2>Funnel</h2></div><div class="funnel">${funnel}</div></div>
+    <div class="card"><div class="head"><h2>By region</h2></div><div class="funnel">${Object.entries(regions).map(([k, l]) => { const n = leads.filter(x => x.region === k).length; return `<div class="frow"><span>${l}</span><div class="bar"><span style="width:${n / Math.max(1, leads.length) * 100}%;background:var(--sky)"></span></div><b class="num">${n}</b></div>`; }).join('')}</div></div></div>
+    <div class="card"><div class="head"><div class="tools"><div class="seg" role="group" aria-label="Status">${seg}</div><div class="seg" role="group" aria-label="Region">${rseg}</div></div><input type="search" id="lq" placeholder="Search name, city, niche" value="${esc(leadQuery)}" style="max-width:240px" aria-label="Search leads"></div>
+    <div class="tablewrap"><table><thead><tr><th>Business</th><th>Where</th><th>Why them</th><th class="num">Score</th><th>Status</th><th>Next</th></tr></thead><tbody>
+    ${rows.length ? rows.map(l => `<tr><td><b>${esc(l.name)}</b><span class="sub">${esc(l.niche || '')}${l.email ? ' · ' + esc(l.email) : ''}</span>${safeUrl(l.website) ? `<span class="sub"><a href="${esc(safeUrl(l.website))}" target="_blank" rel="noopener">${esc(l.website.replace(/^https:\/\//, ''))}</a></span>` : ''}</td>
+      <td>${esc(l.city || '')}<span class="sub">${esc(l.country || '')}</span></td><td>${esc((l.gaps || []).join(', '))}</td><td class="num">${esc(l.score ?? '')}</td>
+      <td>${S.canEdit ? `<select data-ls="${esc(l.id)}" aria-label="Status of ${esc(l.name)}">${LEAD_STATES.map(s => `<option ${s === l.status ? 'selected' : ''}>${s}</option>`).join('')}</select>` : `<span class="chip ${LEAD_CHIP[l.status] || ''}">${esc(l.status)}</span>`}</td>
+      <td>${l.nextFollowUpAt ? 'Follow-up ' + esc(fmtDate(l.nextFollowUpAt)) : l.contactedAt ? 'Contacted ' + esc(fmtDate(l.contactedAt)) : '—'}</td></tr>`).join('') : `<tr><td colspan="6" class="empty">${leads.length ? 'No leads match these filters.' : 'Lookout adds leads on its first weekday shift. You can also add one yourself.'}</td></tr>`}
+    </tbody></table></div></div>`;
+}
+
+function viewOutreach() {
+  const emails = list('emails').sort((a, b) => String(b.sentAt || b.receivedAt).localeCompare(String(a.sentAt || a.receivedAt)));
+  const hot = emails.filter(e => e.direction === 'in' && ['interested', 'question'].includes(e.replyClass) && !e.handled);
+  const lead = id => S.leads[id] || {};
+  const cls = { interested: 'ok', question: 'sky', 'not-now': 'warn', optout: 'bad', bounce: 'bad', other: '' };
+  return header('Outreach', 'Every email Herald sent and every reply Signalman read.') +
+    `<div class="card"><div class="head"><h2>Replies waiting for you</h2><span class="chip ${hot.length ? 'ok' : ''}">${hot.length} open</span></div>
+    ${hot.length ? `<div class="tablewrap"><table><thead><tr><th>From</th><th>What they said</th><th>Signalman's draft</th><th></th></tr></thead><tbody>${hot.map(e => `<tr><td><b>${esc(lead(e.leadId).name || e.from)}</b><span class="sub">${esc(fmtTime(e.receivedAt))}</span></td><td>${esc(e.snippet)}</td><td>${e.draftReady ? '<span class="chip ok">Draft in Gmail</span>' : '—'}</td><td>${S.canEdit ? `<button class="btn" data-handled="${esc(e.id)}">Done</button>` : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">Interested replies and questions land here, with a reply already drafted in Gmail.</p>'}</div>
+    <div class="card"><div class="head"><h2>All email</h2><span class="label">${emails.length} messages</span></div><div class="tablewrap"><table><thead><tr><th>When</th><th>Lead</th><th>Email</th><th>Result</th></tr></thead><tbody>
+    ${emails.length ? emails.slice(0, 200).map(e => `<tr><td>${esc(fmtTime(e.sentAt || e.receivedAt))}</td><td>${esc(lead(e.leadId).name || e.to || e.from || '')}</td><td>${e.direction === 'in' ? '← ' : '→ '}${esc(e.subject || '')}<span class="sub">${esc(e.kind || '')}</span></td><td>${e.replyClass ? `<span class="chip ${cls[e.replyClass] || ''}">${esc(e.replyClass)}</span>` : `<span class="chip">${esc(e.status || 'sent')}</span>`}</td></tr>`).join('') : '<tr><td colspan="4" class="empty">Herald logs each email here as it goes out.</td></tr>'}
+    </tbody></table></div></div>`;
+}
+
+function viewClients() {
+  const cs = list('clients');
+  const hc = { 'on-track': 'ok', 'at-risk': 'warn', stalled: 'bad' };
+  const cols = STAGES.map(s => { const items = cs.filter(c => (c.stage || 'brief') === s);
+    return `<div class="col"><h3>${STAGE_NAME[s]} <span>${items.length}</span></h3>${items.map(c => `<div class="cc" data-open="client:${esc(c.id)}" tabindex="0" role="button"><b>${esc(c.name)}</b><span>${esc(c.package || '')}${c.country ? ' · ' + esc(c.country) : ''}</span>${c.nextAction ? `<span>Next: ${esc(c.nextAction)}</span>` : ''}${c.health ? `<span class="chip ${hc[c.health] || ''}" style="align-self:flex-start">${esc(c.health)}</span>` : ''}</div>`).join('') || '<span class="note">None</span>'}</div>`; }).join('');
+  return header('Clients', 'Every build from brief to launch. Quartermaster updates stages and flags anything stalling.', S.canEdit ? `<button class="btn pri" data-new="client">Add a client</button>` : '') + `<div class="board">${cols}</div>`;
+}
+
+function viewMoney() {
+  const inv = list('invoices').map(i => ({ ...i, ...invState(i) })).sort((a, b) => String(b.issuedAt).localeCompare(String(a.issuedAt)));
+  const c = id => (S.clients[id] || {}).name || '—';
+  const ym = new Date().toISOString().slice(0, 7);
+  const paidM = list('payments').filter(p => String(p.date || '').startsWith(ym)).reduce((a, p) => a + (+p.amount || 0), 0);
+  const sc = { paid: 'ok', 'part-paid': 'warn', overdue: 'bad', sent: 'sky', draft: '' };
+  return header('Money', 'Invoices, deposits and balances. Purser matches payments from your email and drafts reminders.', S.canEdit ? `<button class="btn pri" data-new="invoice">Add an invoice</button><button class="btn" data-new="payment">Record a payment</button>` : '') +
+    `<div class="strip" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="kpi"><b>${money(inv.reduce((a, i) => a + i.bal, 0))}</b><span>outstanding</span></div><div class="kpi"><b>${money(inv.filter(i => i.status === 'overdue').reduce((a, i) => a + i.bal, 0))}</b><span>overdue</span></div><div class="kpi"><b>${money(paidM)}</b><span>received this month</span></div></div>
+    <div class="card"><div class="head"><h2>Invoices</h2></div><div class="tablewrap"><table><thead><tr><th>Invoice</th><th>Client</th><th>Due</th><th class="num">Amount</th><th class="num">Balance</th><th>Status</th></tr></thead><tbody>
+    ${inv.length ? inv.map(i => `<tr><td><b>${esc(i.number || i.id)}</b><span class="sub">${esc(i.kind || '')}</span></td><td>${esc(c(i.clientId))}</td><td>${esc(fmtDate(i.dueAt))}</td><td class="num">${money(i.amount, i.currency)}</td><td class="num">${money(i.bal, i.currency)}</td><td><span class="chip ${sc[i.status] || ''}">${esc(i.status)}</span>${i.reminderDraftedAt ? '<span class="sub">Reminder drafted ' + esc(fmtDate(i.reminderDraftedAt)) + '</span>' : ''}</td></tr>`).join('') : '<tr><td colspan="6" class="empty">Add your first invoice, or Purser will pick up invoices you email to clients.</td></tr>'}
+    </tbody></table></div></div>
+    <div class="card"><div class="head"><h2>Payments</h2></div><div class="tablewrap"><table><thead><tr><th>Date</th><th>Client</th><th>Reference</th><th class="num">Amount</th></tr></thead><tbody>
+    ${list('payments').length ? list('payments').sort((a, b) => String(b.date).localeCompare(String(a.date))).map(p => `<tr><td>${esc(fmtDate(p.date))}</td><td>${esc(c(p.clientId))}</td><td>${esc(p.reference || '')}<span class="sub">${esc(p.source || '')}</span></td><td class="num">${money(p.amount, p.currency)}</td></tr>`).join('') : '<tr><td colspan="4" class="empty">Payments appear as Purser matches them, or when you record one.</td></tr>'}
+    </tbody></table></div></div>`;
+}
+
+function viewSettings() {
+  const st = settings();
+  const sup = list('suppress').sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  const dis = S.canEdit ? '' : 'disabled';
+  return header('Settings', 'How the crew sends, signs and stays within the law.') +
+    `<form class="card" id="setForm"><div class="head"><h2>Sending</h2></div>
+    <div class="switch"><input type="checkbox" id="s-on" name="sendingEnabled" ${st.sendingEnabled ? 'checked' : ''} ${dis}><label for="s-on"><b>Herald may send emails</b><br><span class="note">Switch off to stop all outgoing cold email at once. Replies, tracking and payments keep running.</span></label></div>
+    <div class="form" style="margin-top:12px">
+      <label for="s-cap">First emails per day<input type="number" id="s-cap" name="dailyCap" min="0" max="40" value="${esc(st.dailyCap)}" ${dis}></label>
+      <label for="s-name">Sender name<input type="text" id="s-name" name="senderName" value="${esc(st.senderName)}" ${dis}></label>
+      <label for="s-email">Ensign email address (when ready)<input type="email" id="s-email" name="senderEmail" value="${esc(st.senderEmail)}" placeholder="e.g. hello@ensign…" ${dis}></label>
+      <label for="s-addr">Business postal address (needed before US emails)<input type="text" id="s-addr" name="postalAddress" value="${esc(st.postalAddress)}" ${dis}></label>
+      <label class="full" for="s-sig">Signature<textarea id="s-sig" name="signature" ${dis}>${esc(st.signature)}</textarea></label>
+    </div>
+    ${S.canEdit ? '<div class="tools" style="margin-top:12px"><button class="btn pri" type="submit">Save settings</button></div>' : ''}</form>
+    <div class="card"><div class="head"><h2>Rules the crew follows</h2></div>
+      <ul class="note" style="margin:0;padding-left:18px;display:grid;gap:6px">
+        <li>South Africa (POPIA): one first email that asks if they want to hear more. No follow-ups unless they reply.</li>
+        <li>UK, US and Australia: at most two short follow-ups, 4 and 9 days later, then stop.</li>
+        <li>Only business addresses published on the business's own site or listing. Never personal addresses or bought lists.</li>
+        <li>Every email names Ensign Studio, says why we're writing and offers a one-line way to opt out. Opt-outs are permanent.</li>
+        <li>US emails carry a postal address, so Herald holds them until one is saved above.</li>
+      </ul></div>
+    <div class="card"><div class="head"><h2>Do-not-contact list</h2><span class="label">${sup.length} addresses</span></div>
+    ${S.canEdit ? `<form class="tools" id="supForm" style="margin-bottom:10px"><input type="email" id="sup-email" placeholder="name@business.com" required style="max-width:280px" aria-label="Address to block"><button class="btn" type="submit">Add to list</button></form>` : ''}
+    <div class="tablewrap"><table><thead><tr><th>Address</th><th>Why</th><th>Since</th></tr></thead><tbody>${sup.length ? sup.slice(0, 300).map(s => `<tr><td>${esc(s.email)}</td><td>${esc(s.reason || '')}</td><td>${esc(fmtDate(s.at))}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Opt-outs and bounces are added automatically.</td></tr>'}</tbody></table></div></div>`;
+}
+
+function render() {
+  nav();
+  const v = $('#view'); const r = route();
+  const focusId = document.activeElement && document.activeElement.id;
+  v.innerHTML = ({ deck: viewDeck, crew: viewCrew, pipeline: viewPipeline, outreach: viewOutreach, clients: viewClients, money: viewMoney, settings: viewSettings })[r]();
+  if (focusId === 'lq') { const q = $('#lq'); q && (q.focus(), q.setSelectionRange(q.value.length, q.value.length)); }
+  bind();
+}
+let rq = 0; const schedule = () => { if (!rq) rq = requestAnimationFrame(() => { rq = 0; render(); }); };
+
+async function save(coll, id, data, merge = false) {
+  if (!S.db) return toast('Open this page on claude.ai to save.');
+  try { const ref = S.db.collection(coll).doc(id); if (merge) await ref.update(data); else await ref.set(data); toast('Saved'); }
+  catch (e) { toast(e && e.code === 'quota_exceeded' ? 'The console is full. Archive old leads to add more.' : 'Couldn\'t save. Try again.'); }
+}
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).replace(/[^a-zA-Z0-9-]/g, '');
+
+function drawer(title, body, onSave) {
+  const L = $('#layer');
+  L.innerHTML = `<div class="scrim" data-x></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="${esc(title)}"><header><h2 style="font-size:17px">${esc(title)}</h2><button class="btn" data-x>Close</button></header><form class="body" id="dform">${body}</form><footer><button class="btn pri" id="dsave">Save</button><button class="btn" data-x>Cancel</button></footer></aside>`;
+  L.querySelectorAll('[data-x]').forEach(b => b.onclick = () => L.innerHTML = '');
+  $('#dsave').onclick = async () => { const f = Object.fromEntries(new FormData($('#dform')).entries()); if (await onSave(f) !== false) L.innerHTML = ''; };
+  const first = L.querySelector('input,select,textarea'); first && first.focus();
+}
+addEventListener('keydown', e => { if (e.key === 'Escape') $('#layer').innerHTML = ''; });
+const fld = (id, label, val = '', type = 'text', extra = '') => `<label for="${id}" style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)">${label}<input type="${type}" id="${id}" name="${id}" value="${esc(val)}" ${extra}></label>`;
+
+function openClient(c = {}) {
+  drawer(c.id ? c.name : 'New client', fld('name', 'Business name', c.name, 'text', 'required') + fld('contact', 'Contact person', c.contact) + fld('email', 'Email', c.email, 'email') + fld('phone', 'Phone', c.phone) + fld('country', 'Country', c.country) + fld('package', 'Package', c.package) + fld('value', 'Build value (R)', c.value, 'number') +
+    `<label for="stage" style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)">Stage<select id="stage" name="stage">${STAGES.map(s => `<option value="${s}" ${s === (c.stage || 'brief') ? 'selected' : ''}>${STAGE_NAME[s]}</option>`).join('')}</select></label>` +
+    fld('nextAction', 'Next action', c.nextAction) + fld('dueDate', 'Launch date', (c.dueDate || '').slice(0, 10), 'date') +
+    `<label for="notes" style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)">Notes<textarea id="notes" name="notes">${esc(c.notes)}</textarea></label>`,
+    async f => { if (!f.name.trim()) { toast('Add the business name.'); return false; } const id = c.id || uid(); await save('clients', id, { ...c, ...f, id, value: +f.value || 0, updatedAt: new Date().toISOString(), createdAt: c.createdAt || new Date().toISOString() }); });
+}
+function openInvoice() {
+  drawer('New invoice', `<label for="clientId" style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)">Client<select id="clientId" name="clientId" required><option value="">Choose…</option>${list('clients').map(c => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}</select></label>` +
+    fld('number', 'Invoice number', 'INV-' + String(list('invoices').length + 1).padStart(4, '0')) + `<label for="kind" style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)">Type<select id="kind" name="kind"><option value="deposit">50% deposit</option><option value="balance">Balance on launch</option><option value="retainer">Monthly plan</option><option value="other">Other</option></select></label>` +
+    fld('amount', 'Amount', '', 'number', 'required') + fld('currency', 'Currency', 'ZAR') + fld('issuedAt', 'Issued', new Date().toISOString().slice(0, 10), 'date') + fld('dueAt', 'Due', new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10), 'date'),
+    async f => { if (!f.clientId || !(+f.amount > 0)) { toast('Choose a client and an amount.'); return false; } const id = uid(); await save('invoices', id, { ...f, id, amount: +f.amount, status: 'sent', createdAt: new Date().toISOString() }); });
+}
+function openPayment() {
+  const open = list('invoices').filter(i => invState(i).bal > 0);
+  drawer('Record a payment', `<label for="invoiceId" style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)">Invoice<select id="invoiceId" name="invoiceId" required><option value="">Choose…</option>${open.map(i => `<option value="${esc(i.id)}">${esc(i.number)} · ${esc((S.clients[i.clientId] || {}).name || '')} · ${money(invState(i).bal, i.currency)} due</option>`).join('')}</select></label>` +
+    fld('amount', 'Amount received', '', 'number', 'required') + fld('date', 'Date', new Date().toISOString().slice(0, 10), 'date') + fld('reference', 'Reference'),
+    async f => { const inv = S.invoices[f.invoiceId]; if (!inv || !(+f.amount > 0)) { toast('Choose an invoice and an amount.'); return false; } const id = uid(); await save('payments', id, { ...f, id, clientId: inv.clientId, amount: +f.amount, currency: inv.currency || 'ZAR', source: 'Recorded by hand', createdAt: new Date().toISOString() }); });
+}
+function openLead() {
+  drawer('Add a lead', fld('name', 'Business name', '', 'text', 'required') + fld('website', 'Website (https://…)') + fld('email', 'Business email', '', 'email') + fld('city', 'City') + fld('country', 'Country', 'South Africa') +
+    `<label for="region" style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)">Region<select id="region" name="region"><option value="cape-town">Cape Town</option><option value="south-africa">Rest of South Africa</option><option value="international">International</option></select></label>` + fld('niche', 'What they do'),
+    async f => { if (!f.name.trim()) { toast('Add the business name.'); return false; } const id = uid(); await save('leads', id, { ...f, id, status: 'qualified', score: 70, gaps: [], source: 'Added by hand', createdAt: new Date().toISOString() }); });
+}
+
+function bind() {
+  document.querySelectorAll('[data-fire]').forEach(b => b.onclick = () => fire(b.dataset.fire));
+  flyPackets();
+  document.querySelectorAll('[data-lf]').forEach(b => b.onclick = () => { leadFilter = b.dataset.lf; render(); });
+  document.querySelectorAll('[data-rf]').forEach(b => b.onclick = () => { regionFilter = b.dataset.rf; render(); });
+  const q = $('#lq'); if (q) q.oninput = e => { leadQuery = e.target.value; render(); };
+  document.querySelectorAll('[data-ls]').forEach(s => s.onchange = () => save('leads', s.dataset.ls, { status: s.value, updatedAt: new Date().toISOString(), statusSetBy: 'you' }, true));
+  document.querySelectorAll('[data-handled]').forEach(b => b.onclick = () => save('emails', b.dataset.handled, { handled: true }, true));
+  document.querySelectorAll('[data-open]').forEach(el => { const go = () => { const [k, id] = el.dataset.open.split(':'); if (k === 'client' && S.canEdit) openClient(S.clients[id]); }; el.onclick = go; el.onkeydown = e => { if (e.key === 'Enter') go(); }; });
+  document.querySelectorAll('[data-new]').forEach(b => b.onclick = () => ({ client: openClient, invoice: openInvoice, payment: openPayment, lead: openLead })[b.dataset.new]());
+  const sf = $('#setForm'); if (sf) sf.onsubmit = e => { e.preventDefault(); const f = new FormData(sf); save('settings', 'main', { ...settings(), sendingEnabled: !!f.get('sendingEnabled'), dailyCap: Math.max(0, Math.min(40, +f.get('dailyCap') || 0)), senderName: f.get('senderName') || '', senderEmail: f.get('senderEmail') || '', postalAddress: f.get('postalAddress') || '', signature: f.get('signature') || '', updatedAt: new Date().toISOString() }); };
+  const sup = $('#supForm'); if (sup) sup.onsubmit = e => { e.preventDefault(); const em = $('#sup-email').value.trim().toLowerCase(); if (!em) return; save('suppress', em.replace(/[^a-z0-9._~:@+-]/g, '_'), { email: em, reason: 'Added by you', at: new Date().toISOString() }); };
+}
+
+setInterval(() => { if (route() === 'deck') schedule(); }, 30000);
+(async function boot() {
+  render();
+  const db = window.claude ? await claude.use('db') : null;
+  if (!db) { render(); return; }
+  S.db = db;
+  const user = await claude.use('user'); S.canEdit = user ? !!(await user.canEdit()) : false;
+  for (const c of ['leads', 'emails', 'clients', 'invoices', 'payments', 'suppress', 'runs']) {
+    db.collection(c).onSnapshot(snap => { const m = {}; snap.docs.forEach(d => { m[d.id] = { id: d.id, ...d.data() }; }); S[c] = m; schedule(); }, () => schedule());
+  }
+  db.doc('settings/main').onSnapshot(d => { S.settings = d.exists ? d.data() : null; schedule(); }, () => {});
+})();
+</script>
